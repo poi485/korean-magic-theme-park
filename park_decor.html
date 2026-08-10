@@ -1,0 +1,635 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>마법의 놀이동산 꾸미기 - 나무 추가 업데이트</title>
+    <style>
+        body {
+            font-family: 'Malgun Gothic', sans-serif;
+            background: linear-gradient(180deg, #81d4fa 0%, #e1f5fe 50%, #aed581 50%, #558b2f 100%);
+            margin: 0;
+            padding: 15px;
+            text-align: center;
+            height: 100vh;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            user-select: none;
+        }
+
+        /* 🌟 헤더 영역 수정 */
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 10px 20px;
+            border-radius: 30px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            margin-bottom: 10px;
+            flex-shrink: 0;
+        }
+
+        .header-left, .header-right {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        h1 { margin: 0; font-size: 24px; color: #2e7d32; font-weight: 900; margin-left: 10px; transition: color 0.3s; }
+        
+        .score-box { 
+            font-size: 20px; font-weight: bold; color: #333; 
+            background: #fff; padding: 5px 15px; border-radius: 20px; border: 3px solid #FFD700;
+            cursor: pointer; 
+        }
+
+        .action-btn {
+            background: #ff6b6b; color: white; border: none; padding: 8px 15px;
+            border-radius: 20px; font-weight: bold; font-size: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+            transition: transform 0.2s; cursor: pointer; text-decoration: none;
+        }
+        .action-btn:hover { transform: scale(1.05); }
+        .btn-blue { background: #0288d1; }
+        .btn-orange { background: #f57c00; }
+
+        .main-layout {
+            display: flex;
+            flex: 1;
+            gap: 15px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        #park-field {
+            position: relative;
+            flex: 1;
+            background-color: #aed581;
+            background-image: url('bg/bg-dec2.png');
+            background-size: cover;
+            background-position: center;
+            border: 6px solid rgba(255,255,255,0.4);
+            border-radius: 25px;
+            overflow: hidden;
+            box-shadow: inset 0 10px 20px rgba(0,0,0,0.3), 0 10px 20px rgba(0,0,0,0.2);
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        #inventory-panel {
+            width: 160px;
+            background: rgba(255, 255, 255, 0.95);
+            border: 4px solid #795548;
+            border-radius: 20px;
+            padding: 10px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            flex-shrink: 0;
+            transition: transform 0.3s, opacity 0.3s;
+        }
+        .inv-title { font-size: 16px; font-weight: bold; color: #5d4037; margin-bottom: 8px; border-bottom: 2px solid #d7ccc8; width: 100%; padding-bottom: 5px; }
+        
+        #inventory-items {
+            flex: 1;
+            width: 100%;
+            overflow-y: auto;
+            display: flex;
+            flex-wrap: wrap;
+            align-content: flex-start;
+            gap: 8px;
+            margin-bottom: 10px;
+        }
+        .inv-item {
+            position: relative;
+            background: #fff;
+            border: 3px solid #ccc;
+            border-radius: 12px;
+            width: 60px;
+            height: 60px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            transition: 0.2s;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        .inv-item img { max-width: 45px; max-height: 45px; object-fit: contain; pointer-events: none; }
+        .inv-item.selected { border-color: #e91e63; background: #fce4ec; transform: scale(1.1); box-shadow: 0 5px 15px rgba(233, 30, 99, 0.3); }
+        
+        .inv-badge {
+            position: absolute;
+            top: -8px; right: -8px;
+            background: #e91e63; color: white;
+            font-size: 12px; font-weight: bold;
+            padding: 2px 7px; border-radius: 10px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+            z-index: 10;
+        }
+
+        #trash-can {
+            width: 100%; background: #ffebee; border: 2px dashed #e57373; border-radius: 12px;
+            padding: 12px 0; font-size: 14px; font-weight: bold; color: #c62828;
+            cursor: pointer; transition: 0.2s; flex-shrink: 0;
+        }
+        #trash-can:hover { background: #ffcdd2; transform: scale(1.05); }
+
+        #control-panel {
+            margin-top: 15px;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 10px 15px;
+            border-radius: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            gap: 15px;
+            flex-shrink: 0;
+            transition: opacity 0.3s;
+        }
+
+        .shop-scroll {
+            display: flex;
+            flex: 1; 
+            gap: 12px;
+            overflow-x: auto;
+            padding-bottom: 8px;
+            align-items: center;
+        }
+        .shop-scroll::-webkit-scrollbar { height: 10px; }
+        .shop-scroll::-webkit-scrollbar-thumb { background: #b0bec5; border-radius: 10px; }
+
+        .shop-item {
+            background: #fff; border: 3px solid #ddd; border-radius: 15px; padding: 8px 15px;
+            cursor: pointer; transition: transform 0.2s, border-color 0.2s;
+            display: flex; flex-direction: column; align-items: center; flex-shrink: 0;
+            width: 80px;
+        }
+        .shop-item img { height: 50px; object-fit: contain; margin-bottom: 5px; pointer-events: none; }
+        .shop-item.selected { border-color: #e91e63; background: #fce4ec; box-shadow: 0 5px 15px rgba(233, 30, 99, 0.2); }
+        .shop-price { font-size: 14px; font-weight: bold; color: #d32f2f; }
+
+        .size-control {
+            display: flex; gap: 6px; background: #e0f2f1; padding: 8px; border-radius: 15px; border: 2px solid #80cbc4; flex-shrink: 0;
+        }
+        .size-btn {
+            background: #fff; border: 2px solid #00897b; border-radius: 10px; padding: 8px 14px;
+            font-weight: bold; color: #00796b; cursor: pointer; font-size: 15px; transition: 0.2s;
+        }
+        .size-btn.active { background: #00897b; color: white; box-shadow: 0 3px 6px rgba(0,0,0,0.2); }
+
+        .placed-item {
+            position: absolute; 
+            transform: translate(-50%, -50%); 
+            cursor: pointer; 
+            transition: transform 0.1s;
+        }
+        .placed-item img {
+            width: 100%; height: auto; display: block; pointer-events: none;
+            filter: drop-shadow(0 10px 15px rgba(0,0,0,0.4)); 
+        }
+        .placed-item.selected-target { z-index: 100; }
+        .placed-item.selected-target img { filter: drop-shadow(0 0 20px #ffeb3b) drop-shadow(0 0 10px #ff5722); transform: scale(1.1); }
+
+        /* 🌟 갤러리 모달 UI */
+        #gallery-modal {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.7); backdrop-filter: blur(5px);
+            display: flex; justify-content: center; align-items: center; z-index: 9999;
+            display: none; 
+        }
+        .gallery-content {
+            background: #fff; width: 90%; max-width: 600px; border-radius: 30px;
+            padding: 30px; box-shadow: 0 20px 50px rgba(0,0,0,0.5); text-align: center;
+        }
+        .gallery-content h2 { margin-top: 0; color: #1e3c72; font-size: 28px; }
+        .gallery-list {
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;
+            max-height: 400px; overflow-y: auto; padding: 10px;
+        }
+        .gallery-card {
+            background: #f1f8e9; border: 3px solid #8bc34a; border-radius: 15px; padding: 15px;
+            font-size: 18px; font-weight: bold; color: #33691e; cursor: pointer; transition: 0.2s;
+        }
+        .gallery-card:hover { transform: translateY(-5px); box-shadow: 0 5px 15px rgba(0,0,0,0.2); background: #dcedc8; }
+        .close-modal-btn {
+            margin-top: 20px; background: #9e9e9e; color: white; border: none; padding: 10px 30px;
+            border-radius: 20px; font-size: 18px; font-weight: bold; cursor: pointer;
+        }
+
+        /* 🌟 뷰 모드(구경하기) 하단 컨트롤 컨테이너 */
+        #view-mode-controls {
+            display: none; 
+            justify-content: center;
+            align-items: center;
+            margin-top: 15px;
+            flex-shrink: 0;
+        }
+        #exit-view-btn {
+            background: #e91e63; color: white; border: 4px solid #fff; padding: 12px 40px;
+            border-radius: 50px; font-size: 22px; font-weight: bold; cursor: pointer;
+            box-shadow: 0 8px 15px rgba(0,0,0,0.3);
+            animation: bounceBtn 2s infinite ease-in-out;
+        }
+        #exit-view-btn:hover { background: #d81b60; transform: scale(1.05); animation: none; }
+        @keyframes bounceBtn { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
+
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="header-left">
+            <a href="index.html" class="action-btn">🏠 처음으로</a>
+            <h1 id="page-title">🎡 나만의 놀이동산 꾸미기</h1>
+        </div>
+        <div class="header-right" id="header-right-menu">
+            <button class="action-btn btn-blue" onclick="uploadPark()">📸 자랑하기</button>
+            <button class="action-btn btn-orange" onclick="openGallery()">🌍 구경가기</button>
+            <div class="score-box" id="admin-cheat-btn">내 보물: <span id="park-coins">0</span> 💎</div>
+        </div>
+    </header>
+
+    <div class="main-layout">
+        <div id="park-field" onclick="handleFieldClick(event)">
+            <div id="guide-msg" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 22px; color: #fff; font-weight: bold; pointer-events: none; text-shadow: 0 2px 10px rgba(0,0,0,0.8); background: rgba(0,0,0,0.4); padding: 15px 30px; border-radius: 20px;">
+                ✨ 하단 상점이나 보관함에서 아이템을 고르고 빈 곳을 클릭하세요! ✨
+            </div>
+        </div>
+
+        <div id="inventory-panel">
+            <div class="inv-title">🎒 보관함</div>
+            <div id="inventory-items"></div>
+            <div id="trash-can" onclick="removeSelected()">
+                📦 보관함에 넣기<br>(설치된 아이템 누른 후 클릭)
+            </div>
+        </div>
+    </div>
+
+    <!-- 🌟 구경 모드용 돌아가기 버튼 -->
+    <div id="view-mode-controls">
+        <button id="exit-view-btn" onclick="exitGalleryView()">❌ 내 놀이동산으로 돌아가기</button>
+    </div>
+
+    <div id="control-panel">
+        <div class="shop-scroll" id="shop-container"></div>
+        <div class="size-control">
+            <button class="size-btn" onclick="setSize(80, this)">작게</button>
+            <button class="size-btn active" onclick="setSize(130, this)">보통</button>
+            <button class="size-btn" onclick="setSize(200, this)">크게</button>
+            <button class="size-btn" onclick="setSize(300, this)">왕특대</button>
+        </div>
+    </div>
+
+    <!-- 친구들 갤러리 모달창 -->
+    <div id="gallery-modal">
+        <div class="gallery-content">
+            <h2>🌍 친구들의 놀이동산</h2>
+            <div class="gallery-list" id="gallery-list">
+                <!-- 갤러리 아이템 추가됨 -->
+            </div>
+            <button class="close-modal-btn" onclick="closeGallery()">닫기</button>
+        </div>
+    </div>
+
+    <script>
+        // ====================================================
+        // 🌟 배경 음악 설정 (볼륨 조절 및 무한 반복)
+        // ====================================================
+        let decorBgm = new Audio('source/bg-dec.mp3'); 
+        decorBgm.loop = true;   // 무한루프 설정
+        decorBgm.volume = 0.6;  // 볼륨 60% 설정 (방해되지 않는 은은한 크기)
+
+        window.addEventListener('DOMContentLoaded', () => {
+            // 브라우저 정책을 고려하여 페이지 접속 시 음악 자동 재생 시도
+            decorBgm.play().catch(e => {
+                console.log("자동재생 방지로 인해 화면 클릭 시 재생됩니다.");
+                // 클릭 시 재생되도록 이벤트 추가
+                document.body.addEventListener('click', () => {
+                    if (decorBgm.paused) decorBgm.play();
+                }, { once: true });
+            });
+        });
+
+        // ----------------------------------------------------
+        // 게임 기본 설정 및 데이터
+        // ----------------------------------------------------
+        let currentCoins = parseInt(localStorage.getItem('hangeul_park_coins') || '0');
+        document.getElementById('park-coins').innerText = currentCoins;
+
+        // 🌟 새로운 파랑/분홍 마법나무 항목 2개 추가!
+        const shopItems = [
+            { id: 'flower1', src: 'object/flower1.png', name: '빨강꽃밭', price: 2 },
+            { id: 'flower2', src: 'object/flower2.png', name: '노랑꽃밭', price: 2 },
+            { id: 'tree', src: 'object/tree.png', name: '초록마법나무', price: 4 },
+            { id: 'tree2', src: 'object/tree2.png', name: '파랑마법나무', price: 4 },
+            { id: 'tree3', src: 'object/tree3.png', name: '분홍마법나무', price: 4 },
+            { id: 'bench', src: 'object/bench.png', name: '피크닉벤치', price: 5 },
+            { id: 'shop1', src: 'object/shop1.png', name: '솜사탕마차', price: 10 },
+            { id: 'shop2', src: 'object/shop2.png', name: '기념품가게', price: 10 },
+            { id: 'shop3', src: 'object/shop3.png', name: '간식매점', price: 10 },
+            { id: 'fountain', src: 'object/fountain.png', name: '분수대', price: 15 },
+            { id: 'teacup', src: 'object/teacup.png', name: '회전찻잔', price: 20 },
+            { id: 'mga', src: 'object/mga.png', name: '회전목마', price: 30 },
+            { id: 'viking', src: 'object/viking.png', name: '바이킹', price: 40 },
+            { id: 'wheel', src: 'object/wheel.png', name: '관람차', price: 50 },
+            { id: 'castle', src: 'object/castle.png', name: '마법의성', price: 70 },
+            { id: 'roller', src: 'object/roller.png', name: '롤러코스터', price: 100 }
+        ];
+
+        let selectedItemId = shopItems[0].id;
+        let selectedPrice = shopItems[0].price;  
+        let selectedSize = 130;
+        let activeIndex = null; 
+        let isViewingGallery = false; 
+        let currentViewData = [];     
+
+        let placedList = JSON.parse(localStorage.getItem('hangeul_park_decor_v3') || '[]');
+        let inventoryData = JSON.parse(localStorage.getItem('hangeul_park_inventory_v3') || '{}');
+
+        const shopContainer = document.getElementById('shop-container');
+        shopItems.forEach((item, index) => {
+            const div = document.createElement('div');
+            div.className = `shop-item ${index === 0 ? 'selected' : ''}`;
+            div.onclick = () => selectShopItem(item.id, item.price, div);
+            div.innerHTML = `
+                <img src="${item.src}" alt="${item.name}" onerror="this.src='data:image/svg+xml;utf8,<svg xmlns=\\'http://www.w3.org/2000/svg\\' width=\\'50\\' height=\\'50\\'><rect width=\\'50\\' height=\\'50\\' fill=\\'#eee\\'/><text x=\\'25\\' y=\\'30\\' font-size=\\'10\\' text-anchor=\\'middle\\' fill=\\'%23999\\'>이미지없음</text></svg>'">
+                <div class="shop-price">💎 ${item.price}</div>
+            `;
+            shopContainer.appendChild(div);
+        });
+
+        renderPark();
+        renderInventory();
+
+        // 🌟 뾱 소리 함수
+        let audioCtx = null;
+        function playPopSound() {
+            if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            
+            osc.type = 'sine'; 
+            osc.frequency.setValueAtTime(800, audioCtx.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(1200, audioCtx.currentTime + 0.1); 
+            
+            gain.gain.setValueAtTime(0.5, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.1);
+            
+            osc.start();
+            osc.stop(audioCtx.currentTime + 0.1);
+        }
+
+        // 🌟 관리자 치트키
+        let adminClickCount = 0;
+        let adminClickTimer = null;
+        document.getElementById('admin-cheat-btn').addEventListener('click', () => {
+            adminClickCount++;
+            clearTimeout(adminClickTimer);
+            adminClickTimer = setTimeout(() => { adminClickCount = 0; }, 1000); 
+
+            if (adminClickCount === 10) {
+                currentCoins = 5000;
+                localStorage.setItem('hangeul_park_coins', currentCoins);
+                document.getElementById('park-coins').innerText = currentCoins;
+                alert("✨ [관리자 모드] 보물이 5,000개 충전되었습니다! 플렉스 하세요! ✨");
+                adminClickCount = 0;
+            }
+        });
+
+        // 🌟 갤러리 기능
+        let galleryData = JSON.parse(localStorage.getItem('hangeul_park_gallery') || '[]');
+        if(galleryData.length === 0) {
+            galleryData = [
+                { author: '루피', park: [{id: 'castle', x: 50, y: 30, size: 300}, {id: 'flower1', x: 30, y: 60, size: 130}, {id: 'mga', x: 70, y: 70, size: 200}] },
+                { author: '포비', park: [{id: 'roller', x: 40, y: 40, size: 300}, {id: 'shop1', x: 80, y: 60, size: 130}, {id: 'bench', x: 20, y: 80, size: 130}] }
+            ];
+            localStorage.setItem('hangeul_park_gallery', JSON.stringify(galleryData));
+        }
+
+        function uploadPark() {
+            if (placedList.length === 0) return alert("앗! 아직 공터가 텅 비어있어요. 먼저 아이템을 예쁘게 꾸며주세요!");
+            const authorName = prompt("우와, 정말 멋진 놀이동산이네요! 작가님의 이름을 적어주세요:");
+            if (!authorName) return; 
+            
+            galleryData.push({ author: authorName, park: JSON.parse(JSON.stringify(placedList)) });
+            localStorage.setItem('hangeul_park_gallery', JSON.stringify(galleryData));
+            alert(`성공적으로 사진을 찍었어요! 이제 [구경가기]에서 '${authorName}'님의 작품을 볼 수 있습니다! 📸`);
+        }
+
+        function openGallery() {
+            const listDiv = document.getElementById('gallery-list');
+            listDiv.innerHTML = '';
+            
+            galleryData.forEach((item, index) => {
+                const card = document.createElement('div');
+                card.className = 'gallery-card';
+                card.innerText = `🎪 ${item.author}의 놀이동산`;
+                card.onclick = () => viewPark(index);
+                listDiv.appendChild(card);
+            });
+            document.getElementById('gallery-modal').style.display = 'flex';
+        }
+
+        function closeGallery() {
+            document.getElementById('gallery-modal').style.display = 'none';
+        }
+
+        function viewPark(index) {
+            isViewingGallery = true;
+            currentViewData = galleryData[index].park;
+            const author = galleryData[index].author;
+            closeGallery();
+            
+            const titleEl = document.getElementById('page-title');
+            titleEl.innerText = `🎪 ${author}의 놀이동산을 구경하고 있어요! 👀`;
+            titleEl.style.color = '#e91e63';
+
+            document.getElementById('header-right-menu').style.display = 'none';
+            document.getElementById('inventory-panel').style.display = 'none';
+            document.getElementById('control-panel').style.display = 'none';
+            document.getElementById('guide-msg').style.display = 'none';
+            
+            document.getElementById('view-mode-controls').style.display = 'flex';
+            renderPark();
+        }
+
+        function exitGalleryView() {
+            isViewingGallery = false;
+            
+            const titleEl = document.getElementById('page-title');
+            titleEl.innerText = `🎡 나만의 놀이동산 꾸미기`;
+            titleEl.style.color = '#2e7d32';
+
+            document.getElementById('header-right-menu').style.display = 'flex';
+            document.getElementById('inventory-panel').style.display = 'flex';
+            document.getElementById('control-panel').style.display = 'flex';
+            
+            document.getElementById('view-mode-controls').style.display = 'none';
+            activeIndex = null;
+            renderPark();
+        }
+
+        // 아이템 배치 로직
+        function getSrcById(id) {
+            const found = shopItems.find(item => item.id === id);
+            return found ? found.src : '';
+        }
+
+        function selectShopItem(id, price, element) {
+            selectedItemId = id; selectedPrice = price; activeIndex = null;
+            document.querySelectorAll('.shop-item').forEach(el => el.classList.remove('selected'));
+            element.classList.add('selected');
+            renderInventory(); renderPark();
+        }
+
+        function selectInventoryItem(id) {
+            selectedItemId = id; selectedPrice = 0; activeIndex = null;
+            document.querySelectorAll('.shop-item').forEach(el => el.classList.remove('selected'));
+            renderInventory(); renderPark();
+        }
+
+        function setSize(size, element) {
+            selectedSize = size;
+            document.querySelectorAll('.size-btn').forEach(el => el.classList.remove('active'));
+            element.classList.add('active');
+
+            if (activeIndex !== null && !isViewingGallery) {
+                placedList[activeIndex].size = selectedSize;
+                localStorage.setItem('hangeul_park_decor_v3', JSON.stringify(placedList));
+                renderPark();
+            }
+        }
+
+        function handleFieldClick(event) {
+            if (isViewingGallery) return; 
+
+            const field = document.getElementById('park-field');
+            const rect = field.getBoundingClientRect();
+            const x = ((event.clientX - rect.left) / rect.width) * 100;
+            const y = ((event.clientY - rect.top) / rect.height) * 100;
+
+            if (activeIndex !== null) {
+                placedList[activeIndex].x = x;
+                placedList[activeIndex].y = y;
+                activeIndex = null;
+            } else {
+                let itemToPlace = selectedItemId;
+
+                if (selectedPrice > 0) {
+                    if (currentCoins < selectedPrice) {
+                        alert("💎 보석이 부족해요! 게임을 더 클리어하고 오세요!");
+                        return;
+                    }
+                    currentCoins -= selectedPrice;
+                    localStorage.setItem('hangeul_park_coins', currentCoins);
+                    document.getElementById('park-coins').innerText = currentCoins;
+                } else {
+                    if (!inventoryData[itemToPlace] || inventoryData[itemToPlace] <= 0) return;
+                    inventoryData[itemToPlace]--;
+                    
+                    if (inventoryData[itemToPlace] === 0) {
+                        delete inventoryData[itemToPlace];
+                        setTimeout(() => {
+                            selectShopItem(shopItems[0].id, shopItems[0].price, document.querySelector('.shop-item'));
+                        }, 10);
+                    }
+                    localStorage.setItem('hangeul_park_inventory_v3', JSON.stringify(inventoryData));
+                }
+
+                placedList.push({ id: itemToPlace, x: x, y: y, size: selectedSize });
+                playPopSound();
+            }
+
+            localStorage.setItem('hangeul_park_decor_v3', JSON.stringify(placedList));
+            renderInventory();
+            renderPark();
+        }
+
+        function selectPlacedItem(index, event) {
+            if (isViewingGallery) return; 
+            event.stopPropagation(); 
+            activeIndex = index;     
+            renderPark();
+        }
+
+        function removeSelected() {
+            if (isViewingGallery) return; 
+            
+            if (activeIndex !== null) {
+                const targetId = placedList[activeIndex].id;
+                inventoryData[targetId] = (inventoryData[targetId] || 0) + 1;
+                localStorage.setItem('hangeul_park_inventory_v3', JSON.stringify(inventoryData));
+
+                placedList.splice(activeIndex, 1);
+                activeIndex = null;
+                localStorage.setItem('hangeul_park_decor_v3', JSON.stringify(placedList));
+                
+                renderInventory();
+                renderPark();
+            } else {
+                alert("치울 아이템을 먼저 놀이동산 안에서 클릭해 주세요!");
+            }
+        }
+
+        function renderInventory() {
+            const invContainer = document.getElementById('inventory-items');
+            invContainer.innerHTML = '';
+            
+            for (let id in inventoryData) {
+                if (inventoryData[id] > 0) {
+                    const div = document.createElement('div');
+                    div.className = 'inv-item';
+                    if (selectedItemId === id && selectedPrice === 0) { div.classList.add('selected'); }
+                    div.onclick = () => selectInventoryItem(id);
+                    
+                    const imgSrc = getSrcById(id);
+                    div.innerHTML = `
+                        <img src="${imgSrc}" alt="${id}">
+                        <div class="inv-badge">x${inventoryData[id]}</div>
+                    `;
+                    invContainer.appendChild(div);
+                }
+            }
+        }
+
+        function renderPark() {
+            const field = document.getElementById('park-field');
+            
+            const showGuide = (!isViewingGallery && placedList.length === 0);
+            const guideHTML = `<div id="guide-msg" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 22px; color: #fff; font-weight: bold; pointer-events: none; text-shadow: 0 2px 10px rgba(0,0,0,0.8); background: rgba(0,0,0,0.4); padding: 15px 30px; border-radius: 20px; ${showGuide ? '' : 'display:none;'}">✨ 하단 상점이나 보관함에서 아이템을 고르고 빈 곳을 클릭하세요! ✨</div>`;
+            
+            field.innerHTML = guideHTML;
+
+            const listToRender = isViewingGallery ? currentViewData : placedList;
+
+            const sortedList = listToRender.map((item, index) => ({...item, originalIndex: index}))
+                                         .sort((a, b) => a.y - b.y);
+
+            sortedList.forEach((item) => {
+                const div = document.createElement('div');
+                div.className = `placed-item ${(activeIndex === item.originalIndex && !isViewingGallery) ? 'selected-target' : ''}`;
+                
+                div.style.width = (item.size || 130) + 'px'; 
+                div.style.left = item.x + '%';
+                div.style.top = item.y + '%';
+                
+                const imgSrc = getSrcById(item.id);
+                div.innerHTML = `<img src="${imgSrc}" alt="item">`;
+                
+                if (!isViewingGallery) {
+                    div.onclick = (e) => selectPlacedItem(item.originalIndex, e);
+                }
+                field.appendChild(div);
+            });
+        }
+    </script>
+</body>
+</html>

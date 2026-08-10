@@ -1,0 +1,617 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI 명탐정 돋보기 - 오답 연동 숨바꼭질 적용</title>
+    <style>
+        body { 
+            font-family: 'Malgun Gothic', '맑은 고딕', sans-serif; 
+            text-align: center; 
+            margin: 0; 
+            padding: 0; 
+            touch-action: manipulation;
+            user-select: none;
+            
+            background-image: url('bg/bg-detective.png');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            background-color: #fff3e0;
+        }
+
+        #intro-screen {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            background: rgba(255, 255, 255, 0.3); 
+            backdrop-filter: blur(8px);
+            transition: opacity 1s;
+        }
+
+        #intro-btn {
+            background-color: #ff9800;
+            color: white;
+            font-size: 32px;
+            font-weight: bold;
+            padding: 20px 50px;
+            border: 6px solid #e65100;
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 0 8px 0 #e65100, 0 15px 20px rgba(0,0,0,0.3);
+            transition: all 0.1s;
+            animation: float 2s infinite ease-in-out;
+        }
+        #intro-btn:active { transform: translateY(8px); box-shadow: 0 0 0 #e65100, 0 5px 10px rgba(0,0,0,0.3); }
+
+        #detective-greeting {
+            font-size: 40px;
+            font-weight: bold;
+            color: #e65100;
+            text-shadow: 2px 2px 0px #fff, 0 4px 15px rgba(255,255,255,0.9);
+            margin-bottom: 40px;
+            display: none;
+            text-align: center;
+        }
+
+        @keyframes float {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-15px); }
+            100% { transform: translateY(0px); }
+        }
+
+        #game-ui {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            padding: 15px 20px;
+            opacity: 0;
+            transition: opacity 1.5s;
+            min-height: 100vh;
+        }
+        
+        h1 { color: #5d4037; font-size: 36px; margin-top: 10px; margin-bottom: 5px; text-shadow: 0 4px 10px rgba(255,255,255,0.9), 2px 2px 0px #fff; }
+        .guide { font-size: 18px; color: #5d4037; margin-bottom: 15px; font-weight: bold; background: rgba(255,255,255,0.85); padding: 10px 20px; border-radius: 20px; display: inline-block; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+
+        #theme-menu-screen { max-width: 800px; margin: 30px auto; }
+        .theme-grid { display: flex; flex-wrap: wrap; justify-content: center; gap: 20px; }
+        .theme-card {
+            width: 180px; height: 160px; background: rgba(255, 255, 255, 0.95); border: 6px solid #ff9800; border-radius: 25px;
+            display: flex; flex-direction: column; justify-content: center; align-items: center; cursor: pointer;
+            box-shadow: 0 8px 15px rgba(0,0,0,0.2); transition: transform 0.2s, box-shadow 0.2s;
+            backdrop-filter: blur(5px);
+        }
+        .theme-card:hover { transform: translateY(-5px); box-shadow: 0 12px 20px rgba(0,0,0,0.25); }
+        .theme-card:active { transform: scale(0.95); }
+        .theme-emoji { font-size: 60px; margin-bottom: 10px; }
+        .theme-title { font-size: 22px; font-weight: bold; color: #5d4037; }
+
+        #game-screen { display: none; width: 100%; max-width: 800px; }
+        #badge-board {
+            font-size: 30px; height: 40px; margin-bottom: 15px; background: rgba(255, 224, 178, 0.9);
+            display: inline-block; padding: 5px 20px; border-radius: 20px; border: 3px dashed #ffb74d;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+        .control-btns { display: flex; justify-content: center; gap: 15px; margin-bottom: 20px; }
+        .btn {
+            padding: 12px 25px; font-size: 20px; font-weight: bold; color: white; border: none;
+            border-radius: 30px; cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.15); transition: 0.2s;
+        }
+        .btn:active { transform: scale(0.95); }
+        #replay-btn { background-color: #4caf50; }
+        #home-btn { background-color: #f44336; }
+
+        #scene-area {
+            position: relative; width: 100%; height: 450px; margin: 0 auto;
+            border-radius: 20px; border: 8px solid #5d4037; 
+            box-shadow: inset 0 10px 20px rgba(0,0,0,0.2), 0 15px 30px rgba(0,0,0,0.4);
+            overflow: hidden; background: #ccc; transition: background 0.5s ease;
+        }
+
+        #scene-bg { position: absolute; width: 100%; height: 100%; top: 0; left: 0; pointer-events: none; }
+        .deco { position: absolute; pointer-events: none; }
+
+        #scene-objects { position: absolute; width: 100%; height: 100%; top: 0; left: 0; }
+        .hitbox { position: absolute; display: flex; justify-content: center; align-items: center; cursor: pointer; z-index: 10; }
+        .emoji-entity { transition: transform 0.3s; pointer-events: none; filter: drop-shadow(2px 4px 6px rgba(0,0,0,0.4)); }
+
+        #prompt-box {
+            max-width: 800px; margin: 20px auto 0; padding: 20px; background-color: rgba(255, 255, 255, 0.95); border-radius: 20px;
+            border: 4px solid #ff9800; font-size: 30px; font-weight: bold; color: #333;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2); min-height: 50px; display: flex; align-items: center; justify-content: center; word-break: keep-all;
+            backdrop-filter: blur(5px);
+        }
+        #feedback-text { font-size: 24px; font-weight: bold; color: #f44336; margin-top: 15px; height: 35px; text-shadow: 0 2px 5px rgba(255,255,255,0.8); }
+
+        @keyframes bounceCorrect { 0% { transform: scale(1); } 50% { transform: scale(1.4) translateY(-20px); filter: drop-shadow(0 0 15px #ffeb3b); } 100% { transform: scale(1); } }
+        .anim-correct { animation: bounceCorrect 0.8s ease-out; }
+        @keyframes shakeWrong { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-10px) rotate(-5deg); } 75% { transform: translateX(10px) rotate(5deg); } }
+        .anim-wrong { animation: shakeWrong 0.4s ease-in-out; }
+
+        .overlay {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255, 255, 255, 0.95);
+            display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 100; display: none; border-radius: 12px;
+        }
+        .overlay h2 { font-size: 50px; margin: 0 0 10px 0; color: #ff9800; }
+        .overlay p { font-size: 26px; font-weight: bold; color: #333; margin-bottom: 30px; }
+    </style>
+</head>
+<body>
+
+    <div id="intro-screen">
+        <div id="detective-greeting">"마법의 탐험 지도에 온 것을 환영해!"</div>
+        <button id="intro-btn">🔎 탐험 시작하기</button>
+    </div>
+
+    <div id="game-ui">
+        <a href="index.html" style="
+            position: absolute;
+            top: 15px;
+            left: 15px;
+            background: #ff6b6b;
+            color: white;
+            text-decoration: none;
+            padding: 10px 20px;
+            border-radius: 20px;
+            font-weight: bold;
+            font-size: 18px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+            z-index: 9999;
+            transition: transform 0.2s;
+        " onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
+            🏠 처음으로
+        </a>
+
+        <h1>🔍 AI 명탐정 돋보기</h1>
+        <div class="guide">놀고 싶은 곳을 고르고, 숨어있는 물건들을 찾아보세요!</div>
+
+        <div id="theme-menu-screen">
+            <div class="theme-grid" id="theme-buttons-container"></div>
+        </div>
+
+        <div id="game-screen">
+            <div id="badge-board">탐정 배지: <span id="badges"></span></div>
+            <div class="control-btns">
+                <button class="btn" id="replay-btn">🔊 문제 다시 듣기</button>
+                <button class="btn" id="home-btn">🏠 다른 곳 가기</button>
+            </div>
+            <div id="scene-area">
+                <div id="scene-bg"></div>
+                <div id="scene-objects"></div>
+                <div id="clear-overlay" class="overlay">
+                    <h2>🎉 수사 완료! 🎉</h2>
+                    <p>모든 단서를 찾아냈어요!<br>최고의 명탐정입니다!</p>
+                    <button class="btn" style="background-color: #ff9800;" onclick="goHome()">메뉴로 돌아가기</button>
+                </div>
+            </div>
+            <div id="prompt-box">문제를 잘 듣고 찾아보세요!</div>
+            <div id="feedback-text"></div>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('intro-btn').addEventListener('click', () => {
+            const introBtn = document.getElementById('intro-btn');
+            const greeting = document.getElementById('detective-greeting');
+            
+            introBtn.style.display = 'none';
+            greeting.style.display = 'block';
+
+            const introAudio = new Audio('source/os-detective.mp3');
+            
+            introAudio.onended = () => {
+                transitionToGame();
+            };
+
+            introAudio.play().catch(e => {
+                console.log("오디오 재생 실패 (자동 전환합니다):", e);
+                setTimeout(() => {
+                    if (document.getElementById('intro-screen').style.opacity !== '0') {
+                        transitionToGame();
+                    }
+                }, 2000);
+            });
+        });
+
+        function transitionToGame() {
+            const intro = document.getElementById('intro-screen');
+            intro.style.opacity = '0';
+            
+            setTimeout(() => {
+                intro.style.display = 'none';
+                const gameUI = document.getElementById('game-ui');
+                gameUI.style.display = 'flex';
+                setTimeout(() => {
+                    gameUI.style.opacity = '1';
+                }, 50); 
+            }, 1000);
+        }
+
+        // 🌟 오답 노트를 시각적으로 구현하기 위한 전역 이모지 사전
+        const globalEmojiDict = {
+            "강아지":"🐶", "고양이":"🐱", "호랑이":"🐯", "코끼리":"🐘", "원숭이":"🐵", "거북이":"🐢", 
+            "다람쥐":"🐿️", "병아리":"🐥", "독수리":"🦅", "개구리":"🐸", "사과":"🍎", "포도":"🍇", 
+            "바나나":"🍌", "복숭아":"🍑", "수박":"🍉", "아이스크림":"🍦", "피자":"🍕", "햄버거":"🍔", 
+            "옥수수":"🌽", "고구마":"🍠", "자전거":"🚲", "자동차":"🚗", "비행기":"✈️", "기차":"🚂", 
+            "컴퓨터":"💻", "냉장고":"🧊", "텔레비전":"📺", "스마트폰":"📱", "운동화":"👟", "가방":"🎒", 
+            "무지개":"🌈", "해바라기":"🌻", "나비":"🦋", "거미줄":"🕸️", "도토리":"🌰", "구름":"☁️", 
+            "바다":"🌊", "하늘":"🌤️", "별똥별":"🌠", "우주선":"🚀", "호주머니":"👖", "도서관":"🏛️", 
+            "장난감":"🧸", "놀이터":"🛝", "물고기":"🐠", "잠자리":"🪰", "개미":"🐜", "무당벌레":"🐞", 
+            "거울":"🪞", "의자":"🪑", "책상":"🪑", "연필":"✏️", "지우개":"🧽", "크레파스":"🖍️", 
+            "가위":"✂️", "스케치북":"📓", "물감":"🎨", "우산":"☂️", "장화":"👢", "자물쇠":"🔒", "도화지":"📄",
+            "나무":"🌳", "외계인":"👽", "꽃게":"🦀", "고래":"🐳", "소라":"🐚", "오징어":"🦑", "관람차":"🎡",
+            "회전목마":"🎠", "롤러코스터":"🎢", "풍선":"🎈", "팝콘":"🍿", "곰인형":"🧸", "책":"📚",
+            "지구본":"🌍", "선생님":"👩‍🏫"
+        };
+
+        const themesData = {
+            forest: {
+                title: "숲속 놀이터", emoji: "🌲",
+                background: "linear-gradient(180deg, #81d4fa 0%, #e1f5fe 40%, #aed581 40%, #558b2f 100%)",
+                decoHtml: `
+                    <div class="deco" style="top: 10px; left: 30px; font-size: 80px;">☀️</div>
+                    <div class="deco" style="top: 30px; right: 150px; font-size: 70px; opacity: 0.8;">☁️</div>
+                    <div class="deco" style="top: 50px; left: 30%; font-size: 50px; opacity: 0.6;">☁️</div>
+                    <div class="deco" style="bottom: 180px; left: -20px; font-size: 150px; opacity: 0.4;">🌲</div>
+                    <div class="deco" style="bottom: 200px; left: 15%; font-size: 110px; opacity: 0.3;">🌳</div>
+                    <div class="deco" style="bottom: 170px; left: 35%; font-size: 140px; opacity: 0.5;">🌲</div>
+                    <div class="deco" style="bottom: 190px; right: 25%; font-size: 120px; opacity: 0.4;">🌳</div>
+                    <div class="deco" style="bottom: 160px; right: -30px; font-size: 160px; opacity: 0.5;">🌲</div>
+                    <div class="deco" style="bottom: 10px; left: 5%; font-size: 60px; opacity: 0.8;">🌿</div>
+                    <div class="deco" style="bottom: -10px; right: 10%; font-size: 80px; opacity: 0.8;">🌿</div>
+                    <div class="deco" style="bottom: 20px; left: 45%; font-size: 50px; opacity: 0.7;">🌱</div>
+                `,
+                objects: [
+                    { id: "나무", emoji: "🌳", size: 130, bounds: { minX: 60, maxX: 80, minY: 20, maxY: 35 }, text: "시원한 그늘을 만들어주는 커다란 나무를 찾아보세요." },
+                    { id: "사과", emoji: "🍎", size: 45, bounds: { minX: 5, maxX: 90, minY: 5, maxY: 15 }, text: "나무 아래에 떨어져 있는 빨간 사과를 찾으세요." },
+                    { id: "다람쥐", emoji: "🐿️", size: 50, bounds: { minX: 5, maxX: 80, minY: 25, maxY: 50 }, text: "이리저리 뛰어다니는 귀여운 다람쥐를 찾으세요." },
+                    { id: "강아지", emoji: "🐶", size: 65, bounds: { minX: 5, maxX: 85, minY: 5, maxY: 15 }, text: "꼬리를 살랑살랑 흔드는 강아지를 찾으세요." },
+                    { id: "나비", emoji: "🦋", size: 45, bounds: { minX: 5, maxX: 90, minY: 40, maxY: 70 }, text: "하늘하늘 날아다니는 나비를 찾으세요." },
+                    { id: "꽃", emoji: "🌷", size: 55, bounds: { minX: 5, maxX: 90, minY: 5, maxY: 15 }, text: "바람에 흔들리는 빨간 튤립을 찾으세요." }
+                ]
+            },
+            space: {
+                title: "우주 탐험", emoji: "🚀",
+                background: "radial-gradient(circle at 50% 100%, #311b92 0%, #1a237e 40%, #000000 100%)",
+                decoHtml: `
+                    <div class="deco" style="top: 20px; left: 10%; width: 4px; height: 4px; background: white; border-radius: 50%; box-shadow: 100px 50px white, 250px 120px white, 350px 20px white, 500px 80px white, 650px 30px white, 720px 150px white, 50px 200px white, 400px 220px white; opacity: 0.8;"></div>
+                    <div class="deco" style="top: 150px; left: 5%; width: 2px; height: 2px; background: #fff59d; border-radius: 50%; box-shadow: 80px 50px #fff59d, 200px 120px #fff59d, 380px 60px #fff59d, 450px 180px #fff59d, 600px 10px #fff59d, 700px 100px #fff59d; opacity: 0.6;"></div>
+                    <div class="deco" style="top: 50px; left: 40px; font-size: 30px;">⭐</div>
+                    <div class="deco" style="top: 90px; right: 100px; font-size: 25px;">🌟</div>
+                    <div class="deco" style="top: 40px; right: 30px; font-size: 90px; opacity: 0.9;">🌕</div>
+                    <div class="deco" style="top: 150px; left: 20%; font-size: 110px; opacity: 0.7;">🪐</div>
+                    <div class="deco" style="bottom: 120px; right: 15%; font-size: 70px; opacity: 0.6;">☄️</div>
+                    <div class="deco" style="bottom: -100px; left: 5%; font-size: 250px; opacity: 0.5;">🌍</div>
+                `,
+                objects: [
+                    { id: "로켓", emoji: "🚀", size: 80, bounds: { minX: 5, maxX: 85, minY: 30, maxY: 70 }, text: "우주로 슝 날아가는 빠른 로켓을 찾으세요." },
+                    { id: "외계인", emoji: "👽", size: 65, bounds: { minX: 5, maxX: 85, minY: 20, maxY: 60 }, text: "초록색 얼굴을 가진 외계인 친구를 찾으세요." },
+                    { id: "우주 비행사", emoji: "👨‍🚀", size: 75, bounds: { minX: 5, maxX: 85, minY: 20, maxY: 70 }, text: "우주복을 입고 있는 씩씩한 우주 비행사를 찾으세요." },
+                    { id: "인공위성", emoji: "🛰️", size: 65, bounds: { minX: 5, maxX: 85, minY: 60, maxY: 80 }, text: "지구를 빙글빙글 도는 인공위성을 찾으세요." },
+                    { id: "비행접시", emoji: "🛸", size: 75, bounds: { minX: 5, maxX: 85, minY: 50, maxY: 80 }, text: "외계인이 타고 온 둥근 비행접시를 찾으세요." },
+                    { id: "망원경", emoji: "🔭", size: 55, bounds: { minX: 5, maxX: 85, minY: 5, maxY: 20 }, text: "별을 관찰할 수 있는 커다란 망원경을 찾으세요." }
+                ]
+            },
+            ocean: {
+                title: "바닷속 마을", emoji: "🐳",
+                background: "linear-gradient(180deg, #0277bd 0%, #0288d1 40%, #29b6f6 65%, #e6c280 65%, #c29b57 100%)", 
+                decoHtml: `
+                    <div class="deco" style="bottom: 5px; left: 5%; font-size: 90px; opacity: 0.85;">🪨</div>
+                    <div class="deco" style="bottom: 0px; left: 15%; font-size: 70px; opacity: 0.9;">🪸</div>
+                    <div class="deco" style="bottom: 15px; right: 10%; font-size: 110px; opacity: 0.8;">🪨</div>
+                    <div class="deco" style="bottom: -5px; right: 25%; font-size: 60px; opacity: 0.9;">🐚</div>
+                    <div class="deco" style="bottom: 30px; left: 40%; font-size: 130px; opacity: 0.6;">🪨</div>
+                    <div class="deco" style="bottom: 20px; left: 2%; font-size: 90px; opacity: 0.7;">🌿</div>
+                    <div class="deco" style="bottom: 10px; right: 5%; font-size: 100px; opacity: 0.7;">🌿</div>
+                    <div class="deco" style="top: 60px; left: 20%; font-size: 40px;">🫧</div>
+                    <div class="deco" style="top: 140px; right: 25%; font-size: 50px;">🫧</div>
+                    <div class="deco" style="top: 200px; left: 45%; font-size: 30px;">🫧</div>
+                `,
+                objects: [
+                    { id: "물고기", emoji: "🐠", size: 65, bounds: { minX: 5, maxX: 85, minY: 30, maxY: 60 }, text: "물속을 헤엄치는 예쁜 열대어를 찾으세요." },
+                    { id: "꽃게", emoji: "🦀", size: 65, bounds: { minX: 5, maxX: 85, minY: 5, maxY: 20 }, text: "모래 위를 엉금엉금 기어가는 꽃게를 찾으세요." },
+                    { id: "거북이", emoji: "🐢", size: 75, bounds: { minX: 5, maxX: 85, minY: 15, maxY: 40 }, text: "등딱지가 단단한 바다거북을 찾으세요." },
+                    { id: "고래", emoji: "🐳", size: 80, bounds: { minX: 5, maxX: 85, minY: 50, maxY: 70 }, text: "머리 위로 물을 뿜어내는 커다란 고래를 찾으세요." },
+                    { id: "소라", emoji: "🐚", size: 55, bounds: { minX: 5, maxX: 85, minY: 5, maxY: 15 }, text: "모래 속에 숨어 있는 예쁜 소라껍데기를 찾으세요." },
+                    { id: "오징어", emoji: "🦑", size: 65, bounds: { minX: 5, maxX: 85, minY: 40, maxY: 65 }, text: "다리가 여러 개 있는 오징어를 찾으세요." }
+                ]
+            },
+            park: {
+                title: "놀이동산", emoji: "🎡",
+                background: "linear-gradient(180deg, #64b5f6 0%, #bbdefb 45%, #c8e6c9 45%, #81c784 100%)",
+                decoHtml: `
+                    <div class="deco" style="top: 15px; left: 20px; font-size: 70px;">☀️</div>
+                    <div class="deco" style="top: 30px; right: 25%; font-size: 60px; opacity: 0.9;">☁️</div>
+                    <div class="deco" style="top: 60px; left: 40%; font-size: 50px; opacity: 0.8;">☁️</div>
+                    <div class="deco" style="bottom: 0; left: 15%; width: 70%; height: 90px; background: #e0e0e0; border-radius: 50% 50% 0 0; border-top: 6px solid #bdbdbd; opacity: 0.6;"></div>
+                    <div class="deco" style="bottom: 0; left: 35%; width: 30%; height: 160px; background: #eeeeee; border-radius: 50% 50% 0 0; opacity: 0.4;"></div>
+                    <div class="deco" style="bottom: 150px; left: 5%; font-size: 130px; opacity: 0.6;">🎪</div>
+                    <div class="deco" style="bottom: 160px; right: 10%; font-size: 110px; opacity: 0.5;">🎢</div>
+                    <div class="deco" style="bottom: 190px; left: 40%; font-size: 100px; opacity: 0.4;">🎡</div>
+                    <div class="deco" style="bottom: 10px; left: 20%; font-size: 45px;">🌷</div>
+                    <div class="deco" style="bottom: 25px; right: 25%; font-size: 50px;">🌻</div>
+                    <div class="deco" style="bottom: 5px; right: 40%; font-size: 40px;">🌼</div>
+                `,
+                objects: [
+                    { id: "관람차", emoji: "🎡", size: 90, bounds: { minX: 60, maxX: 80, minY: 40, maxY: 60 }, text: "빙글빙글 돌아가는 커다란 관람차를 찾으세요." },
+                    { id: "회전목마", emoji: "🎠", size: 75, bounds: { minX: 5, maxX: 30, minY: 20, maxY: 40 }, text: "말을 타고 도는 재미있는 회전목마를 찾으세요." },
+                    { id: "롤러코스터", emoji: "🎢", size: 75, bounds: { minX: 30, maxX: 60, minY: 40, maxY: 60 }, text: "빠르게 달리는 롤러코스터를 찾으세요." },
+                    { id: "풍선", emoji: "🎈", size: 60, bounds: { minX: 5, maxX: 85, minY: 40, maxY: 80 }, text: "하늘 위로 둥둥 떠가는 풍선을 찾으세요." },
+                    { id: "팝콘", emoji: "🍿", size: 55, bounds: { minX: 5, maxX: 85, minY: 5, maxY: 20 }, text: "고소한 냄새가 나는 팝콘을 찾으세요." },
+                    { id: "곰인형", emoji: "🧸", size: 60, bounds: { minX: 5, maxX: 85, minY: 5, maxY: 20 }, text: "의자에 앉아 있는 귀여운 곰 인형을 찾으세요." }
+                ]
+            },
+            classroom: {
+                title: "우리 반 교실", emoji: "🏫",
+                background: "linear-gradient(180deg, #fff9c4 0%, #fff9c4 55%, #8d6e63 55%, #5d4037 100%)",
+                decoHtml: `
+                    <div class="deco" style="top: 30px; left: 25%; width: 50%; height: 160px; background: #1b5e20; border: 12px solid #5d4037; border-radius: 8px; box-shadow: 0 5px 15px rgba(0,0,0,0.3); display: flex; justify-content: center; align-items: center; flex-direction: column;">
+                        <span style="color: white; font-size: 40px; font-weight: bold; margin-bottom: 10px;">1학년 1반</span>
+                        <span style="color: #ffeb3b; font-size: 24px;">상상하고 말하고 그리는 한글</span>
+                    </div>
+                    <div class="deco" style="top: 40px; left: 20px; width: 130px; height: 160px; background: #e1f5fe; border: 10px solid #a1887f; border-radius: 5px; display:flex; flex-wrap:wrap; box-shadow: inset 0 0 10px rgba(0,0,0,0.1);">
+                        <div style="width: 50%; height: 50%; border-right: 5px solid #a1887f; border-bottom: 5px solid #a1887f; box-sizing: border-box;"></div>
+                        <div style="width: 50%; height: 50%; border-bottom: 5px solid #a1887f; box-sizing: border-box;"></div>
+                        <div style="width: 50%; height: 50%; border-right: 5px solid #a1887f; box-sizing: border-box;"></div>
+                        <div style="width: 50%; height: 50%; box-sizing: border-box;"></div>
+                        <div style="position: absolute; top: 10px; left: 10px; font-size: 30px;">☀️</div>
+                    </div>
+                    <div class="deco" style="top: 20px; right: 50px; font-size: 70px;">🕰️</div>
+                    <div class="deco" style="bottom: 30px; left: 15%; font-size: 80px; opacity: 0.5;">🪑</div>
+                    <div class="deco" style="bottom: 10px; left: 30%; font-size: 90px; opacity: 0.6;">🪑</div>
+                    <div class="deco" style="bottom: 40px; right: 25%; font-size: 70px; opacity: 0.5;">🪑</div>
+                    <div class="deco" style="bottom: 15px; right: 10%; font-size: 90px; opacity: 0.6;">🪑</div>
+                `,
+                objects: [
+                    { id: "책", emoji: "📚", size: 60, bounds: { minX: 5, maxX: 85, minY: 5, maxY: 35 }, text: "재미있는 이야기가 담긴 책을 찾으세요." },
+                    { id: "연필", emoji: "✏️", size: 50, bounds: { minX: 5, maxX: 85, minY: 5, maxY: 35 }, text: "글씨를 쓸 때 사용하는 연필을 찾으세요." },
+                    { id: "가방", emoji: "🎒", size: 65, bounds: { minX: 5, maxX: 85, minY: 5, maxY: 35 }, text: "준비물을 담아 다니는 가방을 찾으세요." },
+                    { id: "지구본", emoji: "🌍", size: 60, bounds: { minX: 5, maxX: 85, minY: 5, maxY: 35 }, text: "세계 여러 나라를 볼 수 있는 지구본을 찾으세요." },
+                    { id: "컴퓨터", emoji: "💻", size: 65, bounds: { minX: 5, maxX: 85, minY: 5, maxY: 35 }, text: "마우스와 키보드가 있는 컴퓨터를 찾으세요." },
+                    { id: "선생님", emoji: "👩‍🏫", size: 80, bounds: { minX: 5, maxX: 85, minY: 30, maxY: 50 }, text: "우리에게 공부를 가르쳐주시는 선생님을 찾으세요." }
+                ]
+            }
+        };
+
+        let currentThemeKey = "";
+        let currentStages = []; 
+        let currentStageIndex = 0;
+        let gameState = 'ready'; 
+        let currentTargetId = "";
+        let audioCtx = null;
+        let targetVoice = null;
+
+        function initMenu() {
+            const container = document.getElementById('theme-buttons-container');
+            container.innerHTML = '';
+            for (const key in themesData) {
+                const data = themesData[key];
+                const btn = document.createElement('div');
+                btn.className = 'theme-card';
+                btn.innerHTML = `<div class="theme-emoji">${data.emoji}</div><div class="theme-title">${data.title}</div>`;
+                btn.onclick = () => startTheme(key);
+                container.appendChild(btn);
+            }
+        }
+
+        function unlockAudio() {
+            if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            window.speechSynthesis.cancel();
+            const voices = window.speechSynthesis.getVoices();
+            const koVoices = voices.filter(v => v.lang.includes('ko'));
+            targetVoice = koVoices.find(v => v.name.includes('Google')) || koVoices[0];
+        }
+        window.speechSynthesis.onvoiceschanged = () => unlockAudio();
+
+        function playSound(type) {
+            if (!audioCtx) return;
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.connect(gain); gain.connect(audioCtx.destination);
+            
+            if (type === 'correct') {
+                osc.type = 'sine'; osc.frequency.setValueAtTime(600, audioCtx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(1200, audioCtx.currentTime + 0.1);
+                gain.gain.setValueAtTime(0.3, audioCtx.currentTime); gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
+                osc.start(); osc.stop(audioCtx.currentTime + 0.3);
+            } else {
+                osc.type = 'triangle'; osc.frequency.setValueAtTime(250, audioCtx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(150, audioCtx.currentTime + 0.3);
+                gain.gain.setValueAtTime(0.3, audioCtx.currentTime); gain.gain.linearRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
+                osc.start(); osc.stop(audioCtx.currentTime + 0.3);
+            }
+        }
+
+        function speak(text) {
+            window.speechSynthesis.cancel();
+            const utterThis = new SpeechSynthesisUtterance(text);
+            utterThis.lang = 'ko-KR'; utterThis.rate = 0.8; utterThis.pitch = 1.1; 
+            if (targetVoice) utterThis.voice = targetVoice;
+            window.speechSynthesis.speak(utterThis);
+        }
+
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
+
+        function startTheme(themeKey) {
+            unlockAudio(); 
+            document.getElementById('theme-menu-screen').style.display = 'none';
+            document.getElementById('game-screen').style.display = 'block';
+            currentThemeKey = themeKey;
+            startGame();
+        }
+
+        // 🌟 오답 노트를 연동한 맞춤형 숨바꼭질 미션 생성
+        function startGame() {
+            gameState = 'playing';
+            currentStageIndex = 0;
+            document.getElementById('badges').innerText = ''; 
+            
+            const theme = JSON.parse(JSON.stringify(themesData[currentThemeKey])); // 깊은 복사
+            document.getElementById('scene-area').style.background = theme.background;
+            document.getElementById('scene-bg').innerHTML = theme.decoHtml;
+
+            // 💡 [핵심 로직] 브라우저 저장소에서 '오답 노트'를 꺼내옵니다.
+            let weakWords = JSON.parse(localStorage.getItem('hangeul_weak_words') || '[]');
+            
+            if (weakWords.length > 0) {
+                // 오답 단어들 중 이모지 사전에 있는 것만 필터링하고 섞음
+                let validWeakWords = weakWords.filter(w => globalEmojiDict[w.target]).sort(() => Math.random() - 0.5);
+                
+                // 이번 맵에 최대 2개까지만 맞춤형 오답 미션을 추가
+                const injectCount = Math.min(2, validWeakWords.length);
+                
+                for(let i=0; i<injectCount; i++) {
+                    const weakItem = validWeakWords[i];
+                    // 이미 기본 테마 오브젝트에 있는 단어면 패스
+                    if (!theme.objects.some(obj => obj.id === weakItem.target)) {
+                        theme.objects.push({
+                            id: weakItem.target,
+                            emoji: globalEmojiDict[weakItem.target],
+                            size: 60, // 적당한 기본 사이즈
+                            bounds: { minX: 10, maxX: 80, minY: 10, maxY: 60 }, // 맵 중앙부 어딘가에 랜덤 배치
+                            text: `아까 헷갈렸던 '${weakItem.target}'(을)를 찾아보세요!` // 특별 미션 대사
+                        });
+                        console.log(`맞춤형 숨바꼭질 미션 추가됨: ${weakItem.target}`);
+                    }
+                }
+            }
+
+            const objectsContainer = document.getElementById('scene-objects');
+            objectsContainer.innerHTML = ''; 
+
+            const placedPositions = [];
+
+            theme.objects.forEach(obj => {
+                const box = document.createElement('div');
+                box.className = 'hitbox';
+                box.id = obj.id;
+                
+                let randomX, randomY;
+                let isOverlapping = true;
+                let attempts = 0;
+                
+                while (isOverlapping && attempts < 100) {
+                    randomX = Math.floor(Math.random() * (obj.bounds.maxX - obj.bounds.minX + 1)) + obj.bounds.minX;
+                    randomY = Math.floor(Math.random() * (obj.bounds.maxY - obj.bounds.minY + 1)) + obj.bounds.minY;
+                    
+                    isOverlapping = placedPositions.some(pos => {
+                        return Math.abs(pos.x - randomX) < 15 && Math.abs(pos.y - randomY) < 20;
+                    });
+                    
+                    attempts++;
+                }
+                
+                placedPositions.push({ x: randomX, y: randomY });
+                
+                box.style.left = randomX + '%';
+                box.style.bottom = randomY + '%';
+                box.style.width = (obj.size + 40) + 'px';
+                box.style.height = (obj.size + 40) + 'px';
+                box.addEventListener('click', () => handleHitboxClick(obj.id, box));
+
+                const emojiDiv = document.createElement('div');
+                emojiDiv.className = 'emoji-entity';
+                emojiDiv.style.fontSize = obj.size + 'px';
+                emojiDiv.innerText = obj.emoji;
+
+                box.appendChild(emojiDiv);
+                objectsContainer.appendChild(box);
+            });
+
+            // 생성된 오브젝트들을 랜덤으로 섞어서 5개만 이번 게임의 미션으로 사용 (오답 미션이 있으면 포함될 확률 높음)
+            const shuffledObjects = shuffleArray([...theme.objects]);
+            currentStages = shuffledObjects.slice(0, 5); 
+            loadStage();
+        }
+
+        function loadStage() {
+            if (currentStageIndex >= currentStages.length) {
+                gameState = 'clear';
+                document.getElementById('clear-overlay').style.display = 'flex';
+                speak("모든 단서를 찾아냈어요! 최고의 명탐정입니다!");
+                
+                saveReward(10, 'game_detective');
+                return;
+            }
+            const stageData = currentStages[currentStageIndex];
+            currentTargetId = stageData.id;
+            document.getElementById('prompt-box').innerText = stageData.text;
+            document.getElementById('feedback-text').innerText = '';
+            speak(stageData.text);
+        }
+
+        function handleHitboxClick(clickedId, element) {
+            if (gameState !== 'playing') return;
+            const emojiEntity = element.querySelector('.emoji-entity');
+            const feedbackText = document.getElementById('feedback-text');
+            gameState = 'animating'; 
+
+            if (clickedId === currentTargetId) {
+                playSound('correct');
+                emojiEntity.classList.add('anim-correct');
+                feedbackText.innerText = "✨ 정답이에요! 참 잘했어요!";
+                feedbackText.style.color = "#4caf50";
+                document.getElementById('badges').innerText += '🎖️'; 
+
+                setTimeout(() => {
+                    emojiEntity.classList.remove('anim-correct');
+                    currentStageIndex++;
+                    gameState = 'playing';
+                    loadStage(); 
+                }, 1500); 
+            } else {
+                playSound('wrong');
+                emojiEntity.classList.add('anim-wrong');
+                feedbackText.innerText = "앗, 거기가 아니에요. 다시 찾아볼까요?";
+                feedbackText.style.color = "#f44336";
+                speak("다시 찾아볼까요?"); 
+
+                setTimeout(() => {
+                    emojiEntity.classList.remove('anim-wrong');
+                    gameState = 'playing';
+                }, 800);
+            }
+        }
+
+        function goHome() {
+            window.speechSynthesis.cancel();
+            document.getElementById('clear-overlay').style.display = 'none';
+            document.getElementById('game-screen').style.display = 'none';
+            document.getElementById('theme-menu-screen').style.display = 'block';
+            document.getElementById('scene-objects').innerHTML = '';
+            gameState = 'ready';
+        }
+
+        document.getElementById('replay-btn').addEventListener('click', () => {
+            if (gameState === 'playing') speak(currentStages[currentStageIndex].text); 
+        });
+
+        document.getElementById('home-btn').addEventListener('click', goHome);
+
+        initMenu();
+
+        function saveReward(earnedCoins, gameId) {
+            let currentCoins = parseInt(localStorage.getItem('hangeul_park_coins') || '0');
+            localStorage.setItem('hangeul_park_coins', currentCoins + earnedCoins);
+
+            let clearedGames = JSON.parse(localStorage.getItem('hangeul_park_cleared') || '{}');
+            let currentCount = clearedGames[gameId];
+            if (typeof currentCount !== 'number') currentCount = 0;
+            
+            clearedGames[gameId] = currentCount + 1;
+            localStorage.setItem('hangeul_park_cleared', JSON.stringify(clearedGames));
+        }
+    </script>
+</body>
+</html>

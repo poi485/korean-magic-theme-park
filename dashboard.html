@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI 학습 분석 대시보드</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Jua&display=swap');
+
+        body { 
+            font-family: 'Malgun Gothic', sans-serif; 
+            margin: 0; 
+            padding: 20px;
+            background-color: #f0f4f8;
+            background-image: url('bg/bg-lobby.png'); /* 로비 배경 재사용 또는 단색 */
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            color: #333;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .overlay-bg {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(10px); z-index: -1;
+        }
+
+        header {
+            width: 100%; max-width: 900px; display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 30px; position: relative; z-index: 10;
+        }
+
+        h1 { font-family: 'Jua', sans-serif; font-size: 42px; color: #1e3c72; margin: 0; text-shadow: 2px 2px 0px #fff; }
+
+        .btn {
+            background-color: #ff6b6b; color: white; text-decoration: none; padding: 12px 25px;
+            border-radius: 30px; font-weight: bold; font-size: 18px; box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+            transition: transform 0.2s; cursor: pointer; border: none; font-family: 'Jua', sans-serif;
+        }
+        .btn:hover { transform: translateY(-3px); box-shadow: 0 6px 15px rgba(0,0,0,0.3); }
+
+        .dashboard-container {
+            width: 100%; max-width: 900px; display: grid; grid-template-columns: 1fr; gap: 25px; position: relative; z-index: 10;
+        }
+        @media (min-width: 768px) { .dashboard-container { grid-template-columns: 1fr 1fr; } }
+
+        .card {
+            background: #fff; border-radius: 25px; padding: 25px;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.08); border: 4px solid #e0e0e0;
+            display: flex; flex-direction: column;
+        }
+        .card-full { grid-column: 1 / -1; }
+        
+        .card h2 { font-family: 'Jua', sans-serif; font-size: 26px; color: #0277bd; margin-top: 0; border-bottom: 2px dashed #b3e5fc; padding-bottom: 10px; display: flex; align-items: center; gap: 10px; }
+
+        /* 요약 카드 스타일 */
+        .summary-box { display: flex; justify-content: space-around; align-items: center; margin-top: 10px; }
+        .stat-item { text-align: center; }
+        .stat-value { font-size: 45px; font-weight: 900; color: #ff9800; font-family: 'Jua', sans-serif; text-shadow: 1px 1px 0px #fff; }
+        .stat-label { font-size: 18px; color: #555; font-weight: bold; }
+
+        /* 오답 분석 카드 스타일 */
+        .weak-word-list { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 20px; }
+        .weak-tag { background: #ffebee; color: #c62828; border: 2px solid #ef9a9a; padding: 8px 15px; border-radius: 20px; font-weight: bold; font-size: 18px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+        
+        .analysis-result { background: #e3f2fd; border-radius: 15px; padding: 20px; border: 2px solid #81d4fa; line-height: 1.6; font-size: 18px; color: #01579b; font-weight: bold; }
+        .analysis-highlight { color: #d84315; background: #ffcc80; padding: 2px 8px; border-radius: 8px; }
+
+        /* 차트 카드 스타일 */
+        .chart-container { margin-top: 15px; }
+        .chart-bar-group { display: flex; align-items: center; margin-bottom: 12px; }
+        .chart-label { width: 140px; font-weight: bold; color: #444; font-size: 16px; }
+        .chart-bar-bg { flex: 1; height: 24px; background: #eeeeee; border-radius: 12px; overflow: hidden; position: relative; }
+        .chart-bar-fill { height: 100%; background: linear-gradient(90deg, #4caf50, #8bc34a); border-radius: 12px; transition: width 1s ease-out; width: 0%; display: flex; align-items: center; justify-content: flex-end; padding-right: 10px; color: white; font-weight: bold; font-size: 14px; text-shadow: 1px 1px 1px rgba(0,0,0,0.5); }
+
+        .empty-state { text-align: center; color: #999; font-size: 18px; padding: 20px; font-style: italic; }
+
+        .admin-controls { margin-top: 40px; position: relative; z-index: 10; text-align: center; }
+        .reset-btn { background-color: #9e9e9e; font-size: 14px; padding: 8px 20px; }
+    </style>
+</head>
+<body>
+
+    <div class="overlay-bg"></div>
+
+    <header>
+        <a href="index.html" class="btn">🏠 처음으로</a>
+        <h1>📊 우리 아이 한글 성장 리포트</h1>
+        <div style="width: 120px;"></div> <!-- 레이아웃 밸런스용 -->
+    </header>
+
+    <div class="dashboard-container">
+        
+        <!-- 1. 종합 요약 카드 -->
+        <div class="card">
+            <h2>🏆 학습 기록</h2>
+            <div class="summary-box">
+                <div class="stat-item">
+                    <div class="stat-value" id="total-gems">0</div>
+                    <div class="stat-label">모은 보물(💎)</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" id="total-clears" style="color: #4caf50;">0</div>
+                    <div class="stat-label">게임 성공 횟수</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 2. 오답 노트 및 취약점 분석 카드 -->
+        <div class="card card-full" style="border-color: #ffcc80;">
+            <h2>🕵️‍♂️ AI 취약점 정밀 분석</h2>
+            <div id="weak-words-container">
+                <div style="color: #666; margin-bottom: 10px; font-weight: bold;">가장 많이 헷갈려 한 낱말 TOP</div>
+                <div class="weak-word-list" id="weak-word-list">
+                    <!-- 오답 태그 렌더링 -->
+                </div>
+                <div class="analysis-result" id="analysis-text">
+                    데이터를 분석 중입니다...
+                </div>
+            </div>
+            <div id="empty-weak-state" class="empty-state" style="display: none;">
+                🎉 와! 아직 어려워하는 단어가 없어요. 완벽합니다!
+            </div>
+        </div>
+
+        <!-- 3. 게임별 선호도/참여도 차트 -->
+        <div class="card card-full">
+            <h2>🎡 어떤 놀이를 가장 좋아할까요?</h2>
+            <div class="chart-container" id="chart-container">
+                <!-- 막대 그래프 렌더링 -->
+            </div>
+        </div>
+
+    </div>
+
+    <div class="admin-controls">
+        <button class="btn reset-btn" onclick="resetAllData()">⚠️ 학습 데이터 초기화 (테스트용)</button>
+    </div>
+
+    <script>
+        // 게임 이름 매핑
+        const gameNames = {
+            'game_ghost': '👻 유령의 집',
+            'game_detective': '🔍 명탐정 돋보기',
+            'game_frog': '🐸 징검다리',
+            'game_line': '✏️ 별자리 선 긋기',
+            'game_sketch': '🎨 요정 스케치북',
+            'game_combine': '🍲 한글 솥단지',
+            'game_boss': '🚂 끝말잇기 기차'
+        };
+
+        const chartColors = ['#ff5252', '#ff4081', '#7c4dff', '#536dfe', '#448aff', '#4caf50', '#ff9800'];
+
+        window.onload = () => {
+            loadSummaryData();
+            loadChartData();
+            analyzeWeakWords();
+        };
+
+        // 1. 요약 데이터 로드
+        function loadSummaryData() {
+            const coins = localStorage.getItem('hangeul_park_coins') || '0';
+            document.getElementById('total-gems').innerText = coins;
+
+            const clearedData = JSON.parse(localStorage.getItem('hangeul_park_cleared') || '{}');
+            let totalClears = 0;
+            for (let key in clearedData) {
+                if (typeof clearedData[key] === 'number') {
+                    totalClears += clearedData[key];
+                }
+            }
+            document.getElementById('total-clears').innerText = totalClears;
+        }
+
+        // 2. 게임 참여도 차트 로드
+        function loadChartData() {
+            const clearedData = JSON.parse(localStorage.getItem('hangeul_park_cleared') || '{}');
+            const chartContainer = document.getElementById('chart-container');
+            
+            let maxCount = 1; // 0으로 나누기 방지
+            for (let key in gameNames) {
+                if (clearedData[key] > maxCount) maxCount = clearedData[key];
+            }
+
+            let colorIdx = 0;
+            for (let key in gameNames) {
+                const count = clearedData[key] || 0;
+                const percentage = (count / maxCount) * 100;
+                const color = chartColors[colorIdx % chartColors.length];
+
+                const barGroup = document.createElement('div');
+                barGroup.className = 'chart-bar-group';
+                barGroup.innerHTML = `
+                    <div class="chart-label">${gameNames[key]}</div>
+                    <div class="chart-bar-bg">
+                        <div class="chart-bar-fill" style="background: ${color}; width: 0%;" data-width="${percentage}%">${count > 0 ? count + '회' : ''}</div>
+                    </div>
+                `;
+                chartContainer.appendChild(barGroup);
+                colorIdx++;
+            }
+
+            // 차트 애니메이션 실행
+            setTimeout(() => {
+                document.querySelectorAll('.chart-bar-fill').forEach(bar => {
+                    bar.style.width = bar.getAttribute('data-width');
+                });
+            }, 300);
+        }
+
+        // 3. 🌟 한글 원리 기반 스마트 오답 분석 알고리즘
+        function analyzeWeakWords() {
+            const weakWordsObj = JSON.parse(localStorage.getItem('hangeul_weak_words') || '[]');
+            
+            if (weakWordsObj.length === 0) {
+                document.getElementById('weak-words-container').style.display = 'none';
+                document.getElementById('empty-weak-state').style.display = 'block';
+                return;
+            }
+
+            // 최신 오답부터 역순 정렬 및 TOP 5 태그 표시
+            const reversedWords = [...weakWordsObj].reverse();
+            const tagContainer = document.getElementById('weak-word-list');
+            
+            reversedWords.slice(0, 5).forEach(item => {
+                const tag = document.createElement('div');
+                tag.className = 'weak-tag';
+                tag.innerText = item.target;
+                tagContainer.appendChild(tag);
+            });
+
+            // --- 🤖 AI 분석 로직 시작 ---
+            let batchimCount = 0;
+            let complexVowelCount = 0;
+            let chosungMap = {};
+            
+            const COMPLEX_VOWELS = ['ㅐ','ㅒ','ㅔ','ㅖ','ㅘ','ㅙ','ㅚ','ㅝ','ㅞ','ㅟ','ㅢ'];
+            const CHOSUNG_LIST = ['ㄱ', 'ㄲ', 'ㄴ', 'ㄷ', 'ㄸ', 'ㄹ', 'ㅁ', 'ㅂ', 'ㅃ', 'ㅅ', 'ㅆ', 'ㅇ', 'ㅈ', 'ㅉ', 'ㅊ', 'ㅋ', 'ㅌ', 'ㅍ', 'ㅎ'];
+            const JUNGSUNG_LIST = ['ㅏ', 'ㅐ', 'ㅑ', 'ㅒ', 'ㅓ', 'ㅔ', 'ㅕ', 'ㅖ', 'ㅗ', 'ㅘ', 'ㅙ', 'ㅚ', 'ㅛ', 'ㅜ', 'ㅝ', 'ㅞ', 'ㅟ', 'ㅠ', 'ㅡ', 'ㅢ', 'ㅣ'];
+
+            let totalCharsAnalyzed = 0;
+
+            weakWordsObj.forEach(item => {
+                let word = item.target;
+                for(let i = 0; i < word.length; i++) {
+                    let charCode = word.charCodeAt(i) - 0xAC00;
+                    if (charCode > -1 && charCode < 11172) { // 한글 음절인 경우만
+                        totalCharsAnalyzed++;
+                        
+                        let cho = Math.floor(charCode / 588);
+                        let jung = Math.floor((charCode % 588) / 28);
+                        let jong = charCode % 28;
+
+                        // 1. 받침 여부 검사
+                        if (jong > 0) batchimCount++;
+
+                        // 2. 이중모음 여부 검사
+                        let jungChar = JUNGSUNG_LIST[jung];
+                        if (COMPLEX_VOWELS.includes(jungChar)) complexVowelCount++;
+
+                        // 3. 특정 자음(초성) 빈도 검사
+                        let choChar = CHOSUNG_LIST[cho];
+                        chosungMap[choChar] = (chosungMap[choChar] || 0) + 1;
+                    }
+                }
+            });
+
+            // 결과 문장 생성 조합기
+            let findings = [];
+
+            // 글자 수 대비 받침 등장 비율이 30% 이상일 때
+            if (batchimCount > totalCharsAnalyzed * 0.3) {
+                findings.push("<span class='analysis-highlight'>받침이 있는 낱말(은/는, 강 등)</span>");
+            }
+
+            // 글자 수 대비 이중모음 등장 비율이 20% 이상일 때
+            if (complexVowelCount > totalCharsAnalyzed * 0.2) {
+                findings.push("<span class='analysis-highlight'>복잡한 모음(ㅐ, ㅔ, ㅘ 등)</span>");
+            }
+
+            // 가장 많이 틀린 자음 찾기
+            let maxCho = Object.keys(chosungMap).reduce((a, b) => chosungMap[a] > chosungMap[b] ? a : b, "");
+            // 최소 3번 이상 같은 자음에서 틀렸을 때만 지적
+            if (maxCho && chosungMap[maxCho] >= 3) {
+                findings.push(`<span class='analysis-highlight'>자음 '${maxCho}'(이)가 들어간 낱말</span>`);
+            }
+
+            const analysisBox = document.getElementById('analysis-text');
+            
+            if (findings.length > 0) {
+                analysisBox.innerHTML = `우리 아이는 헷갈렸던 단어들을 살펴보니, 특히 <strong>${findings.join(' 및 ')}</strong>을(를) 듣고 구별하는 데 조금 더 연습이 필요해 보여요!<br><br>💡 <b>추천:</b> '마법의 선 긋기'나 '한글 솥단지'에서 요정의 추천 미션을 따라가며 자연스럽게 모양과 소리를 익히도록 지도해 주세요.`;
+            } else {
+                analysisBox.innerHTML = `특정한 규칙(받침, 모음 등)을 몰라서라기보다는 <strong>전반적인 낱말 소리 듣기</strong> 연습을 꾸준히 해주면 좋을 것 같아요! 🌟<br><br>💡 <b>추천:</b> '유령의 집'이나 '징검다리' 놀이를 통해 소리에 귀 기울이는 연습을 많이 칭찬해 주세요.`;
+            }
+        }
+
+        // 초기화 버튼 (테스트용)
+        function resetAllData() {
+            if (confirm("모든 학습 데이터와 보석, 오답 노트가 삭제됩니다. 정말 초기화할까요?")) {
+                localStorage.removeItem('hangeul_park_coins');
+                localStorage.removeItem('hangeul_park_cleared');
+                localStorage.removeItem('hangeul_weak_words');
+                localStorage.removeItem('hangeul_park_decor_v3');
+                localStorage.removeItem('hangeul_park_inventory_v3');
+                localStorage.removeItem('hangeul_sketch_album');
+                alert("초기화되었습니다. 페이지를 새로고침합니다.");
+                location.reload();
+            }
+        }
+    </script>
+</body>
+</html>
