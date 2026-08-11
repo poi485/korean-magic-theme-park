@@ -3,18 +3,20 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>깜깜한 유령의 집 - 디바이스 완벽 최적화</title>
+    <title>깜깜한 유령의 집 - 스크롤 허용 완벽 최적화</title>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
         
         body { 
-            font-family: 'Malgun Gothic', '맑은 고딕', sans-serif; color: white; margin: 0; padding: 0; touch-action: none; 
-            min-height: 100vh; min-height: 100dvh;
-            overflow: hidden; /* 🌟 모바일 스크롤 완벽 차단 */
+            font-family: 'Malgun Gothic', '맑은 고딕', sans-serif; color: white; margin: 0; padding: 0; 
+            touch-action: pan-y; /* 🌟 세로 스크롤 허용 */
+            min-height: 100vh; min-height: 100dvh; height: auto; /* 🌟 내용물에 따라 늘어나도록 설정 */
+            overflow-y: auto; overflow-x: hidden; /* 🌟 억지로 쑤셔넣지 않고 스크롤 활성화 */
             background-image: url('bg/bg-gh.png'); background-size: cover; background-position: center; background-attachment: fixed; background-color: #12091c;
             display: flex; flex-direction: column;
         }
 
+        /* 🌟 세로 모드 경고창 (가로 유도) */
         #landscape-warning {
             display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: #12091c; z-index: 999999;
             flex-direction: column; justify-content: center; align-items: center; color: white; text-align: center;
@@ -30,7 +32,8 @@
 
         @keyframes float { 0% { transform: translateY(0px); } 50% { transform: translateY(-15px); } 100% { transform: translateY(0px); } }
 
-        #game-ui { display: none; flex-direction: column; align-items: center; justify-content: flex-start; height: 100vh; padding: 10px; width: 100%; opacity: 0; transition: opacity 1.5s; box-sizing: border-box; position: relative;}
+        /* 🌟 100%로 억제하지 않고 내용에 맞춰 늘어나게 flex: 1 적용 */
+        #game-ui { display: none; flex-direction: column; align-items: center; justify-content: flex-start; min-height: 100%; height: auto; padding: 10px 10px 40px 10px; width: 100%; opacity: 0; transition: opacity 1.5s; box-sizing: border-box; position: relative;}
 
         .header-area { display: flex; flex-direction: column; align-items: center; width: 100%; margin-bottom: 5px; flex-shrink: 0; position: relative;}
         h1 { color: #e67e22; font-size: clamp(20px, 4vw, 32px); margin: 0 0 5px 0; text-shadow: 0 4px 15px rgba(230, 126, 34, 0.9); }
@@ -39,20 +42,22 @@
         .guide span { display: block; }
         .action-btn-top { position: absolute; top: 0px; left: 10px; background: #ff6b6b; color: white; text-decoration: none; padding: 6px 12px; border-radius: 20px; font-size: clamp(12px, 2.5vw, 18px); font-weight: bold; box-shadow: 0 4px 10px rgba(0,0,0,0.5); z-index: 99; border: 2px solid white;}
 
-        #top-bar { width: 100%; max-width: 800px; display: flex; justify-content: flex-end; margin-bottom: 5px; visibility: hidden; flex-shrink: 0; }
+        #top-bar { width: 100%; max-width: 650px; display: flex; justify-content: flex-end; margin-bottom: 5px; visibility: hidden; flex-shrink: 0; }
         #score-board { background: rgba(142, 68, 173, 0.7); border: 2px solid #9b59b6; border-radius: 15px; padding: 5px 10px; font-size: clamp(14px, 3vw, 20px); font-weight: bold; color: #fff; box-shadow: 0 4px 15px rgba(0,0,0,0.5); display: flex; align-items: center; gap: 8px; backdrop-filter: blur(5px); }
         .score-bounce { animation: popBounce 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
 
-        /* 🌟 게임 컨테이너: flex: 1을 유지하면서 절대 짜부라지지 않게 min-height 적용 */
+        /* 🌟 게임 컨테이너: 어떤 기기에서든 1:1 완벽한 정사각형 유지 (스크롤 허용) */
         #game-container {
             position: relative; 
-            width: 100%; max-width: 800px; 
-            flex: 1; /* 남은 화면 꽉 채우기 */
-            min-height: 250px; /* 🌟 PC에서 짜부라짐 원천 차단 */
+            width: 100%; 
+            max-width: 650px; /* 🌟 맵이 너무 거대해지지 않도록 최대 넓이 고정 */
+            aspect-ratio: 1 / 1; /* 🌟 무조건 정사각형 유지 */
+            margin: 0 auto 20px auto;
             background: rgba(10, 5, 15, 0.85); border: 4px solid #4a235a; border-radius: 15px;
             box-shadow: 0 15px 30px rgba(0,0,0,0.9), inset 0 0 50px rgba(0,0,0,0.9); overflow: hidden;
             display: flex; justify-content: center; align-items: center; backdrop-filter: blur(8px);
-            margin-bottom: 10px; padding: 5px; 
+            padding: 5px; 
+            flex-shrink: 0;
         }
 
         #start-screen { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: radial-gradient(circle at 50% 50%, rgba(74, 35, 90, 0.9) 0%, rgba(10, 5, 15, 0.95) 100%); z-index: 50; display: flex; flex-direction: column; align-items: center; justify-content: center; }
@@ -60,9 +65,10 @@
         .level-btn { width: 80%; max-width: 250px; padding: 12px 0; margin: 6px 0; font-size: clamp(16px, 3.5vw, 22px); font-weight: bold; color: white; background: #8e44ad; border: 3px solid #9b59b6; border-radius: 30px; cursor: pointer; box-shadow: 0 6px 10px rgba(0,0,0,0.3); transition: 0.2s; }
         .level-btn:active { transform: scale(0.95); }
 
-        /* 🌟 미로 그리드: 크기는 JS가 픽셀 단위로 정확하게 주입함 */
+        /* 🌟 미로 그리드 - 100% 꽉 채우기 */
         #maze-grid {
             display: grid; gap: 2px; 
+            width: 100%; height: 100%; 
             margin: auto; 
         }
 
@@ -265,43 +271,33 @@
             grid.style.gridTemplateColumns = `repeat(${mapSize}, 1fr)`; 
             grid.style.gridTemplateRows = `repeat(${mapSize}, 1fr)`; 
             
-            renderMaze();
+            // 모바일 폰트 조절을 위해 JS에서 정사각형 비율이 확정된 후 이모지 크기를 계산하여 렌더링
+            setTimeout(renderMaze, 10);
         }
 
         function renderMaze() {
-            const grid = document.getElementById('maze-grid'); 
-            grid.innerHTML = '';
+            const grid = document.getElementById('maze-grid'); grid.innerHTML = '';
             
-            // 🌟 자바스크립트로 화면 가용 공간을 정확하게 측정하여 완벽한 1:1 정사각형 생성
+            // 🌟 자바스크립트로 화면 가용 공간을 정확하게 측정하여 완벽한 1:1 비율을 유지하고 폰트 사이즈를 부여
             const container = document.getElementById('game-container');
-            const availableWidth = container.clientWidth - 10;  // 패딩(5px*2) 제외
-            const availableHeight = container.clientHeight - 10;
+            const availableWidth = container.clientWidth - 10; 
             
-            // 가로와 세로 중 더 짧은 쪽을 기준으로 정사각형 맵 크기 지정
-            const minSize = Math.min(availableWidth, availableHeight);
-            grid.style.width = minSize + 'px';
-            grid.style.height = minSize + 'px';
-            
-            // 🌟 셀 한 칸의 크기에 비례하여 이모지 폰트 사이즈를 동적으로 설정 (셀 크기의 60%)
-            const cellSize = minSize / mapSize;
-            const emSize = (cellSize * 0.6) + 'px';
+            // 컨테이너 폭에 맞춰 셀 하나의 너비를 계산
+            const cellSize = availableWidth / mapSize;
+            const emSize = (cellSize * 0.6) + 'px'; // 셀 너비의 60%를 폰트 크기로 지정!
             
             for (let r = 0; r < mapSize; r++) {
                 for (let c = 0; c < mapSize; c++) {
-                    const cellVal = currentMap[r][c]; 
-                    const cell = document.createElement('div'); 
-                    cell.className = 'cell'; 
+                    const cellVal = currentMap[r][c]; const cell = document.createElement('div'); cell.className = 'cell'; 
                     
-                    const isVisited = visited[r][c]; 
-                    const isAdjacent = (Math.abs(playerPos.r - r) + Math.abs(playerPos.c - c) === 1);
-                    
+                    const isVisited = visited[r][c]; const isAdjacent = (Math.abs(playerPos.r - r) + Math.abs(playerPos.c - c) === 1);
                     if (isVisited) { 
                         if (r === playerPos.r && c === playerPos.c) { 
                             cell.classList.add('visited', 'path'); 
-                            cell.innerHTML = `<div id="player" style="font-size: ${emSize};">🕵️</div>`; 
+                            cell.innerHTML = `<div id="player" style="font-size: ${emSize}; line-height: 1;">🕵️</div>`; 
                         } else if (cellVal === 4) { 
                             cell.classList.add('visited', 'exit'); 
-                            cell.innerHTML = `<div class="exit-icon" style="font-size: ${emSize};">🚪</div>`; 
+                            cell.innerHTML = `<div class="exit-icon" style="font-size: ${emSize}; line-height: 1;">🚪</div>`; 
                         } else { cell.classList.add('visited', 'path'); } 
                     } 
                     else if (isAdjacent) { 
@@ -310,7 +306,7 @@
                         else if (cellVal === 1 || cellVal === 4) { 
                             cell.classList.add('path'); 
                             const monEmoji = monsters[(r * mapSize + c) % monsters.length]; 
-                            cell.innerHTML = `<div class="monster-icon" style="font-size: ${emSize};">${monEmoji}</div>`; 
+                            cell.innerHTML = `<div class="monster-icon" style="font-size: ${emSize}; line-height: 1;">${monEmoji}</div>`; 
                             cell.dataset.monster = monEmoji; 
                         } 
                     } 
@@ -373,7 +369,7 @@
         function resetToMenu() { document.getElementById('clear-overlay').style.display = 'none'; document.getElementById('start-screen').style.display = 'flex'; document.getElementById('maze-grid').innerHTML = ''; document.getElementById('top-bar').style.visibility = 'hidden'; totalGems = 0; document.getElementById('gem-count').innerText = totalGems; }
         function saveReward(earnedCoins, gameId) { let currentCoins = parseInt(localStorage.getItem('hangeul_park_coins') || '0'); localStorage.setItem('hangeul_park_coins', currentCoins + earnedCoins); let clearedGames = JSON.parse(localStorage.getItem('hangeul_park_cleared') || '{}'); let currentCount = clearedGames[gameId]; if (typeof currentCount !== 'number') currentCount = 0; clearedGames[gameId] = currentCount + 1; localStorage.setItem('hangeul_park_cleared', JSON.stringify(clearedGames)); }
         
-        // 🌟 브라우저 창 크기가 변할 때(회전 등) 미로를 다시 그려서 크기를 1:1로 맞춤
+        // 🌟 브라우저 창 크기가 변할 때 미로를 다시 그림 (불필요한 계산을 줄임)
         window.addEventListener('resize', () => {
             if (document.getElementById('game-ui').style.display === 'flex' && document.getElementById('start-screen').style.display === 'none') {
                 renderMaze();
