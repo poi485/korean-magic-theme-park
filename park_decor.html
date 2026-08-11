@@ -3,17 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>마법의 놀이동산 꾸미기 - 모바일 스크롤 완벽 방지</title>
+    <title>마법의 놀이동산 꾸미기 - 실시간 공유 갤러리</title>
     <style>
         body {
             font-family: 'Malgun Gothic', sans-serif;
             background: linear-gradient(180deg, #81d4fa 0%, #e1f5fe 50%, #aed581 50%, #558b2f 100%);
             margin: 0; padding: 10px; 
             text-align: center;
-            min-height: 100vh; min-height: 100dvh; /* 모바일 하단바 제외 실제 높이 적용 */
+            min-height: 100vh; min-height: 100dvh;
             box-sizing: border-box;
             display: flex; flex-direction: column;
-            overflow-y: auto; overflow-x: hidden; /* 높이가 부족할 경우에만 스크롤 허용 */
+            overflow-y: auto; overflow-x: hidden;
             user-select: none;
         }
 
@@ -41,7 +41,7 @@
         .btn-blue { background: #0288d1; }
         .btn-orange { background: #f57c00; }
 
-        .main-layout { display: flex; flex: 1; gap: 10px; position: relative; min-height: 200px; /* 맵이 찌부러지는 것 방지 */}
+        .main-layout { display: flex; flex: 1; gap: 10px; position: relative; min-height: 200px; }
 
         #park-field {
             position: relative; flex: 1; background-color: #aed581; background-image: url('bg/bg-dec2.png');
@@ -111,6 +111,28 @@
         @keyframes bounceBtn { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
 
     </style>
+
+    <!-- 🌟 파이어베이스 SDK (웹 데이터베이스 연결용) -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+        import { getFirestore, collection, addDataToFirestore, getDocs, setDoc, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+        // 선생님이 발급받으신 파이어베이스 열쇠 코드 연동
+        const firebaseConfig = {
+            apiKey: "AIzaSyDakimsR5994YA2uQnjPEKv8He6hHDdhNs",
+            authDomain: "korean-magic-theme-park.firebaseapp.com",
+            projectId: "korean-magic-theme-park",
+            storageBucket: "korean-magic-theme-park.firebasestorage.app",
+            messagingSenderId: "916952311588",
+            appId: "1:916952311588:web:7715907c441becb08335b1"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        // 전역으로 함수 노출하여 하단 스크립트에서 사용 가능하게 설정
+        window.FB_db = db;
+    </script>
 </head>
 <body>
 
@@ -174,7 +196,9 @@
         </div>
     </div>
 
-    <script>
+    <script type="module">
+        import { collection, addDoc, getDocs } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
         // ====================================================
         // 🌟 배경 음악 설정 (볼륨 조절 및 무한 반복)
         // ====================================================
@@ -280,48 +304,74 @@
             }
         });
 
-        // 🌟 갤러리 기능
-        let galleryData = JSON.parse(localStorage.getItem('hangeul_park_gallery') || '[]');
-        if(galleryData.length === 0) {
-            galleryData = [
-                { author: '루피', park: [{id: 'castle', x: 50, y: 30, size: 300}, {id: 'flower1', x: 30, y: 60, size: 130}, {id: 'mga', x: 70, y: 70, size: 200}] },
-                { author: '포비', park: [{id: 'roller', x: 40, y: 40, size: 300}, {id: 'shop1', x: 80, y: 60, size: 130}, {id: 'bench', x: 20, y: 80, size: 130}] }
-            ];
-            localStorage.setItem('hangeul_park_gallery', JSON.stringify(galleryData));
-        }
-
-        function uploadPark() {
+        // 🌟 실시간 웹 파이어베이스 갤러리 기능 (동명이인 자동 구분 적용)
+        window.uploadPark = async function() {
             if (placedList.length === 0) return alert("앗! 아직 공터가 텅 비어있어요. 먼저 아이템을 예쁘게 꾸며주세요!");
             const authorName = prompt("우와, 정말 멋진 놀이동산이네요! 작가님의 이름을 적어주세요:");
             if (!authorName) return; 
             
-            galleryData.push({ author: authorName, park: JSON.parse(JSON.stringify(placedList)) });
-            localStorage.setItem('hangeul_park_gallery', JSON.stringify(galleryData));
-            alert(`성공적으로 사진을 찍었어요! 이제 [구경가기]에서 '${authorName}'님의 작품을 볼 수 있습니다! 📸`);
+            // 🌟 동명이인 자동 구분 및 정리를 위한 고유 시간표시 생성 (예: 루피 (13:05))
+            const now = new Date();
+            const timeString = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+            const uniqueAuthorName = `${authorName.trim()} (${timeString})`;
+
+            try {
+                const docRef = await addDoc(collection(window.FB_db, "parks"), {
+                    author: uniqueAuthorName,
+                    park: JSON.parse(JSON.stringify(placedList)),
+                    createdAt: Date.now()
+                });
+                alert(`성공적으로 서버에 업로드했어요! 이제 [구경가기]에서 '${uniqueAuthorName}'님의 작품을 볼 수 있습니다! 📸`);
+            } catch (e) {
+                console.error("업로드 에러: ", e);
+                alert("업로드 중 문제가 발생했어요. 인터넷 연결을 확인해 주세요!");
+            }
         }
 
-        function openGallery() {
+        let remoteGalleryData = [];
+
+        window.openGallery = async function() {
             const listDiv = document.getElementById('gallery-list');
-            listDiv.innerHTML = '';
-            
-            galleryData.forEach((item, index) => {
-                const card = document.createElement('div');
-                card.className = 'gallery-card';
-                card.innerText = `🎪 ${item.author}의 놀이동산`;
-                card.onclick = () => viewPark(index);
-                listDiv.appendChild(card);
-            });
+            listDiv.innerHTML = '불러오는 중... ⏳';
             document.getElementById('gallery-modal').style.display = 'flex';
+
+            try {
+                const querySnapshot = await getDocs(collection(window.FB_db, "parks"));
+                remoteGalleryData = [];
+                querySnapshot.forEach((doc) => {
+                    remoteGalleryData.push({ id: doc.id, ...doc.data() });
+                });
+                
+                // 최신순 정렬
+                remoteGalleryData.sort((a, b) => b.createdAt - a.createdAt);
+
+                listDiv.innerHTML = '';
+                if (remoteGalleryData.length === 0) {
+                    listDiv.innerHTML = '아직 등록된 친구들의 놀이동산이 없어요!';
+                    return;
+                }
+
+                remoteGalleryData.forEach((item, index) => {
+                    const card = document.createElement('div');
+                    card.className = 'gallery-card';
+                    card.innerText = `🎪 ${item.author}의 놀이동산`;
+                    card.onclick = () => viewPark(index);
+                    listDiv.appendChild(card);
+                });
+            } catch (e) {
+                console.error("갤러리 로드 에러: ", e);
+                listDiv.innerHTML = '목록을 불러오지 못했어요 ㅠ_ㅠ';
+            }
         }
 
-        function closeGallery() {
+        window.closeGallery = function() {
             document.getElementById('gallery-modal').style.display = 'none';
         }
 
         function viewPark(index) {
             isViewingGallery = true;
-            currentViewData = galleryData[index].park;
-            const author = galleryData[index].author;
+            currentViewData = remoteGalleryData[index].park;
+            const author = remoteGalleryData[index].author;
             closeGallery();
             
             const titleEl = document.getElementById('page-title');
@@ -337,7 +387,7 @@
             renderPark();
         }
 
-        function exitGalleryView() {
+        window.exitGalleryView = function() {
             isViewingGallery = false;
             
             const titleEl = document.getElementById('page-title');
@@ -359,20 +409,20 @@
             return found ? found.src : '';
         }
 
-        function selectShopItem(id, price, element) {
+        window.selectShopItem = function(id, price, element) {
             selectedItemId = id; selectedPrice = price; activeIndex = null;
             document.querySelectorAll('.shop-item').forEach(el => el.classList.remove('selected'));
             element.classList.add('selected');
             renderInventory(); renderPark();
         }
 
-        function selectInventoryItem(id) {
+        window.selectInventoryItem = function(id) {
             selectedItemId = id; selectedPrice = 0; activeIndex = null;
             document.querySelectorAll('.shop-item').forEach(el => el.classList.remove('selected'));
             renderInventory(); renderPark();
         }
 
-        function setSize(size, element) {
+        window.setSize = function(size, element) {
             selectedSize = size;
             document.querySelectorAll('.size-btn').forEach(el => el.classList.remove('active'));
             element.classList.add('active');
@@ -384,7 +434,7 @@
             }
         }
 
-        function handleFieldClick(event) {
+        window.handleFieldClick = function(event) {
             if (isViewingGallery) return; 
 
             const field = document.getElementById('park-field');
@@ -436,7 +486,7 @@
             renderPark();
         }
 
-        function removeSelected() {
+        window.removeSelected = function() {
             if (isViewingGallery) return; 
             
             if (activeIndex !== null) {
