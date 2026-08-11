@@ -2,244 +2,137 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>마법의 놀이동산 꾸미기 - 나무 추가 업데이트</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>마법의 놀이동산 꾸미기 - 모바일 스크롤 완벽 방지</title>
     <style>
         body {
             font-family: 'Malgun Gothic', sans-serif;
             background: linear-gradient(180deg, #81d4fa 0%, #e1f5fe 50%, #aed581 50%, #558b2f 100%);
             margin: 0;
-            padding: 15px;
+            padding: 10px; /* 모바일에서 공간 확보를 위해 패딩 축소 */
             text-align: center;
-            height: 100vh;
+            height: 100vh; /* 화면에 딱 맞게 고정 */
             box-sizing: border-box;
             display: flex;
             flex-direction: column;
-            overflow: hidden;
+            overflow: hidden; /* 🌟 핵심: 전체 스크롤 원천 차단 */
             user-select: none;
         }
 
-        /* 🌟 헤더 영역 수정 */
-        header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            background: rgba(255, 255, 255, 0.95);
-            padding: 10px 20px;
-            border-radius: 30px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-            margin-bottom: 10px;
-            flex-shrink: 0;
+        /* 🌟 세로 모드 경고창 (가로 유도) */
+        #landscape-warning {
+            display: none;
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+            background: #558b2f; z-index: 999999;
+            flex-direction: column; justify-content: center; align-items: center;
+            color: white; text-align: center; font-family: 'Malgun Gothic', sans-serif;
         }
-
-        .header-left, .header-right {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        h1 { margin: 0; font-size: 24px; color: #2e7d32; font-weight: 900; margin-left: 10px; transition: color 0.3s; }
+        #landscape-warning .icon { font-size: 80px; animation: rotatePhone 1.5s infinite ease-in-out; margin-bottom: 20px;}
+        @keyframes rotatePhone { 0% { transform: rotate(0deg); } 50% { transform: rotate(-90deg); } 100% { transform: rotate(-90deg); } }
         
-        .score-box { 
-            font-size: 20px; font-weight: bold; color: #333; 
-            background: #fff; padding: 5px 15px; border-radius: 20px; border: 3px solid #FFD700;
-            cursor: pointer; 
+        @media screen and (orientation: portrait) {
+            #landscape-warning { display: flex !important; }
         }
+
+        header {
+            display: flex; justify-content: space-between; align-items: center;
+            background: rgba(255, 255, 255, 0.95); padding: 8px 15px; /* 공간 확보 */
+            border-radius: 25px; box-shadow: 0 4px 10px rgba(0,0,0,0.2); margin-bottom: 8px; flex-shrink: 0;
+        }
+        .header-left, .header-right { display: flex; align-items: center; gap: 8px; }
+        h1 { margin: 0; font-size: 20px; color: #2e7d32; font-weight: 900; margin-left: 5px; }
+        
+        .score-box { font-size: 16px; font-weight: bold; color: #333; background: #fff; padding: 5px 12px; border-radius: 20px; border: 3px solid #FFD700; cursor: pointer; }
 
         .action-btn {
-            background: #ff6b6b; color: white; border: none; padding: 8px 15px;
-            border-radius: 20px; font-weight: bold; font-size: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+            background: #ff6b6b; color: white; border: none; padding: 6px 12px;
+            border-radius: 15px; font-weight: bold; font-size: 14px; box-shadow: 0 4px 8px rgba(0,0,0,0.2);
             transition: transform 0.2s; cursor: pointer; text-decoration: none;
         }
         .action-btn:hover { transform: scale(1.05); }
         .btn-blue { background: #0288d1; }
         .btn-orange { background: #f57c00; }
 
-        .main-layout {
-            display: flex;
-            flex: 1;
-            gap: 15px;
-            overflow: hidden;
-            position: relative;
-        }
+        .main-layout { display: flex; flex: 1; gap: 10px; overflow: hidden; position: relative; }
 
         #park-field {
-            position: relative;
-            flex: 1;
-            background-color: #aed581;
-            background-image: url('bg/bg-dec2.png');
-            background-size: cover;
-            background-position: center;
-            border: 6px solid rgba(255,255,255,0.4);
-            border-radius: 25px;
-            overflow: hidden;
-            box-shadow: inset 0 10px 20px rgba(0,0,0,0.3), 0 10px 20px rgba(0,0,0,0.2);
-            cursor: pointer;
-            transition: all 0.3s;
+            position: relative; flex: 1; background-color: #aed581; background-image: url('bg/bg-dec2.png');
+            background-size: cover; background-position: center; border: 4px solid rgba(255,255,255,0.4);
+            border-radius: 20px; overflow: hidden; box-shadow: inset 0 10px 20px rgba(0,0,0,0.3), 0 5px 15px rgba(0,0,0,0.2);
+            cursor: pointer; transition: all 0.3s;
         }
 
         #inventory-panel {
-            width: 160px;
-            background: rgba(255, 255, 255, 0.95);
-            border: 4px solid #795548;
-            border-radius: 20px;
-            padding: 10px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
-            flex-shrink: 0;
-            transition: transform 0.3s, opacity 0.3s;
+            width: 140px; background: rgba(255, 255, 255, 0.95); border: 4px solid #795548; border-radius: 15px;
+            padding: 8px; display: flex; flex-direction: column; align-items: center; box-shadow: 0 5px 10px rgba(0,0,0,0.2);
+            flex-shrink: 0; transition: transform 0.3s, opacity 0.3s;
         }
-        .inv-title { font-size: 16px; font-weight: bold; color: #5d4037; margin-bottom: 8px; border-bottom: 2px solid #d7ccc8; width: 100%; padding-bottom: 5px; }
+        .inv-title { font-size: 14px; font-weight: bold; color: #5d4037; margin-bottom: 5px; border-bottom: 2px solid #d7ccc8; width: 100%; padding-bottom: 3px; }
         
-        #inventory-items {
-            flex: 1;
-            width: 100%;
-            overflow-y: auto;
-            display: flex;
-            flex-wrap: wrap;
-            align-content: flex-start;
-            gap: 8px;
-            margin-bottom: 10px;
-        }
-        .inv-item {
-            position: relative;
-            background: #fff;
-            border: 3px solid #ccc;
-            border-radius: 12px;
-            width: 60px;
-            height: 60px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            cursor: pointer;
-            transition: 0.2s;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-        }
-        .inv-item img { max-width: 45px; max-height: 45px; object-fit: contain; pointer-events: none; }
-        .inv-item.selected { border-color: #e91e63; background: #fce4ec; transform: scale(1.1); box-shadow: 0 5px 15px rgba(233, 30, 99, 0.3); }
-        
-        .inv-badge {
-            position: absolute;
-            top: -8px; right: -8px;
-            background: #e91e63; color: white;
-            font-size: 12px; font-weight: bold;
-            padding: 2px 7px; border-radius: 10px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.3);
-            z-index: 10;
-        }
+        #inventory-items { flex: 1; width: 100%; overflow-y: auto; display: flex; flex-wrap: wrap; align-content: flex-start; gap: 5px; margin-bottom: 8px; }
+        /* 🌟 보관함 내부 스크롤바 꾸미기 */
+        #inventory-items::-webkit-scrollbar { width: 6px; }
+        #inventory-items::-webkit-scrollbar-thumb { background: #a1887f; border-radius: 10px; }
 
-        #trash-can {
-            width: 100%; background: #ffebee; border: 2px dashed #e57373; border-radius: 12px;
-            padding: 12px 0; font-size: 14px; font-weight: bold; color: #c62828;
-            cursor: pointer; transition: 0.2s; flex-shrink: 0;
+        .inv-item {
+            position: relative; background: #fff; border: 3px solid #ccc; border-radius: 10px;
+            width: 55px; height: 55px; display: flex; justify-content: center; align-items: center; cursor: pointer; transition: 0.2s; box-shadow: 0 3px 5px rgba(0,0,0,0.1);
         }
+        .inv-item img { max-width: 40px; max-height: 40px; object-fit: contain; pointer-events: none; }
+        .inv-item.selected { border-color: #e91e63; background: #fce4ec; transform: scale(1.1); box-shadow: 0 5px 10px rgba(233, 30, 99, 0.3); z-index: 5;}
+        
+        .inv-badge { position: absolute; top: -6px; right: -6px; background: #e91e63; color: white; font-size: 11px; font-weight: bold; padding: 2px 5px; border-radius: 10px; box-shadow: 0 2px 4px rgba(0,0,0,0.3); z-index: 10; }
+
+        #trash-can { width: 100%; background: #ffebee; border: 2px dashed #e57373; border-radius: 10px; padding: 8px 0; font-size: 12px; font-weight: bold; color: #c62828; cursor: pointer; transition: 0.2s; flex-shrink: 0; }
         #trash-can:hover { background: #ffcdd2; transform: scale(1.05); }
 
         #control-panel {
-            margin-top: 15px;
-            background: rgba(255, 255, 255, 0.95);
-            padding: 10px 15px;
-            border-radius: 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
-            gap: 15px;
-            flex-shrink: 0;
-            transition: opacity 0.3s;
+            margin-top: 10px; background: rgba(255, 255, 255, 0.95); padding: 8px 12px; border-radius: 15px;
+            display: flex; justify-content: space-between; align-items: center; box-shadow: 0 5px 10px rgba(0,0,0,0.2);
+            gap: 10px; flex-shrink: 0; transition: opacity 0.3s; height: 70px; /* 고정 높이 할당 */
         }
 
-        .shop-scroll {
-            display: flex;
-            flex: 1; 
-            gap: 12px;
-            overflow-x: auto;
-            padding-bottom: 8px;
-            align-items: center;
-        }
-        .shop-scroll::-webkit-scrollbar { height: 10px; }
+        .shop-scroll { display: flex; flex: 1; gap: 8px; overflow-x: auto; padding-bottom: 5px; align-items: center; height: 100%;}
+        .shop-scroll::-webkit-scrollbar { height: 6px; }
         .shop-scroll::-webkit-scrollbar-thumb { background: #b0bec5; border-radius: 10px; }
 
-        .shop-item {
-            background: #fff; border: 3px solid #ddd; border-radius: 15px; padding: 8px 15px;
-            cursor: pointer; transition: transform 0.2s, border-color 0.2s;
-            display: flex; flex-direction: column; align-items: center; flex-shrink: 0;
-            width: 80px;
-        }
-        .shop-item img { height: 50px; object-fit: contain; margin-bottom: 5px; pointer-events: none; }
-        .shop-item.selected { border-color: #e91e63; background: #fce4ec; box-shadow: 0 5px 15px rgba(233, 30, 99, 0.2); }
-        .shop-price { font-size: 14px; font-weight: bold; color: #d32f2f; }
+        .shop-item { background: #fff; border: 3px solid #ddd; border-radius: 12px; padding: 4px 10px; cursor: pointer; transition: transform 0.2s, border-color 0.2s; display: flex; flex-direction: column; align-items: center; flex-shrink: 0; width: 70px; height: 100%; justify-content: center; box-sizing: border-box;}
+        .shop-item img { height: 30px; object-fit: contain; margin-bottom: 2px; pointer-events: none; }
+        .shop-item.selected { border-color: #e91e63; background: #fce4ec; box-shadow: 0 5px 10px rgba(233, 30, 99, 0.2); }
+        .shop-price { font-size: 12px; font-weight: bold; color: #d32f2f; }
 
-        .size-control {
-            display: flex; gap: 6px; background: #e0f2f1; padding: 8px; border-radius: 15px; border: 2px solid #80cbc4; flex-shrink: 0;
-        }
-        .size-btn {
-            background: #fff; border: 2px solid #00897b; border-radius: 10px; padding: 8px 14px;
-            font-weight: bold; color: #00796b; cursor: pointer; font-size: 15px; transition: 0.2s;
-        }
+        .size-control { display: flex; gap: 4px; background: #e0f2f1; padding: 6px; border-radius: 12px; border: 2px solid #80cbc4; flex-shrink: 0; height: 100%; align-items: center; box-sizing: border-box;}
+        .size-btn { background: #fff; border: 2px solid #00897b; border-radius: 8px; padding: 6px 10px; font-weight: bold; color: #00796b; cursor: pointer; font-size: 13px; transition: 0.2s; }
         .size-btn.active { background: #00897b; color: white; box-shadow: 0 3px 6px rgba(0,0,0,0.2); }
 
-        .placed-item {
-            position: absolute; 
-            transform: translate(-50%, -50%); 
-            cursor: pointer; 
-            transition: transform 0.1s;
-        }
-        .placed-item img {
-            width: 100%; height: auto; display: block; pointer-events: none;
-            filter: drop-shadow(0 10px 15px rgba(0,0,0,0.4)); 
-        }
+        .placed-item { position: absolute; transform: translate(-50%, -50%); cursor: pointer; transition: transform 0.1s; }
+        .placed-item img { width: 100%; height: auto; display: block; pointer-events: none; filter: drop-shadow(0 8px 12px rgba(0,0,0,0.4)); }
         .placed-item.selected-target { z-index: 100; }
-        .placed-item.selected-target img { filter: drop-shadow(0 0 20px #ffeb3b) drop-shadow(0 0 10px #ff5722); transform: scale(1.1); }
+        .placed-item.selected-target img { filter: drop-shadow(0 0 15px #ffeb3b) drop-shadow(0 0 8px #ff5722); transform: scale(1.1); }
 
-        /* 🌟 갤러리 모달 UI */
-        #gallery-modal {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0, 0, 0, 0.7); backdrop-filter: blur(5px);
-            display: flex; justify-content: center; align-items: center; z-index: 9999;
-            display: none; 
-        }
-        .gallery-content {
-            background: #fff; width: 90%; max-width: 600px; border-radius: 30px;
-            padding: 30px; box-shadow: 0 20px 50px rgba(0,0,0,0.5); text-align: center;
-        }
-        .gallery-content h2 { margin-top: 0; color: #1e3c72; font-size: 28px; }
-        .gallery-list {
-            display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;
-            max-height: 400px; overflow-y: auto; padding: 10px;
-        }
-        .gallery-card {
-            background: #f1f8e9; border: 3px solid #8bc34a; border-radius: 15px; padding: 15px;
-            font-size: 18px; font-weight: bold; color: #33691e; cursor: pointer; transition: 0.2s;
-        }
-        .gallery-card:hover { transform: translateY(-5px); box-shadow: 0 5px 15px rgba(0,0,0,0.2); background: #dcedc8; }
-        .close-modal-btn {
-            margin-top: 20px; background: #9e9e9e; color: white; border: none; padding: 10px 30px;
-            border-radius: 20px; font-size: 18px; font-weight: bold; cursor: pointer;
-        }
+        #gallery-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.7); backdrop-filter: blur(5px); display: flex; justify-content: center; align-items: center; z-index: 9999; display: none; }
+        .gallery-content { background: #fff; width: 90%; max-width: 600px; border-radius: 20px; padding: 20px; box-shadow: 0 15px 40px rgba(0,0,0,0.5); text-align: center; }
+        .gallery-content h2 { margin-top: 0; color: #1e3c72; font-size: 24px; margin-bottom: 15px;}
+        .gallery-list { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; max-height: 60vh; overflow-y: auto; padding: 5px; }
+        .gallery-card { background: #f1f8e9; border: 3px solid #8bc34a; border-radius: 12px; padding: 12px; font-size: 16px; font-weight: bold; color: #33691e; cursor: pointer; transition: 0.2s; }
+        .gallery-card:hover { transform: translateY(-3px); box-shadow: 0 5px 10px rgba(0,0,0,0.2); background: #dcedc8; }
+        .close-modal-btn { margin-top: 15px; background: #9e9e9e; color: white; border: none; padding: 8px 25px; border-radius: 15px; font-size: 16px; font-weight: bold; cursor: pointer; }
 
-        /* 🌟 뷰 모드(구경하기) 하단 컨트롤 컨테이너 */
-        #view-mode-controls {
-            display: none; 
-            justify-content: center;
-            align-items: center;
-            margin-top: 15px;
-            flex-shrink: 0;
-        }
-        #exit-view-btn {
-            background: #e91e63; color: white; border: 4px solid #fff; padding: 12px 40px;
-            border-radius: 50px; font-size: 22px; font-weight: bold; cursor: pointer;
-            box-shadow: 0 8px 15px rgba(0,0,0,0.3);
-            animation: bounceBtn 2s infinite ease-in-out;
-        }
+        #view-mode-controls { display: none; justify-content: center; align-items: center; margin-top: 10px; flex-shrink: 0; }
+        #exit-view-btn { background: #e91e63; color: white; border: 3px solid #fff; padding: 10px 30px; border-radius: 40px; font-size: 18px; font-weight: bold; cursor: pointer; box-shadow: 0 6px 12px rgba(0,0,0,0.3); animation: bounceBtn 2s infinite ease-in-out; }
         #exit-view-btn:hover { background: #d81b60; transform: scale(1.05); animation: none; }
         @keyframes bounceBtn { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
 
     </style>
 </head>
 <body>
+
+    <!-- 🌟 화면 돌림 유도 오버레이 -->
+    <div id="landscape-warning">
+        <div class="icon">📱</div>
+        <h2>화면을 가로로 눕혀주세요!</h2>
+        <p>놀이공원 꾸미기는 가로 모드에서만 할 수 있어요.</p>
+    </div>
 
     <header>
         <div class="header-left">
@@ -255,8 +148,8 @@
 
     <div class="main-layout">
         <div id="park-field" onclick="handleFieldClick(event)">
-            <div id="guide-msg" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 22px; color: #fff; font-weight: bold; pointer-events: none; text-shadow: 0 2px 10px rgba(0,0,0,0.8); background: rgba(0,0,0,0.4); padding: 15px 30px; border-radius: 20px;">
-                ✨ 하단 상점이나 보관함에서 아이템을 고르고 빈 곳을 클릭하세요! ✨
+            <div id="guide-msg" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: clamp(16px, 3vw, 22px); color: #fff; font-weight: bold; pointer-events: none; text-shadow: 0 2px 10px rgba(0,0,0,0.8); background: rgba(0,0,0,0.4); padding: 10px 20px; border-radius: 15px; width: 80%; text-align: center;">
+                ✨ 하단 상점이나 우측 보관함에서 아이템을 고르고<br>빈 곳을 클릭하세요! ✨
             </div>
         </div>
 
@@ -269,7 +162,6 @@
         </div>
     </div>
 
-    <!-- 🌟 구경 모드용 돌아가기 버튼 -->
     <div id="view-mode-controls">
         <button id="exit-view-btn" onclick="exitGalleryView()">❌ 내 놀이동산으로 돌아가기</button>
     </div>
@@ -300,14 +192,12 @@
         // 🌟 배경 음악 설정 (볼륨 조절 및 무한 반복)
         // ====================================================
         let decorBgm = new Audio('source/bg-dec.mp3'); 
-        decorBgm.loop = true;   // 무한루프 설정
-        decorBgm.volume = 0.6;  // 볼륨 60% 설정 (방해되지 않는 은은한 크기)
+        decorBgm.loop = true;   
+        decorBgm.volume = 0.6;  
 
         window.addEventListener('DOMContentLoaded', () => {
-            // 브라우저 정책을 고려하여 페이지 접속 시 음악 자동 재생 시도
             decorBgm.play().catch(e => {
                 console.log("자동재생 방지로 인해 화면 클릭 시 재생됩니다.");
-                // 클릭 시 재생되도록 이벤트 추가
                 document.body.addEventListener('click', () => {
                     if (decorBgm.paused) decorBgm.play();
                 }, { once: true });
@@ -320,7 +210,6 @@
         let currentCoins = parseInt(localStorage.getItem('hangeul_park_coins') || '0');
         document.getElementById('park-coins').innerText = currentCoins;
 
-        // 🌟 새로운 파랑/분홍 마법나무 항목 2개 추가!
         const shopItems = [
             { id: 'flower1', src: 'object/flower1.png', name: '빨강꽃밭', price: 2 },
             { id: 'flower2', src: 'object/flower2.png', name: '노랑꽃밭', price: 2 },
@@ -449,7 +338,7 @@
             closeGallery();
             
             const titleEl = document.getElementById('page-title');
-            titleEl.innerText = `🎪 ${author}의 놀이동산을 구경하고 있어요! 👀`;
+            titleEl.innerText = `🎪 ${author}의 놀이동산 구경 중 👀`;
             titleEl.style.color = '#e91e63';
 
             document.getElementById('header-right-menu').style.display = 'none';
@@ -604,7 +493,7 @@
             const field = document.getElementById('park-field');
             
             const showGuide = (!isViewingGallery && placedList.length === 0);
-            const guideHTML = `<div id="guide-msg" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 22px; color: #fff; font-weight: bold; pointer-events: none; text-shadow: 0 2px 10px rgba(0,0,0,0.8); background: rgba(0,0,0,0.4); padding: 15px 30px; border-radius: 20px; ${showGuide ? '' : 'display:none;'}">✨ 하단 상점이나 보관함에서 아이템을 고르고 빈 곳을 클릭하세요! ✨</div>`;
+            const guideHTML = `<div id="guide-msg" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: clamp(16px, 3vw, 22px); color: #fff; font-weight: bold; pointer-events: none; text-shadow: 0 2px 10px rgba(0,0,0,0.8); background: rgba(0,0,0,0.4); padding: 10px 20px; border-radius: 15px; width: 80%; text-align: center; ${showGuide ? '' : 'display:none;'}">✨ 하단 상점이나 보관함에서 아이템을 고르고<br>빈 곳을 클릭하세요! ✨</div>`;
             
             field.innerHTML = guideHTML;
 

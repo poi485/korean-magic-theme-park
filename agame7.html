@@ -2,8 +2,8 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>깜깜한 유령의 집 - 오답 수집 및 스포일러 방지</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>깜깜한 유령의 집 - 모바일 반응형 완벽 적용</title>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
         
@@ -13,6 +13,8 @@
             margin: 0;
             padding: 0;
             touch-action: none; 
+            height: 100vh; /* 전체 스크롤 방지 */
+            overflow: hidden;
             
             background-image: url('bg/bg-gh.png');
             background-size: cover;
@@ -22,116 +24,70 @@
         }
 
         #intro-screen {
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100vh;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            z-index: 1000;
-            background: rgba(10, 5, 15, 0.85);
-            transition: opacity 1s;
+            position: fixed; top: 0; left: 0; width: 100%; height: 100vh;
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            z-index: 1000; background: rgba(10, 5, 15, 0.85); transition: opacity 1s;
         }
 
         #intro-btn {
-            background-color: #8e44ad;
-            color: white;
-            font-size: 32px;
-            font-weight: bold;
-            padding: 20px 50px;
-            border: none;
-            border-radius: 50px;
-            cursor: pointer;
-            box-shadow: 0 8px 0 #5b2c6f;
-            transition: all 0.1s;
-            animation: float 2s infinite ease-in-out;
+            background-color: #8e44ad; color: white; font-size: clamp(24px, 5vw, 32px); font-weight: bold;
+            padding: 20px 50px; border: none; border-radius: 50px; cursor: pointer;
+            box-shadow: 0 8px 0 #5b2c6f; transition: all 0.1s; animation: float 2s infinite ease-in-out;
         }
         #intro-btn:active { transform: translateY(8px); box-shadow: 0 0px 0 #5b2c6f; }
 
-        #ghost-greeting {
-            font-size: 40px;
-            font-weight: bold;
-            color: #fff;
-            text-shadow: 0 4px 15px rgba(230, 126, 34, 0.8);
-            margin-bottom: 40px;
-            display: none;
-            text-align: center;
-        }
+        #ghost-greeting { font-size: clamp(28px, 6vw, 40px); font-weight: bold; color: #fff; text-shadow: 0 4px 15px rgba(230, 126, 34, 0.8); margin-bottom: 40px; display: none; text-align: center; }
 
         #game-ui {
-            display: none;
-            flex-direction: column; 
-            align-items: center; 
-            justify-content: flex-start; 
-            min-height: 100vh;
-            padding-top: 15px;
-            width: 100%;
-            opacity: 0;
-            transition: opacity 1.5s;
+            display: none; flex-direction: column; align-items: center; justify-content: flex-start;
+            height: 100vh; padding: 10px; width: 100%; opacity: 0; transition: opacity 1.5s;
         }
 
-        h1 { color: #e67e22; font-size: 32px; margin-bottom: 10px; text-shadow: 0 4px 15px rgba(230, 126, 34, 0.9); }
+        h1 { color: #e67e22; font-size: clamp(24px, 5vw, 32px); margin-bottom: 5px; text-shadow: 0 4px 15px rgba(230, 126, 34, 0.9); flex-shrink: 0; }
         
         .guide-box {
-            background-color: rgba(0, 0, 0, 0.6);
-            padding: 10px 25px;
-            border-radius: 15px;
-            margin-bottom: 15px;
-            text-align: center;
-            border: 2px dashed #8e44ad;
-            backdrop-filter: blur(3px);
+            background-color: rgba(0, 0, 0, 0.6); padding: 8px 15px; border-radius: 15px;
+            margin-bottom: 10px; text-align: center; border: 2px dashed #8e44ad; backdrop-filter: blur(3px); flex-shrink: 0;
         }
-        .guide { font-size: 16px; color: #dfe6e9; font-weight: bold; line-height: 1.5; }
+        .guide { font-size: clamp(14px, 3vw, 16px); color: #dfe6e9; font-weight: bold; line-height: 1.4; }
         .guide span { display: block; }
 
         #top-bar {
-            width: 95%; max-width: 800px;
-            display: flex; justify-content: flex-end; margin-bottom: 10px;
-            visibility: hidden;
+            width: 100%; max-width: 800px; display: flex; justify-content: flex-end; margin-bottom: 5px; visibility: hidden; flex-shrink: 0;
         }
 
         #score-board {
-            background: rgba(142, 68, 173, 0.7);
-            border: 3px solid #9b59b6; border-radius: 20px; padding: 8px 15px;
-            font-size: 20px; font-weight: bold; color: #fff;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.5); display: flex; align-items: center; gap: 10px;
-            backdrop-filter: blur(5px);
+            background: rgba(142, 68, 173, 0.7); border: 3px solid #9b59b6; border-radius: 20px; padding: 5px 15px;
+            font-size: clamp(16px, 4vw, 20px); font-weight: bold; color: #fff; box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+            display: flex; align-items: center; gap: 10px; backdrop-filter: blur(5px);
         }
         .score-bounce { animation: popBounce 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
 
         #game-container {
-            position: relative;
-            width: 95%; max-width: 800px; aspect-ratio: 16 / 10;
-            background: rgba(10, 5, 15, 0.85);
-            border: 8px solid #4a235a; border-radius: 20px;
-            box-shadow: 0 15px 30px rgba(0,0,0,0.9), inset 0 0 50px rgba(0,0,0,0.9);
-            overflow: hidden; display: flex; justify-content: center; align-items: center;
-            backdrop-filter: blur(8px);
+            position: relative; width: 100%; max-width: 800px; flex: 1; /* 🌟 핵심: 화면 꽉 채우기 */
+            background: rgba(10, 5, 15, 0.85); border: 6px solid #4a235a; border-radius: 20px;
+            box-shadow: 0 15px 30px rgba(0,0,0,0.9), inset 0 0 50px rgba(0,0,0,0.9); overflow: hidden;
+            display: flex; justify-content: center; align-items: center; backdrop-filter: blur(8px);
         }
 
         #start-screen {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
             background: radial-gradient(circle at 50% 50%, rgba(74, 35, 90, 0.9) 0%, rgba(10, 5, 15, 0.95) 100%);
-            z-index: 50; display: flex; flex-direction: column; align-items: center; justify-content: center;
-            border-radius: 12px;
+            z-index: 50; display: flex; flex-direction: column; align-items: center; justify-content: center; border-radius: 12px;
         }
-        #start-screen h2 { font-size: 36px; color: #e67e22; margin-bottom: 30px; text-shadow: 0 5px 15px rgba(230,126,34,0.5); }
+        #start-screen h2 { font-size: clamp(24px, 6vw, 36px); color: #e67e22; margin-bottom: 30px; text-shadow: 0 5px 15px rgba(230,126,34,0.5); text-align: center;}
         .level-btn {
-            width: 250px; padding: 15px 0; margin: 10px 0; font-size: 22px; font-weight: bold;
-            color: white; background: #8e44ad; border: 4px solid #9b59b6; border-radius: 50px;
-            cursor: pointer; box-shadow: 0 8px 15px rgba(0,0,0,0.3); transition: 0.2s;
+            width: 80%; max-width: 250px; padding: 15px 0; margin: 8px 0; font-size: clamp(18px, 4vw, 22px); font-weight: bold;
+            color: white; background: #8e44ad; border: 4px solid #9b59b6; border-radius: 50px; cursor: pointer;
+            box-shadow: 0 8px 15px rgba(0,0,0,0.3); transition: 0.2s;
         }
-        .level-btn:hover { background: #9b59b6; transform: scale(1.05); }
         .level-btn:active { transform: scale(0.95); }
 
         #maze-grid {
-            display: grid; gap: 4px; width: 92%; height: 92%;
+            display: grid; gap: 2px; width: 95%; height: 95%; /* 🌟 틈새 줄이기 */
         }
 
-        .cell {
-            border-radius: 8px; display: flex; justify-content: center; align-items: center;
-            transition: background-color 0.4s, filter 0.4s;
-        }
+        .cell { border-radius: 6px; display: flex; justify-content: center; align-items: center; transition: background-color 0.4s, filter 0.4s; }
 
         .visited.path { background-color: rgba(91, 44, 111, 0.7); box-shadow: inset 0 0 10px rgba(255, 255, 255, 0.1); border: 2px solid #8e44ad; cursor: pointer; }
         .visited.exit { background-color: rgba(91, 44, 111, 0.7); border: 2px solid #8e44ad; cursor: pointer; }
@@ -139,7 +95,6 @@
         .fog { filter: brightness(0.4) sepia(0.5) hue-rotate(250deg); border: 2px solid #2d1838; cursor: pointer; }
         .fog.wall { background-color: rgba(30, 15, 38, 0.8); background-image: repeating-linear-gradient(45deg, transparent, transparent 8px, rgba(0,0,0,0.5) 8px, rgba(0,0,0,0.5) 16px); }
         .fog.path { background-color: rgba(62, 27, 77, 0.8); box-shadow: 0 0 20px rgba(0,0,0,0.8) inset; }
-        
         .fog .monster-icon { animation: float 2s infinite, spookyGlow 3s infinite alternate; filter: drop-shadow(0 0 5px rgba(230, 126, 34, 0.5)); }
 
         .darkness { background-color: rgba(5, 2, 8, 0.95) !important; border: 2px solid #050208 !important; cursor: default; }
@@ -150,30 +105,21 @@
 
         #combat-overlay {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(10, 5, 15, 0.95); z-index: 20;
-            display: none; flex-direction: column; align-items: center; justify-content: center;
-            border-radius: 12px;
+            background: rgba(10, 5, 15, 0.95); z-index: 20; display: none; flex-direction: column; align-items: center; justify-content: center; border-radius: 12px;
         }
 
-        #combat-feedback { font-size: 26px; font-weight: bold; color: #2ecc71; margin-bottom: 25px; text-shadow: 0 2px 5px rgba(0,0,0,0.5); text-align: center; }
-        #combat-monster { font-size: 80px; cursor: pointer; transition: transform 0.2s; filter: drop-shadow(0 0 30px rgba(230, 126, 34, 0.4)); }
+        #combat-feedback { font-size: clamp(20px, 5vw, 26px); font-weight: bold; color: #2ecc71; margin-bottom: 20px; text-shadow: 0 2px 5px rgba(0,0,0,0.5); text-align: center; }
+        #combat-monster { font-size: clamp(60px, 15vw, 80px); cursor: pointer; transition: transform 0.2s; filter: drop-shadow(0 0 30px rgba(230, 126, 34, 0.4)); }
         #combat-monster:active { transform: scale(0.9); }
-        #combat-mic-area { margin-top: 25px; display: flex; flex-direction: column; align-items: center; opacity: 0.5; pointer-events: none; transition: opacity 0.3s; }
-        #combat-mic-btn { font-size: 35px; width: 70px; height: 70px; border-radius: 50%; background-color: #d35400; border: 5px solid #e67e22; cursor: pointer; display: flex; justify-content: center; align-items: center; }
+        #combat-mic-area { margin-top: 15px; display: flex; flex-direction: column; align-items: center; opacity: 0.5; pointer-events: none; transition: opacity 0.3s; }
+        #combat-mic-btn { font-size: clamp(24px, 8vw, 35px); width: clamp(60px, 15vw, 70px); height: clamp(60px, 15vw, 70px); border-radius: 50%; background-color: #d35400; border: 5px solid #e67e22; cursor: pointer; display: flex; justify-content: center; align-items: center; }
         .recording { animation: pulseMic 1s infinite alternate; }
-        #combat-stt-result { margin-top: 10px; font-size: 22px; font-weight: bold; color: #f1c40f; min-height: 35px; }
+        #combat-stt-result { margin-top: 10px; font-size: clamp(16px, 4vw, 22px); font-weight: bold; color: #f1c40f; min-height: 35px; text-align: center; }
 
-        #combat-stone-area { display: flex; gap: 15px; margin-top: 20px; visibility: hidden; opacity: 0; transition: opacity 0.5s; flex-wrap: wrap; justify-content: center;}
-        
+        #combat-stone-area { display: flex; gap: 10px; margin-top: 10px; visibility: hidden; opacity: 0; transition: opacity 0.5s; flex-wrap: wrap; justify-content: center;}
         .stone {
-            background: #fdf5e6; border: 3px solid #d35400; 
-            width: 150px; height: 80px; 
-            border-radius: 10px; display: flex; justify-content: center; align-items: center;
-            font-size: 24px; font-weight: 900; color: #c0392b; cursor: pointer; 
-            box-shadow: 5px 10px 15px rgba(0,0,0,0.8);
-            transition: transform 0.2s, filter 0.2s;
-            text-align: center;
-            word-break: keep-all; 
+            background: #fdf5e6; border: 3px solid #d35400; width: clamp(100px, 28vw, 150px); height: clamp(50px, 15vw, 80px); 
+            border-radius: 10px; display: flex; justify-content: center; align-items: center; font-size: clamp(18px, 5vw, 24px); font-weight: 900; color: #c0392b; cursor: pointer; box-shadow: 5px 10px 15px rgba(0,0,0,0.8); transition: transform 0.2s, filter 0.2s; text-align: center; word-break: keep-all; 
         }
         .stone:active { transform: scale(0.95); }
 
@@ -191,27 +137,18 @@
         .anim-shake { animation: shake 0.4s ease-in-out; }
         .anim-gem-strong { animation: popGemStrong 2s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
 
-        /* 🌟 탈출 성공(클리어) 화면을 위한 디자인 및 폭죽 파티클 */
+        /* 탈출 성공(클리어) 화면 */
         #clear-overlay {
-            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(10, 5, 15, 0.95); z-index: 200;
-            display: none; flex-direction: column; align-items: center; justify-content: center;
-            border-radius: 12px; overflow: hidden;
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(10, 5, 15, 0.95); z-index: 200; display: none; flex-direction: column; align-items: center; justify-content: center; border-radius: 12px; overflow: hidden;
         }
-        #clear-overlay h2 { font-size: 55px; color: #f1c40f; text-shadow: 0 5px 15px rgba(241, 196, 15, 0.6); margin-bottom: 20px; }
-        #clear-overlay p { 
-            font-size: 26px; color: #fff; background: rgba(142, 68, 173, 0.5); 
-            padding: 20px 30px; border-radius: 20px; border: 3px solid #9b59b6; 
-            margin-bottom: 30px; font-weight: bold; line-height: 1.5; text-align: center;
-        }
-        .firework-particle {
-            position: absolute; width: 12px; height: 12px; border-radius: 50%; pointer-events: none;
-            animation: fireworkBurst 1.5s cubic-bezier(0.1, 0.8, 0.3, 1) forwards; z-index: 201;
-        }
-        @keyframes fireworkBurst {
-            0% { transform: translate(0, 0) scale(1); opacity: 1; }
-            100% { transform: translate(var(--tx), var(--ty)) scale(0); opacity: 0; }
-        }
+        #clear-overlay h2 { font-size: clamp(36px, 8vw, 55px); color: #f1c40f; text-shadow: 0 5px 15px rgba(241, 196, 15, 0.6); margin-bottom: 20px; }
+        #clear-overlay p { font-size: clamp(18px, 4vw, 26px); color: #fff; background: rgba(142, 68, 173, 0.5); padding: 15px 20px; border-radius: 20px; border: 3px solid #9b59b6; margin-bottom: 30px; font-weight: bold; line-height: 1.5; text-align: center; }
+        .firework-particle { position: absolute; width: 12px; height: 12px; border-radius: 50%; pointer-events: none; animation: fireworkBurst 1.5s cubic-bezier(0.1, 0.8, 0.3, 1) forwards; z-index: 201; }
+        @keyframes fireworkBurst { 0% { transform: translate(0, 0) scale(1); opacity: 1; } 100% { transform: translate(var(--tx), var(--ty)) scale(0); opacity: 0; } }
+        
+        .action-btn { padding: 10px 20px; font-size: 16px; font-weight: bold; color: white; text-decoration: none; border-radius: 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.5); display: inline-block; cursor: pointer; border: 2px solid white; transition: 0.2s;}
+        .action-btn:active { transform: scale(0.95); }
+
     </style>
 </head>
 <body>
@@ -222,23 +159,9 @@
     </div>
 
     <div id="game-ui">
-        <a href="index.html" style="
-            position: absolute;
-            top: 15px;
-            left: 15px;
-            background: #ff6b6b;
-            color: white;
-            text-decoration: none;
-            padding: 10px 20px;
-            border-radius: 20px;
-            font-weight: bold;
-            font-size: 18px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.5);
-            z-index: 9999;
-            transition: transform 0.2s;
-        " onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
-            🏠 처음으로
-        </a>
+        <div style="width:100%; display: flex; justify-content: flex-start; margin-bottom: 5px; flex-shrink: 0;">
+             <a href="index.html" class="action-btn" style="background:#ff6b6b; border-color:#fff;">🏠 처음으로</a>
+        </div>
 
         <h1>👻 깜깜한 유령의 집 - 대탈출</h1>
         <div class="guide-box">
@@ -254,21 +177,20 @@
         </div>
 
         <div id="game-container">
-            <!-- 탈출 성공 화면 -->
             <div id="clear-overlay">
                 <h2>🎉 대탈출 성공! 🎉</h2>
                 <p>용감하게 유령의 집을 빠져나왔어요!<br>보석 10개를 얻었습니다!</p>
-                <div style="display: flex; gap: 15px;">
-                    <button class="level-btn" style="background:#2ecc71; border-color:#27ae60; width:auto; padding: 15px 30px;" onclick="resetToMenu()">한 번 더 탈출하기</button>
-                    <a href="index.html" class="level-btn" style="background:#e74c3c; border-color:#c0392b; width:auto; padding: 15px 30px; text-decoration: none; display: flex; justify-content: center; align-items: center;">🏠 로비로</a>
+                <div style="display: flex; gap: 10px; flex-wrap: wrap; justify-content: center;">
+                    <button class="action-btn" style="background:#2ecc71; border-color:#27ae60;" onclick="resetToMenu()">한 번 더 탈출하기</button>
+                    <a href="index.html" class="action-btn" style="background:#e74c3c; border-color:#c0392b;">🏠 로비로</a>
                 </div>
             </div>
 
             <div id="start-screen">
                 <h2>탐험할 유령의 집을 골라주세요!</h2>
-                <button class="level-btn" style="background:#2ecc71; border-color:#27ae60;" onclick="startGame('하')">꼬마 유령의 집 (5x5)</button>
-                <button class="level-btn" style="background:#e67e22; border-color:#d35400;" onclick="startGame('중')">쌍둥이 유령의 집 (7x7)</button>
-                <button class="level-btn" style="background:#e74c3c; border-color:#c0392b;" onclick="startGame('상')">대왕 유령의 집 (9x9)</button>
+                <button class="level-btn" style="background:#2ecc71; border-color:#27ae60;" onclick="startGame('하')">꼬마 유령 (5x5)</button>
+                <button class="level-btn" style="background:#e67e22; border-color:#d35400;" onclick="startGame('중')">쌍둥이 유령 (7x7)</button>
+                <button class="level-btn" style="background:#e74c3c; border-color:#c0392b;" onclick="startGame('상')">대왕 유령 (9x9)</button>
             </div>
 
             <div id="maze-grid"></div>
@@ -345,7 +267,6 @@
         
         const monsters = ['👻', '🎃', '💀', '🧟', '🧛', '🤡', '🦇'];
         
-        // 🌟 단어 풀 60개 이상 (모든 게임과 공유 가능)
         const caveWords = [
             { target: "강아지", traps: ["깅아지", "강아자"] },
             { target: "고양이", traps: ["구양이", "고앙이"] },
@@ -441,7 +362,6 @@
                     const spoken = event.results[0][0].transcript.replace(/\s+/g, ''); 
                     const targetNoSpace = targetWord.replace(/\s+/g, '');
                     
-                    // 🌟 1. 스포일러 완전 차단 (인식된 단어는 화면에 표시하지 않음)
                     document.getElementById('combat-stt-result').innerText = ""; 
                     document.getElementById('combat-mic-btn').classList.remove('recording');
 
@@ -460,19 +380,15 @@
         }
         window.speechSynthesis.onvoiceschanged = initSystem;
 
-        // 🌟 2. 오답 수집기: 아이가 틀린 단어를 로컬 스토리지에 저장하는 함수
         function logWeakWord(word) {
             let weakWords = JSON.parse(localStorage.getItem('hangeul_weak_words') || '[]');
             
-            // 이미 오답노트에 있는 단어라면 중복해서 넣지 않음
             if (!weakWords.some(item => item.target === word.target)) {
                 weakWords.push(word);
-                // 오답 단어는 최대 20개까지만 보관 (가장 예전 것부터 삭제)
                 if (weakWords.length > 20) {
                     weakWords.shift();
                 }
                 localStorage.setItem('hangeul_weak_words', JSON.stringify(weakWords));
-                console.log("오답 수집 완료:", word.target);
             }
         }
 
@@ -567,7 +483,6 @@
             }
         }
 
-        // 🌟 3. 맞춤형 오답 재학습(Adaptive Learning): 오답 노트에 있는 단어를 강제로 섞기!
         function startGame(level) {
             initSystem();
             
@@ -579,25 +494,14 @@
             visited[0][0] = true; 
             playerPos = { r: 0, c: 0 };
             
-            // 💡 [핵심 로직] 전체 단어(caveWords)를 무작위로 섞습니다.
             shuffledWords = [...caveWords].sort(() => Math.random() - 0.5);
             
-            // 💡 [핵심 로직] 브라우저 저장소에서 '오답 노트'를 꺼내옵니다.
             let weakWords = JSON.parse(localStorage.getItem('hangeul_weak_words') || '[]');
             
-            // 💡 [핵심 로직] 오답 노트에 단어가 있다면, 무작위로 섞은 단어 배열 맨 앞에 '강제'로 꽂아 넣습니다.
-            // (즉, 아이가 가장 먼저 만나게 되는 유령들이 오답 단어 문제를 내게 됩니다!)
             if (weakWords.length > 0) {
-                // 오답 단어들을 한 번 섞어서 추가
                 weakWords = weakWords.sort(() => Math.random() - 0.5);
-                
-                // 기존 배열에서 오답과 겹치는 단어는 빼버림 (중복 방지)
                 shuffledWords = shuffledWords.filter(item => !weakWords.some(w => w.target === item.target));
-                
-                // 오답 단어들을 맨 앞으로 합치기
                 shuffledWords = [...weakWords, ...shuffledWords];
-                
-                console.log("맞춤형 복습 모드 발동! 이번 판 우선 출제 단어:", weakWords.map(w => w.target));
             }
 
             currentStageIndex = 0;
@@ -616,7 +520,7 @@
             const grid = document.getElementById('maze-grid');
             grid.innerHTML = '';
             
-            let cellFontSize = mapSize === 5 ? '40px' : (mapSize === 7 ? '30px' : '22px');
+            let cellFontSize = mapSize === 5 ? 'clamp(20px, 6vw, 40px)' : (mapSize === 7 ? 'clamp(16px, 4.5vw, 30px)' : 'clamp(12px, 3vw, 22px)');
             
             for (let r = 0; r < mapSize; r++) {
                 for (let c = 0; c < mapSize; c++) {
@@ -744,7 +648,6 @@
             document.getElementById('combat-feedback').innerText = "다시 또박또박 말해볼까요?";
             document.getElementById('combat-feedback').style.color = "#e74c3c";
             
-            // 💡 오답 수집! (음성 인식 실패 시)
             logWeakWord(shuffledWords[currentStageIndex % shuffledWords.length]);
         }
 
@@ -801,7 +704,6 @@
                 document.getElementById('combat-feedback').innerText = "가짜 부적이에요!";
                 document.getElementById('combat-feedback').style.color = "#e74c3c";
                 
-                // 💡 오답 수집! (글자 고르기 실패 시)
                 logWeakWord(shuffledWords[currentStageIndex % shuffledWords.length]);
                 
                 setTimeout(() => { stoneElement.classList.remove('anim-shake'); }, 400);

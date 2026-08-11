@@ -2,221 +2,87 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI 한글 요술 스케치북 - 맞춤형 오답 재학습 연동</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>AI 퐁당퐁당 징검다리 - 모바일 스크롤 방지 완벽 적용</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Jua&display=swap');
 
         body { 
-            font-family: 'Jua', 'Malgun Gothic', sans-serif; 
-            text-align: center; 
-            margin: 0; 
-            padding: 0; 
-            touch-action: manipulation;
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: flex-start;
-            
-            background-image: url('bg/bg-frog.png');
-            background-size: cover;
-            background-position: center;
-            background-attachment: fixed;
-            background-color: #e0f7fa;
-            overflow-x: hidden;
+            font-family: 'Jua', 'Malgun Gothic', sans-serif; text-align: center; margin: 0; padding: 0; 
+            touch-action: none; user-select: none; height: 100vh; overflow: hidden; /* 🌟 전체 스크롤 차단 */
+            background-image: url('bg/bg-frog.png'); background-size: cover; background-position: center;
+            background-attachment: fixed; background-color: #e0f7fa; display: flex; flex-direction: column;
         }
 
-        /* 🌟 인트로 화면 스타일 */
-        #intro-screen {
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100vh;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            z-index: 1000;
-            background: rgba(224, 247, 250, 0.6); 
-            backdrop-filter: blur(10px);
-            transition: opacity 1s;
+        /* 🌟 세로 모드 경고창 (가로 유도) */
+        #landscape-warning {
+            display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+            background: #00838f; z-index: 999999; flex-direction: column; justify-content: center; align-items: center;
+            color: white; text-align: center; font-family: 'Jua', sans-serif;
         }
+        #landscape-warning .icon { font-size: 80px; animation: rotatePhone 1.5s infinite ease-in-out; margin-bottom: 20px;}
+        #landscape-warning p { font-size: 24px; font-family: 'Malgun Gothic', sans-serif;}
+        @keyframes rotatePhone { 0% { transform: rotate(0deg); } 50% { transform: rotate(-90deg); } 100% { transform: rotate(-90deg); } }
+        @media screen and (orientation: portrait) { #landscape-warning { display: flex !important; } }
 
-        #intro-btn {
-            background-color: #4caf50;
-            color: white;
-            font-size: 36px;
-            padding: 20px 60px;
-            border: 6px solid #2e7d32;
-            border-radius: 60px;
-            cursor: pointer;
-            box-shadow: 0 12px 0 #2e7d32, 0 20px 25px rgba(0,0,0,0.3);
-            transition: all 0.1s;
-            animation: float 2.5s infinite ease-in-out;
-            font-family: 'Jua', sans-serif;
-            text-shadow: 2px 2px 0px #2e7d32;
-        }
-        #intro-btn:active { transform: translateY(12px); box-shadow: 0 0 0 #2e7d32, 0 5px 10px rgba(0,0,0,0.3); animation: none; }
+        #intro-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100vh; display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 1000; background: rgba(224, 247, 250, 0.6); backdrop-filter: blur(10px); transition: opacity 1s; }
+        #intro-btn { background-color: #4caf50; color: white; font-size: clamp(24px, 5vw, 36px); padding: 15px 40px; border: 6px solid #2e7d32; border-radius: 60px; cursor: pointer; box-shadow: 0 10px 0 #2e7d32, 0 15px 25px rgba(0,0,0,0.3); transition: all 0.1s; animation: float 2.5s infinite ease-in-out; font-family: 'Jua', sans-serif; text-shadow: 2px 2px 0px #2e7d32; }
+        #intro-btn:active { transform: translateY(10px); box-shadow: 0 0 0 #2e7d32, 0 5px 10px rgba(0,0,0,0.3); animation: none; }
+        #frog-greeting { font-size: clamp(28px, 6vw, 42px); color: #fff; text-shadow: 0 0 10px #4caf50, 0 0 20px #2e7d32, 2px 2px 0px #1b5e20; margin-bottom: 40px; display: none; text-align: center; word-break: keep-all; padding: 0 20px; letter-spacing: 2px; }
 
-        #frog-greeting {
-            font-size: 42px;
-            color: #fff;
-            text-shadow: 0 0 10px #4caf50, 0 0 20px #2e7d32, 2px 2px 0px #1b5e20;
-            margin-bottom: 40px;
-            display: none;
-            text-align: center;
-            word-break: keep-all;
-            padding: 0 20px;
-            letter-spacing: 2px;
-        }
+        @keyframes float { 0%, 100% { transform: translateY(0px); } 50% { transform: translateY(-15px); } }
 
-        @keyframes float {
-            0%, 100% { transform: translateY(0px); }
-            50% { transform: translateY(-15px); }
-        }
-
-        /* 🌟 게임 메인 UI */
-        #game-ui {
-            display: none;
-            flex-direction: column;
-            align-items: center;
-            width: 100%;
-            padding: 20px;
-            box-sizing: border-box;
-            opacity: 0;
-            transition: opacity 1.5s;
-        }
+        #game-ui { display: none; flex-direction: column; align-items: center; width: 100%; height: 100%; padding: 10px; box-sizing: border-box; opacity: 0; transition: opacity 1.5s; position: relative; }
         
-        h1 { 
-            color: #fff; font-size: 46px; margin-top: 15px; margin-bottom: 5px; 
-            text-shadow: 2px 2px 0px #00838f, -2px -2px 0 #00838f, 2px -2px 0 #00838f, -2px 2px 0 #00838f, 0 5px 15px rgba(0,0,0,0.5); 
-            letter-spacing: 2px;
-        }
-        
-        .guide { 
-            font-size: 22px; color: #006064; margin-bottom: 25px; background: rgba(255,255,255,0.95); 
-            padding: 12px 30px; border-radius: 30px; box-shadow: 0 5px 15px rgba(0,0,0,0.15); border: 3px solid #b2ebf2;
-        }
+        .action-btn-top { position: absolute; top: 5px; left: 10px; background: #ff6b6b; color: white; text-decoration: none; padding: 6px 12px; border-radius: 20px; font-weight: bold; font-size: clamp(12px, 2.5vw, 16px); box-shadow: 0 4px 10px rgba(0,0,0,0.2); z-index: 9999; border: 2px solid white; font-family: 'Jua', sans-serif;}
 
-        #main-action-btn {
-            padding: 12px 35px; font-size: 24px; font-family: 'Jua', sans-serif;
-            background-color: #ffca28; color: #d84315; border: 4px solid #ff9800;
-            border-radius: 40px; cursor: pointer; box-shadow: 0 6px 0 #ff9800, 0 10px 15px rgba(0,0,0,0.2);
-            margin-bottom: 20px; transition: all 0.2s;
-        }
+        .header-area { flex-shrink: 0; margin-bottom: 5px; display: flex; flex-direction: column; align-items: center;}
+        h1 { color: #fff; font-size: clamp(28px, 5vw, 40px); margin: 5px 0; text-shadow: 2px 2px 0px #00838f, -2px -2px 0 #00838f, 2px -2px 0 #00838f, -2px 2px 0 #00838f, 0 5px 10px rgba(0,0,0,0.5); letter-spacing: 2px; }
+        .guide { font-size: clamp(14px, 3vw, 20px); color: #006064; margin-bottom: 10px; background: rgba(255,255,255,0.95); padding: 5px 20px; border-radius: 30px; box-shadow: 0 4px 10px rgba(0,0,0,0.15); border: 2px solid #b2ebf2; display: inline-block; }
+
+        #main-action-btn { padding: 8px 25px; font-size: clamp(18px, 4vw, 24px); font-family: 'Jua', sans-serif; background-color: #ffca28; color: #d84315; border: 4px solid #ff9800; border-radius: 40px; cursor: pointer; box-shadow: 0 6px 0 #ff9800, 0 10px 15px rgba(0,0,0,0.2); margin-bottom: 10px; transition: all 0.2s; flex-shrink: 0;}
         #main-action-btn:active { transform: translateY(6px); box-shadow: 0 0 0 #ff9800, 0 4px 6px rgba(0,0,0,0.2); }
 
-        #river-area {
-            position: relative; max-width: 800px; width: 100%; height: 480px; margin: 0 auto;
-            background: linear-gradient(180deg, rgba(129, 212, 250, 0.8) 0%, rgba(0, 188, 212, 0.9) 100%);
-            border-radius: 40px; border: 8px solid rgba(255, 255, 255, 0.5);
-            box-shadow: inset 0 15px 25px rgba(0,0,0,0.3), 0 15px 30px rgba(0,0,0,0.3);
-            overflow: hidden; backdrop-filter: blur(5px);
-        }
+        #river-area { position: relative; max-width: 800px; width: 100%; flex: 1; margin: 0 auto; background: linear-gradient(180deg, rgba(129, 212, 250, 0.8) 0%, rgba(0, 188, 212, 0.9) 100%); border-radius: 30px; border: 6px solid rgba(255, 255, 255, 0.5); box-shadow: inset 0 10px 20px rgba(0,0,0,0.3), 0 10px 20px rgba(0,0,0,0.3); overflow: hidden; backdrop-filter: blur(5px); box-sizing: border-box;}
 
-        #world {
-            display: flex; flex-direction: column-reverse; width: 100%;
-            position: absolute; bottom: 0; left: 0;
-            transition: transform 0.6s cubic-bezier(0.25, 0.8, 0.25, 1); 
-        }
+        #world { display: flex; flex-direction: column-reverse; width: 100%; position: absolute; bottom: 0; left: 0; transition: transform 0.6s cubic-bezier(0.25, 0.8, 0.25, 1); }
 
-        .row {
-            display: flex; justify-content: space-evenly; align-items: center;
-            height: 150px; width: 100%;
-        }
+        /* 🌟 연잎(로우) 높이를 모바일 화면 크기에 맞춰 반응형으로 설정 */
+        .row { display: flex; justify-content: space-evenly; align-items: center; height: clamp(90px, 18vh, 150px); width: 100%; }
 
-        .start-rock {
-            width: 180px; height: 90px;
-            background: radial-gradient(circle at 30% 30%, #95a5a6, #555);
-            border: 4px solid #333; border-radius: 50%;
-            box-shadow: 0 10px 0 #333, 0 15px 20px rgba(0,0,0,0.5);
-            display: flex; justify-content: center; align-items: center;
-            color: white; font-size: 28px; text-shadow: 1px 1px 0 #000;
-        }
+        .start-rock { width: clamp(120px, 25vw, 180px); height: clamp(60px, 12vw, 90px); background: radial-gradient(circle at 30% 30%, #95a5a6, #555); border: 4px solid #333; border-radius: 50%; box-shadow: 0 8px 0 #333, 0 10px 15px rgba(0,0,0,0.5); display: flex; justify-content: center; align-items: center; color: white; font-size: clamp(20px, 4vw, 28px); text-shadow: 1px 1px 0 #000; }
+        .finish-land { width: 80%; height: clamp(80px, 15vw, 110px); background: linear-gradient(180deg, #aed581, #558b2f); border: 6px solid #33691e; border-radius: 30px; box-shadow: 0 8px 0 #33691e, 0 10px 15px rgba(0,0,0,0.5); display: flex; justify-content: center; align-items: center; color: white; font-size: clamp(28px, 6vw, 40px); font-weight: bold; text-shadow: 2px 2px 0 #1b5e20; margin: 0 auto; }
 
-        /* 🌟 도착 지점(육지) 디자인 추가 */
-        .finish-land {
-            width: 80%; height: 110px;
-            background: linear-gradient(180deg, #aed581, #558b2f);
-            border: 6px solid #33691e; border-radius: 30px;
-            box-shadow: 0 10px 0 #33691e, 0 15px 20px rgba(0,0,0,0.5);
-            display: flex; justify-content: center; align-items: center;
-            color: white; font-size: 40px; font-weight: bold;
-            text-shadow: 2px 2px 0 #1b5e20; margin: 0 auto;
-        }
+        .leaf-btn { background: linear-gradient(145deg, #66bb6a, #43a047); border: 3px solid #1b5e20; border-radius: 50% 50% 50% 10px; width: clamp(90px, 20vw, 130px); height: clamp(55px, 12vw, 80px); font-size: clamp(18px, 4vw, 28px); color: white; cursor: pointer; box-shadow: 0 6px 0 #1b5e20, 0 8px 10px rgba(0,0,0,0.4); display: flex; justify-content: center; align-items: center; transition: transform 0.1s, box-shadow 0.1s, filter 0.3s; text-shadow: 2px 2px 0 #1b5e20; }
+        .leaf-btn:active { transform: translateY(6px); box-shadow: 0 0px 0 #1b5e20, 0 3px 5px rgba(0,0,0,0.4); }
+        .inactive-row .leaf-btn { filter: grayscale(30%) brightness(80%) opacity(0.8); cursor: not-allowed; transform: scale(0.95); box-shadow: 0 3px 0 #1b5e20, 0 4px 5px rgba(0,0,0,0.2); }
 
-        .leaf-btn {
-            background: linear-gradient(145deg, #66bb6a, #43a047);
-            border: 4px solid #1b5e20; border-radius: 50% 50% 50% 10px; 
-            width: 130px; height: 80px; font-size: 28px; color: white;
-            cursor: pointer; box-shadow: 0 8px 0 #1b5e20, 0 12px 15px rgba(0,0,0,0.4);
-            display: flex; justify-content: center; align-items: center;
-            transition: transform 0.1s, box-shadow 0.1s, filter 0.3s;
-            text-shadow: 2px 2px 0 #1b5e20;
-        }
+        #animal-wrapper { position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%); transition: bottom 0.5s ease-out, left 0.5s ease-in-out; z-index: 10; }
+        #animal { font-size: clamp(50px, 10vw, 80px); transition: transform 0.3s; filter: drop-shadow(0 6px 8px rgba(0,0,0,0.4)); animation: breathe 2s infinite ease-in-out; }
 
-        .leaf-btn:active { transform: translateY(6px); box-shadow: 0 2px 0 #1b5e20, 0 5px 5px rgba(0,0,0,0.4); }
-
-        .inactive-row .leaf-btn {
-            filter: grayscale(30%) brightness(80%) opacity(0.8);
-            cursor: not-allowed; transform: scale(0.95);
-            box-shadow: 0 4px 0 #1b5e20, 0 5px 5px rgba(0,0,0,0.2);
-        }
-
-        #animal-wrapper {
-            position: absolute; bottom: 35px; left: 50%;
-            transform: translateX(-50%);
-            transition: bottom 0.5s ease-out, left 0.5s ease-in-out;
-            z-index: 10;
-        }
-
-        #animal { 
-            font-size: 80px; transition: transform 0.3s; 
-            filter: drop-shadow(0 8px 10px rgba(0,0,0,0.4)); 
-            animation: breathe 2s infinite ease-in-out;
-        }
-
-        @keyframes breathe {
-            0%, 100% { transform: scale(1) translateY(0); }
-            50% { transform: scale(1.05) translateY(-5px); }
-        }
-
-        @keyframes splash {
-            0% { transform: scale(1) rotate(0deg); opacity: 1; }
-            50% { transform: scale(0.5) translateY(50px) rotate(180deg); opacity: 0.5; }
-            100% { transform: scale(0) translateY(100px) rotate(360deg); opacity: 0; }
-        }
+        @keyframes breathe { 0%, 100% { transform: scale(1) translateY(0); } 50% { transform: scale(1.05) translateY(-5px); } }
+        @keyframes splash { 0% { transform: scale(1) rotate(0deg); opacity: 1; } 50% { transform: scale(0.5) translateY(50px) rotate(180deg); opacity: 0.5; } 100% { transform: scale(0) translateY(100px) rotate(360deg); opacity: 0; } }
         .fall-water { animation: splash 0.8s forwards !important; }
 
-        #feedback-text {
-            font-size: 32px; color: #fff; margin-top: 15px; height: 45px;
-            text-shadow: 2px 2px 0px #d84315, -1px -1px 0 #d84315, 1px -1px 0 #d84315, -1px 1px 0 #d84315;
-            letter-spacing: 1px;
-        }
+        #feedback-text { font-size: clamp(20px, 4.5vw, 32px); color: #fff; margin-top: 10px; height: 35px; text-shadow: 2px 2px 0px #d84315, -1px -1px 0 #d84315, 1px -1px 0 #d84315, -1px 1px 0 #d84315; letter-spacing: 1px; flex-shrink: 0; }
 
-        .overlay {
-            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(5px);
-            display: none; flex-direction: column; justify-content: center; align-items: center;
-            z-index: 100; border-radius: 30px;
-        }
-        .overlay h2 { font-size: 60px; margin: 0 0 10px 0; color: #ff4500; text-shadow: 2px 2px 0 #fff; }
-        .overlay p { font-size: 28px; color: #333; margin-bottom: 30px; background: #fff; padding: 15px 30px; border-radius: 20px; box-shadow: 0 5px 15px rgba(0,0,0,0.1); border: 3px solid #eee; }
+        .overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(5px); display: none; flex-direction: column; justify-content: center; align-items: center; z-index: 100; border-radius: 20px; }
+        .overlay h2 { font-size: clamp(40px, 8vw, 60px); margin: 0 0 10px 0; color: #ff4500; text-shadow: 2px 2px 0 #fff; text-align: center;}
+        .overlay p { font-size: clamp(18px, 4vw, 28px); color: #333; margin-bottom: 20px; background: #fff; padding: 10px 20px; border-radius: 15px; box-shadow: 0 5px 10px rgba(0,0,0,0.1); border: 3px solid #eee; text-align: center;}
         
-        .retry-btn {
-            padding: 15px 30px; font-size: 26px; font-family: 'Jua', sans-serif;
-            background-color: #32cd32; color: white; border: 4px solid #2e7d32; border-radius: 40px; cursor: pointer;
-            box-shadow: 0 8px 0 #2e7d32, 0 15px 20px rgba(50,205,50,0.4); transition: 0.2s;
-        }
-        .retry-btn:active { transform: translateY(8px); box-shadow: 0 0 0 #2e7d32, 0 5px 10px rgba(50,205,50,0.4); }
-
-        .btn-blue {
-            background-color: #29b6f6; border-color: #0288d1;
-            box-shadow: 0 8px 0 #0288d1, 0 15px 20px rgba(41,182,246,0.4);
-        }
-        .btn-blue:active { box-shadow: 0 0 0 #0288d1, 0 5px 10px rgba(41,182,246,0.4); }
+        .retry-btn { padding: 10px 25px; font-size: clamp(18px, 4vw, 26px); font-family: 'Jua', sans-serif; background-color: #32cd32; color: white; border: 4px solid #2e7d32; border-radius: 40px; cursor: pointer; box-shadow: 0 6px 0 #2e7d32, 0 10px 15px rgba(50,205,50,0.4); transition: 0.2s; }
+        .retry-btn:active { transform: translateY(6px); box-shadow: 0 0 0 #2e7d32, 0 3px 5px rgba(50,205,50,0.4); }
+        .btn-blue { background-color: #29b6f6; border-color: #0288d1; box-shadow: 0 6px 0 #0288d1, 0 10px 15px rgba(41,182,246,0.4); }
+        .btn-blue:active { box-shadow: 0 0 0 #0288d1, 0 3px 5px rgba(41,182,246,0.4); }
     </style>
 </head>
 <body>
+
+    <div id="landscape-warning">
+        <div class="icon">📱</div>
+        <h2>화면을 가로로 눕혀주세요!</h2>
+        <p>징검다리 게임은 가로 화면에서 더 재밌어요.</p>
+    </div>
 
     <div id="intro-screen">
         <div id="frog-greeting">"동물원 호숫가에 왔어요! 징검다리를 건너볼까요?"</div>
@@ -224,18 +90,13 @@
     </div>
 
     <div id="game-ui">
-        <a href="index.html" style="
-            position: absolute; top: 20px; left: 20px; background: #ff8a80; color: white; text-decoration: none;
-            padding: 12px 25px; border-radius: 30px; font-size: 20px; border: 3px solid #fff;
-            box-shadow: 0 6px 15px rgba(0,0,0,0.2); z-index: 9999; transition: transform 0.2s; font-family: 'Jua', sans-serif;
-        " onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'">
-            🏠 처음으로
-        </a>
+        <a href="index.html" class="action-btn-top">🏠 처음으로</a>
 
-        <h1>🐸 퐁당퐁당 징검다리</h1>
-        <div class="guide">단어를 듣고 알맞은 연잎을 건너봐! (목표: 10단계)</div>
-
-        <button id="main-action-btn">🚀 게임 시작!</button>
+        <div class="header-area">
+            <h1>🐸 퐁당퐁당 징검다리</h1>
+            <div class="guide">단어를 듣고 알맞은 연잎을 건너봐! (목표: 10단계)</div>
+            <button id="main-action-btn">🚀 게임 시작!</button>
+        </div>
 
         <div id="river-area">
             <div id="world">
@@ -244,10 +105,10 @@
             
             <div id="gameover-overlay" class="overlay">
                 <h2>💦 풍덩!</h2>
-                <p>아쉽게도 물에 빠졌어요.<br>도착 기록: <span id="score-text" style="color:#ff4500; font-size: 34px;"></span>단계</p>
-                <div style="display: flex; gap: 15px; flex-wrap: wrap; justify-content: center;">
+                <p>아쉽게도 물에 빠졌어요.<br>도착 기록: <span id="score-text" style="color:#ff4500;"></span>단계</p>
+                <div style="display: flex; gap: 10px; flex-wrap: wrap; justify-content: center;">
                     <button class="retry-btn btn-blue" onclick="continueGame()">💙 이어서 하기</button>
-                    <button class="retry-btn" onclick="resetGame()">🚀 처음부터 하기</button>
+                    <button class="retry-btn" onclick="resetGame()">🚀 처음부터</button>
                 </div>
             </div>
 
@@ -263,425 +124,129 @@
 
     <script>
         document.getElementById('intro-btn').addEventListener('click', () => {
-            const introBtn = document.getElementById('intro-btn');
-            const greeting = document.getElementById('frog-greeting');
-            
-            introBtn.style.display = 'none';
-            greeting.style.display = 'block';
-
-            const introAudio = new Audio('source/os-frog.mp3');
-            introAudio.onended = () => { transitionToGame(); };
-            introAudio.play().catch(e => {
-                setTimeout(() => { if (document.getElementById('intro-screen').style.opacity !== '0') transitionToGame(); }, 2000);
-            });
+            const introBtn = document.getElementById('intro-btn'); const greeting = document.getElementById('frog-greeting');
+            introBtn.style.display = 'none'; greeting.style.display = 'block';
+            const introAudio = new Audio('source/os-frog.mp3'); introAudio.onended = () => { transitionToGame(); };
+            introAudio.play().catch(e => { setTimeout(() => { if (document.getElementById('intro-screen').style.opacity !== '0') transitionToGame(); }, 2000); });
             setTimeout(() => { if (document.getElementById('intro-screen').style.opacity !== '0') transitionToGame(); }, 6000);
         });
 
         function transitionToGame() {
-            const intro = document.getElementById('intro-screen');
-            intro.style.opacity = '0';
-            setTimeout(() => {
-                intro.style.display = 'none';
-                const gameUI = document.getElementById('game-ui');
-                gameUI.style.display = 'flex';
-                setTimeout(() => { gameUI.style.opacity = '1'; }, 50); 
-            }, 1000);
+            const intro = document.getElementById('intro-screen'); intro.style.opacity = '0';
+            setTimeout(() => { intro.style.display = 'none'; const gameUI = document.getElementById('game-ui'); gameUI.style.display = 'flex'; setTimeout(() => { gameUI.style.opacity = '1'; }, 50); }, 1000);
         }
 
-        const allWordSets = [
-            { answer: "자전거", distractor: "자전기", onsetDistractor: "자동차" },
-            { answer: "자동차", distractor: "지동차", onsetDistractor: "자석" },
-            { answer: "나비", distractor: "나베", onsetDistractor: "나무" },
-            { answer: "나무", distractor: "나모", onsetDistractor: "나침반" },
-            { answer: "기차", distractor: "기채", onsetDistractor: "기린" },
-            { answer: "기린", distractor: "기릴", onsetDistractor: "기타" },
-            { answer: "고양이", distractor: "고양에", onsetDistractor: "고구마" },
-            { answer: "고구마", distractor: "구구마", onsetDistractor: "고래" },
-            { answer: "바나나", distractor: "바느느", onsetDistractor: "바다" },
-            { answer: "바다", distractor: "바디", onsetDistractor: "바지" },
-            { answer: "수박", distractor: "수복", onsetDistractor: "수건" },
-            { answer: "수건", distractor: "소건", onsetDistractor: "수프" },
-            { answer: "오리", distractor: "오레", onsetDistractor: "오이" },
-            { answer: "오이", distractor: "아이", onsetDistractor: "오징어" },
-            { answer: "구두", distractor: "구디", onsetDistractor: "구름" },
-            { answer: "구름", distractor: "고름", onsetDistractor: "구슬" },
-            { answer: "비행기", distractor: "배행기", onsetDistractor: "비누" },
-            { answer: "피아노", distractor: "피애노", onsetDistractor: "피자" },
-            { answer: "토끼", distractor: "토깨", onsetDistractor: "토마토" },
-            { answer: "토마토", distractor: "타마토", onsetDistractor: "토치" },
-            { answer: "호랑이", distractor: "호랭이", onsetDistractor: "호박" },
-            { answer: "다람쥐", distractor: "다람주", onsetDistractor: "다리" },
-            { answer: "코끼리", distractor: "쿠끼리", onsetDistractor: "코수염" },
-            { answer: "사과", distractor: "사고", onsetDistractor: "사자" },
-            { answer: "사자", distractor: "새자", onsetDistractor: "사탕" },
-            { answer: "거북이", distractor: "고북이", onsetDistractor: "거미" },
-            { answer: "지우개", distractor: "자우개", onsetDistractor: "지구" },
-            { answer: "연필", distractor: "얀필", onsetDistractor: "연못" },
-            { answer: "가방", distractor: "거방", onsetDistractor: "가위" },
-            { answer: "책상", distractor: "측상", onsetDistractor: "책방" },
-            { answer: "시계", distractor: "사계", onsetDistractor: "시장" },
-            { answer: "안경", distractor: "언경", onsetDistractor: "안개" },
-            { answer: "우산", distractor: "오산", onsetDistractor: "우유" },
-            { answer: "돼지", distractor: "뙈지", onsetDistractor: "도지" },
-            { answer: "사탕", distractor: "사탱", onsetDistractor: "사진" },
-            { answer: "풍선", distractor: "펑선", onsetDistractor: "풍경" },
-            { answer: "포도", distractor: "파도", onsetDistractor: "포스터" },
-            { answer: "딸기", distractor: "떨기", onsetDistractor: "땅콩" }
-        ];
+        const allWordSets = [ { answer: "자전거", distractor: "자전기", onsetDistractor: "자동차" }, { answer: "자동차", distractor: "지동차", onsetDistractor: "자석" }, { answer: "나비", distractor: "나베", onsetDistractor: "나무" }, { answer: "나무", distractor: "나모", onsetDistractor: "나침반" }, { answer: "기차", distractor: "기채", onsetDistractor: "기린" }, { answer: "기린", distractor: "기릴", onsetDistractor: "기타" }, { answer: "고양이", distractor: "고양에", onsetDistractor: "고구마" }, { answer: "고구마", distractor: "구구마", onsetDistractor: "고래" }, { answer: "바나나", distractor: "바느느", onsetDistractor: "바다" }, { answer: "바다", distractor: "바디", onsetDistractor: "바지" }, { answer: "수박", distractor: "수복", onsetDistractor: "수건" }, { answer: "수건", distractor: "소건", onsetDistractor: "수프" }, { answer: "오리", distractor: "오레", onsetDistractor: "오이" }, { answer: "오이", distractor: "아이", onsetDistractor: "오징어" }, { answer: "구두", distractor: "구디", onsetDistractor: "구름" }, { answer: "구름", distractor: "고름", onsetDistractor: "구슬" }, { answer: "비행기", distractor: "배행기", onsetDistractor: "비누" }, { answer: "피아노", distractor: "피애노", onsetDistractor: "피자" }, { answer: "토끼", distractor: "토깨", onsetDistractor: "토마토" }, { answer: "토마토", distractor: "타마토", onsetDistractor: "토치" }, { answer: "호랑이", distractor: "호랭이", onsetDistractor: "호박" }, { answer: "다람쥐", distractor: "다람주", onsetDistractor: "다리" }, { answer: "코끼리", distractor: "쿠끼리", onsetDistractor: "코수염" }, { answer: "사과", distractor: "사고", onsetDistractor: "사자" }, { answer: "사자", distractor: "새자", onsetDistractor: "사탕" }, { answer: "거북이", distractor: "고북이", onsetDistractor: "거미" }, { answer: "지우개", distractor: "자우개", onsetDistractor: "지구" }, { answer: "연필", distractor: "얀필", onsetDistractor: "연못" }, { answer: "가방", distractor: "거방", onsetDistractor: "가위" }, { answer: "책상", distractor: "측상", onsetDistractor: "책방" }, { answer: "시계", distractor: "사계", onsetDistractor: "시장" }, { answer: "안경", distractor: "언경", onsetDistractor: "안개" }, { answer: "우산", distractor: "오산", onsetDistractor: "우유" }, { answer: "돼지", distractor: "뙈지", onsetDistractor: "도지" }, { answer: "사탕", distractor: "사탱", onsetDistractor: "사진" }, { answer: "풍선", distractor: "펑선", onsetDistractor: "풍경" }, { answer: "포도", distractor: "파도", onsetDistractor: "포스터" }, { answer: "딸기", distractor: "떨기", onsetDistractor: "땅콩" } ];
 
-        const MAX_STAGE = 10; 
-        let gameState = 'ready'; 
-        let currentRowIndex = 0; 
-        let rowData = []; 
-        let currentSessionWords = []; 
-        let currentSafeLeft = '50%';  
-        let isJumping = false;
-        let targetVoice = null;
-        const rowHeight = 150; 
-
+        const MAX_STAGE = 10; let gameState = 'ready'; let currentRowIndex = 0; let rowData = []; let currentSessionWords = []; let currentSafeLeft = '50%'; let isJumping = false; let targetVoice = null;
         let audioCtx = null;
 
-        function initAudio() {
-            if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-        }
+        function initAudio() { if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)(); }
 
-        // 🌟 오답 수집기 (공통 규격으로 변환해서 저장)
-        function logWeakWord(frogWordObj) {
-            let weakWords = JSON.parse(localStorage.getItem('hangeul_weak_words') || '[]');
-            
-            // 유령의 집 포맷(target, traps)과 호환되게 저장
-            if (!weakWords.some(item => item.target === frogWordObj.answer)) {
-                weakWords.push({
-                    target: frogWordObj.answer,
-                    traps: [frogWordObj.distractor, frogWordObj.onsetDistractor]
-                });
-                
-                if (weakWords.length > 20) {
-                    weakWords.shift();
-                }
-                localStorage.setItem('hangeul_weak_words', JSON.stringify(weakWords));
-                console.log("징검다리 오답 수집 완료:", frogWordObj.answer);
-            }
-        }
+        function logWeakWord(frogWordObj) { let weakWords = JSON.parse(localStorage.getItem('hangeul_weak_words') || '[]'); if (!weakWords.some(item => item.target === frogWordObj.answer)) { weakWords.push({ target: frogWordObj.answer, traps: [frogWordObj.distractor, frogWordObj.onsetDistractor] }); if (weakWords.length > 20) { weakWords.shift(); } localStorage.setItem('hangeul_weak_words', JSON.stringify(weakWords)); } }
+        function playJumpSound() { initAudio(); const osc = audioCtx.createOscillator(); const gain = audioCtx.createGain(); osc.connect(gain); gain.connect(audioCtx.destination); osc.type = 'sine'; osc.frequency.setValueAtTime(140, audioCtx.currentTime); osc.frequency.exponentialRampToValueAtTime(450, audioCtx.currentTime + 0.12); osc.frequency.exponentialRampToValueAtTime(200, audioCtx.currentTime + 0.25); gain.gain.setValueAtTime(0.25, audioCtx.currentTime); gain.gain.linearRampToValueAtTime(0.01, audioCtx.currentTime + 0.25); osc.start(); osc.stop(audioCtx.currentTime + 0.25); }
+        function playSplashSound() { initAudio(); const osc = audioCtx.createOscillator(); const gain = audioCtx.createGain(); osc.connect(gain); gain.connect(audioCtx.destination); osc.type = 'triangle'; osc.frequency.setValueAtTime(300, audioCtx.currentTime); osc.frequency.linearRampToValueAtTime(60, audioCtx.currentTime + 0.4); gain.gain.setValueAtTime(0.3, audioCtx.currentTime); gain.gain.linearRampToValueAtTime(0.01, audioCtx.currentTime + 0.4); osc.start(); osc.stop(audioCtx.currentTime + 0.4); }
 
-        function playJumpSound() {
-            initAudio();
-            const osc = audioCtx.createOscillator();
-            const gain = audioCtx.createGain();
-            osc.connect(gain); gain.connect(audioCtx.destination);
-            osc.type = 'sine';
-            osc.frequency.setValueAtTime(140, audioCtx.currentTime);
-            osc.frequency.exponentialRampToValueAtTime(450, audioCtx.currentTime + 0.12);
-            osc.frequency.exponentialRampToValueAtTime(200, audioCtx.currentTime + 0.25);
-            gain.gain.setValueAtTime(0.25, audioCtx.currentTime);
-            gain.gain.linearRampToValueAtTime(0.01, audioCtx.currentTime + 0.25);
-            osc.start(); osc.stop(audioCtx.currentTime + 0.25);
-        }
+        function loadVoices() { const voices = window.speechSynthesis.getVoices(); const koVoices = voices.filter(v => v.lang.includes('ko')); targetVoice = koVoices.find(v => v.name.includes('Google')) || koVoices[0]; }
+        window.speechSynthesis.onvoiceschanged = loadVoices; loadVoices();
 
-        function playSplashSound() {
-            initAudio();
-            const osc = audioCtx.createOscillator();
-            const gain = audioCtx.createGain();
-            osc.connect(gain); gain.connect(audioCtx.destination);
-            osc.type = 'triangle';
-            osc.frequency.setValueAtTime(300, audioCtx.currentTime);
-            osc.frequency.linearRampToValueAtTime(60, audioCtx.currentTime + 0.4);
-            gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
-            gain.gain.linearRampToValueAtTime(0.01, audioCtx.currentTime + 0.4);
-            osc.start(); osc.stop(audioCtx.currentTime + 0.4);
-        }
+        function speak(text, rate = 0.85) { window.speechSynthesis.cancel(); const utterThis = new SpeechSynthesisUtterance(text); utterThis.lang = 'ko-KR'; utterThis.rate = rate; utterThis.pitch = 1.1; if (targetVoice) utterThis.voice = targetVoice; window.speechSynthesis.speak(utterThis); }
+        function shuffleArray(array) { for (let i = array.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [array[i], array[j]] = [array[j], array[i]]; } return array; }
 
-        function loadVoices() {
-            const voices = window.speechSynthesis.getVoices();
-            const koVoices = voices.filter(v => v.lang.includes('ko'));
-            targetVoice = koVoices.find(v => v.name.includes('Google')) || koVoices[0];
-        }
-        window.speechSynthesis.onvoiceschanged = loadVoices;
-        loadVoices();
-
-        function speak(text, rate = 0.85) {
-            window.speechSynthesis.cancel();
-            const utterThis = new SpeechSynthesisUtterance(text);
-            utterThis.lang = 'ko-KR'; utterThis.rate = rate; utterThis.pitch = 1.1; 
-            if (targetVoice) utterThis.voice = targetVoice;
-            window.speechSynthesis.speak(utterThis);
-        }
-
-        function shuffleArray(array) {
-            for (let i = array.length - 1; i > 0; i--) {
-                const j = Math.floor(Math.random() * (i + 1));
-                [array[i], array[j]] = [array[j], array[i]];
-            }
-            return array;
+        function getDynamicRowHeight() {
+            const world = document.getElementById('world');
+            return world.clientHeight / 4; // 화면에 약 4칸이 보이도록 비율 계산
         }
 
         function createRow(index) {
-            const rowDiv = document.createElement('div');
-            rowDiv.className = 'row';
-            rowDiv.id = 'row-' + index;
-
-            if (index === 0) {
-                rowDiv.style.justifyContent = 'center';
-                const rock = document.createElement('div');
-                rock.className = 'start-rock';
-                rock.innerText = "출발!";
-                rowDiv.appendChild(rock);
-                rowData[index] = null;
-            } 
-            else if (index === MAX_STAGE + 1) {
-                rowDiv.style.justifyContent = 'center';
-                const land = document.createElement('div');
-                land.className = 'finish-land';
-                land.innerText = "🚩 도착!";
-                rowDiv.appendChild(land);
-                rowData[index] = null;
-            }
+            const rowDiv = document.createElement('div'); rowDiv.className = 'row'; rowDiv.id = 'row-' + index;
+            if (index === 0) { rowDiv.style.justifyContent = 'center'; const rock = document.createElement('div'); rock.className = 'start-rock'; rock.innerText = "출발!"; rowDiv.appendChild(rock); rowData[index] = null; } 
+            else if (index === MAX_STAGE + 1) { rowDiv.style.justifyContent = 'center'; const land = document.createElement('div'); land.className = 'finish-land'; land.innerText = "🚩 도착!"; rowDiv.appendChild(land); rowData[index] = null; }
             else {
-                const qData = currentSessionWords[index - 1];
-                const numLeaves = Math.floor(Math.random() * 3) + 2; 
-                
-                let leaves = [qData.answer];
-                if (numLeaves >= 2) leaves.push(qData.distractor);
-                if (numLeaves >= 3) leaves.push(qData.onsetDistractor);
-                if (numLeaves === 4) {
-                    let randomWord;
-                    do { randomWord = allWordSets[Math.floor(Math.random() * allWordSets.length)].answer; } 
-                    while (leaves.includes(randomWord));
-                    leaves.push(randomWord);
-                }
-
-                leaves = shuffleArray(leaves);
-                rowData[index] = { answer: qData.answer };
-
-                if (index > currentRowIndex + 1) {
-                    rowDiv.classList.add('inactive-row');
-                }
-
+                const qData = currentSessionWords[index - 1]; const numLeaves = Math.floor(Math.random() * 3) + 2; 
+                let leaves = [qData.answer]; if (numLeaves >= 2) leaves.push(qData.distractor); if (numLeaves >= 3) leaves.push(qData.onsetDistractor);
+                if (numLeaves === 4) { let randomWord; do { randomWord = allWordSets[Math.floor(Math.random() * allWordSets.length)].answer; } while (leaves.includes(randomWord)); leaves.push(randomWord); }
+                leaves = shuffleArray(leaves); rowData[index] = { answer: qData.answer };
+                if (index > currentRowIndex + 1) { rowDiv.classList.add('inactive-row'); }
                 rowDiv.style.justifyContent = 'space-evenly';
-
-                leaves.forEach((word, leafPos) => {
-                    const btn = document.createElement('div');
-                    btn.className = 'leaf-btn';
-                    const rot = (Math.random() * 16 - 8).toFixed(1); 
-                    btn.style.transform = `rotate(${rot}deg)`;
-                    btn.innerText = word;
-                    
-                    btn.onclick = () => handleLeafClick(word, leafPos, index, btn, numLeaves);
-                    rowDiv.appendChild(btn);
-                });
+                leaves.forEach((word, leafPos) => { const btn = document.createElement('div'); btn.className = 'leaf-btn'; const rot = (Math.random() * 16 - 8).toFixed(1); btn.style.transform = `rotate(${rot}deg)`; btn.innerText = word; btn.onclick = () => handleLeafClick(word, leafPos, index, btn, numLeaves); rowDiv.appendChild(btn); });
             }
             return rowDiv;
         }
 
-        document.getElementById('main-action-btn').addEventListener('click', () => {
-            if (gameState === 'ready') {
-                startGame();
-            } else if (gameState === 'playing' && !isJumping) {
-                readCurrentQuestion();
-            }
-        });
+        document.getElementById('main-action-btn').addEventListener('click', () => { if (gameState === 'ready') { startGame(); } else if (gameState === 'playing' && !isJumping) { readCurrentQuestion(); } });
 
-        // 🌟 맞춤형 오답 재학습(Adaptive Learning) 적용
         function startGame() {
-            gameState = 'playing';
-            isJumping = false; 
-            currentSafeLeft = '50%'; 
-            
+            gameState = 'playing'; isJumping = false; currentSafeLeft = '50%'; 
             let shuffledSets = shuffleArray([...allWordSets]);
-            
-            // 💡 브라우저 저장소에서 '오답 노트'를 꺼내옵니다.
-            let weakWords = JSON.parse(localStorage.getItem('hangeul_weak_words') || '[]');
-            let mappedWeakWords = [];
-            
-            // 오답 노트에 있는 단어 중 징검다리 사전에 있는 단어만 매칭
-            weakWords.forEach(w => {
-                let found = allWordSets.find(item => item.answer === w.target);
-                if (found) mappedWeakWords.push(found);
-            });
-
-            // 💡 매칭된 오답 단어가 있다면 이번 판 앞쪽에 1순위로 배치!
-            if (mappedWeakWords.length > 0) {
-                mappedWeakWords = mappedWeakWords.sort(() => Math.random() - 0.5);
-                
-                // 기존 배열에서 오답과 겹치는 단어는 삭제
-                shuffledSets = shuffledSets.filter(item => !mappedWeakWords.some(w => w.answer === item.answer));
-                
-                // 오답 단어들을 맨 앞으로 합치기
-                shuffledSets = [...mappedWeakWords, ...shuffledSets];
-                console.log("맞춤형 복습 모드 발동! 이번 판 우선 출제 단어:", mappedWeakWords.map(w => w.answer));
-            }
-
-            // 정확히 10단계만 잘라서 사용
+            let weakWords = JSON.parse(localStorage.getItem('hangeul_weak_words') || '[]'); let mappedWeakWords = [];
+            weakWords.forEach(w => { let found = allWordSets.find(item => item.answer === w.target); if (found) mappedWeakWords.push(found); });
+            if (mappedWeakWords.length > 0) { mappedWeakWords = mappedWeakWords.sort(() => Math.random() - 0.5); shuffledSets = shuffledSets.filter(item => !mappedWeakWords.some(w => w.answer === item.answer)); shuffledSets = [...mappedWeakWords, ...shuffledSets]; }
             currentSessionWords = shuffledSets.slice(0, MAX_STAGE);
 
-            document.getElementById('main-action-btn').innerText = '🔊 문제 다시 듣기';
-            document.getElementById('main-action-btn').style.backgroundColor = '#64b5f6';
-            document.getElementById('main-action-btn').style.borderColor = '#0288d1';
-            document.getElementById('main-action-btn').style.boxShadow = '0 6px 0 #0288d1, 0 10px 15px rgba(0,0,0,0.2)';
-            document.getElementById('main-action-btn').style.color = '#fff';
+            document.getElementById('main-action-btn').innerText = '🔊 다시 듣기'; document.getElementById('main-action-btn').style.backgroundColor = '#64b5f6'; document.getElementById('main-action-btn').style.borderColor = '#0288d1'; document.getElementById('main-action-btn').style.boxShadow = '0 4px 0 #0288d1, 0 5px 10px rgba(0,0,0,0.2)'; document.getElementById('main-action-btn').style.color = '#fff';
 
             const world = document.getElementById('world');
-            Array.from(world.children).forEach(child => {
-                if(child.id !== 'animal-wrapper') world.removeChild(child);
-            });
-            
-            rowData = [];
-            currentRowIndex = 0;
+            Array.from(world.children).forEach(child => { if(child.id !== 'animal-wrapper') world.removeChild(child); });
+            rowData = []; currentRowIndex = 0;
+            for (let i = 0; i < 4; i++) { world.appendChild(createRow(i)); }
 
-            for (let i = 0; i < 4; i++) {
-                world.appendChild(createRow(i));
-            }
-
-            const wrapper = document.getElementById('animal-wrapper');
-            wrapper.style.bottom = '35px';
-            wrapper.style.left = '50%';
-            document.getElementById('animal').classList.remove('fall-water');
-            world.style.transform = `translateY(0px)`;
-            
-            document.getElementById('feedback-text').innerText = '준비, 출발!';
-            setTimeout(() => { document.getElementById('feedback-text').innerText = ''; }, 1000);
-
+            const wrapper = document.getElementById('animal-wrapper'); wrapper.style.bottom = '20px'; wrapper.style.left = '50%'; document.getElementById('animal').classList.remove('fall-water'); world.style.transform = `translateY(0px)`;
+            document.getElementById('feedback-text').innerText = '준비, 출발!'; setTimeout(() => { document.getElementById('feedback-text').innerText = ''; }, 1000);
             setTimeout(() => { readCurrentQuestion(); }, 800);
         }
 
-        function readCurrentQuestion() {
-            if (currentRowIndex < MAX_STAGE) {
-                speak(rowData[currentRowIndex + 1].answer);
-            }
-        }
+        function readCurrentQuestion() { if (currentRowIndex < MAX_STAGE) { speak(rowData[currentRowIndex + 1].answer); } }
 
         function handleLeafClick(selectedWord, leafPos, rowIndex, btnElement, numLeaves) {
             if (gameState !== 'playing' || rowIndex !== currentRowIndex + 1 || isJumping) return;
-            isJumping = true;
-
-            const wrapper = document.getElementById('animal-wrapper');
-            const animal = document.getElementById('animal');
-            const feedback = document.getElementById('feedback-text');
-            const targetData = rowData[rowIndex];
-
-            const targetLeftPercent = (100 / (numLeaves + 1)) * (leafPos + 1);
+            isJumping = true; const wrapper = document.getElementById('animal-wrapper'); const animal = document.getElementById('animal'); const feedback = document.getElementById('feedback-text'); const targetData = rowData[rowIndex]; const targetLeftPercent = (100 / (numLeaves + 1)) * (leafPos + 1);
+            
+            const dynHeight = getDynamicRowHeight();
 
             if (selectedWord === targetData.answer) {
-                feedback.innerText = `🎉 ${rowIndex}단계 통과!`;
-                feedback.style.color = "#ffeb3b";
-                
-                currentSafeLeft = targetLeftPercent + '%';
-                wrapper.style.bottom = (rowIndex * rowHeight + 35) + 'px';
-                wrapper.style.left = currentSafeLeft; 
-
+                feedback.innerText = `🎉 ${rowIndex}단계 통과!`; feedback.style.color = "#ffeb3b";
+                currentSafeLeft = targetLeftPercent + '%'; wrapper.style.bottom = (rowIndex * dynHeight + 20) + 'px'; wrapper.style.left = currentSafeLeft; 
                 playJumpSound();
 
                 setTimeout(() => {
                     currentRowIndex++;
-                    
-                    document.getElementById('world').style.transform = `translateY(${currentRowIndex * rowHeight}px)`;
-                    
-                    const nextRow = document.getElementById('row-' + (currentRowIndex + 1));
-                    if(nextRow) nextRow.classList.remove('inactive-row');
-
-                    if (currentRowIndex + 3 <= MAX_STAGE + 1) {
-                        document.getElementById('world').appendChild(createRow(currentRowIndex + 3));
-                    }
-
+                    document.getElementById('world').style.transform = `translateY(${currentRowIndex * dynHeight}px)`;
+                    const nextRow = document.getElementById('row-' + (currentRowIndex + 1)); if(nextRow) nextRow.classList.remove('inactive-row');
+                    if (currentRowIndex + 3 <= MAX_STAGE + 1) { document.getElementById('world').appendChild(createRow(currentRowIndex + 3)); }
                     if (currentRowIndex === MAX_STAGE) {
                         setTimeout(() => {
-                            isJumping = true;
-                            playJumpSound();
-                            wrapper.style.bottom = ((MAX_STAGE + 1) * rowHeight + 20) + 'px'; 
-                            wrapper.style.left = '50%'; 
-                            
-                            setTimeout(() => {
-                                gameState = 'clear';
-                                isJumping = false; 
-                                document.getElementById('clear-overlay').style.display = 'flex';
-                                speak("축하합니다! 동물원 도착!");
-                                saveReward(10, 'game_frog');
-                            }, 600);
+                            isJumping = true; playJumpSound(); wrapper.style.bottom = ((MAX_STAGE + 1) * dynHeight) + 'px'; wrapper.style.left = '50%'; 
+                            setTimeout(() => { gameState = 'clear'; isJumping = false; document.getElementById('clear-overlay').style.display = 'flex'; speak("축하합니다! 동물원 도착!"); saveReward(10, 'game_frog'); }, 600);
                         }, 800);
-                    } else {
-                        feedback.innerText = "";
-                        isJumping = false;
-                        setTimeout(() => { readCurrentQuestion(); }, 500);
-                    }
-                    
+                    } else { feedback.innerText = ""; isJumping = false; setTimeout(() => { readCurrentQuestion(); }, 500); }
                 }, 600); 
 
             } else {
-                gameState = 'gameover';
-                
-                // 💡 오답 수집! (틀린 연잎을 골랐을 때)
-                const failedWordData = currentSessionWords[rowIndex - 1];
-                logWeakWord(failedWordData);
-
-                wrapper.style.bottom = (rowIndex * rowHeight + 35) + 'px';
-                wrapper.style.left = targetLeftPercent + '%'; 
-                playJumpSound();
-
+                gameState = 'gameover'; const failedWordData = currentSessionWords[rowIndex - 1]; logWeakWord(failedWordData);
+                wrapper.style.bottom = (rowIndex * dynHeight + 20) + 'px'; wrapper.style.left = targetLeftPercent + '%'; playJumpSound();
                 setTimeout(() => {
-                    animal.classList.add('fall-water');
-                    btnElement.classList.add('fall-water'); 
-                    
-                    playSplashSound();
-                    speak("앗, 물에 빠졌어요.");
-
-                    setTimeout(() => {
-                        document.getElementById('score-text').innerText = currentRowIndex;
-                        document.getElementById('gameover-overlay').style.display = 'flex';
-                        isJumping = false; 
-                    }, 1000);
-
+                    animal.classList.add('fall-water'); btnElement.classList.add('fall-water'); playSplashSound(); speak("앗, 물에 빠졌어요.");
+                    setTimeout(() => { document.getElementById('score-text').innerText = currentRowIndex; document.getElementById('gameover-overlay').style.display = 'flex'; isJumping = false; }, 1000);
                 }, 500);
             }
         }
 
         function continueGame() {
-            document.getElementById('gameover-overlay').style.display = 'none';
-            const wrapper = document.getElementById('animal-wrapper');
-            const animal = document.getElementById('animal');
-            
-            document.querySelectorAll('.leaf-btn').forEach(btn => btn.classList.remove('fall-water'));
-            animal.classList.remove('fall-water');
-            
-            wrapper.style.bottom = (currentRowIndex * rowHeight + 35) + 'px';
-            wrapper.style.left = currentSafeLeft;
-
-            isJumping = false;
-            gameState = 'playing';
-
-            const feedback = document.getElementById('feedback-text');
-            feedback.innerText = '힘내요! 다시 잘 들어봐요!';
-            feedback.style.color = '#ffeb3b';
-            
-            setTimeout(() => { readCurrentQuestion(); }, 800);
+            document.getElementById('gameover-overlay').style.display = 'none'; const wrapper = document.getElementById('animal-wrapper'); const animal = document.getElementById('animal');
+            document.querySelectorAll('.leaf-btn').forEach(btn => btn.classList.remove('fall-water')); animal.classList.remove('fall-water');
+            const dynHeight = getDynamicRowHeight();
+            wrapper.style.bottom = (currentRowIndex * dynHeight + 20) + 'px'; wrapper.style.left = currentSafeLeft;
+            isJumping = false; gameState = 'playing';
+            const feedback = document.getElementById('feedback-text'); feedback.innerText = '힘내요! 다시 들어봐요!'; feedback.style.color = '#ffeb3b'; setTimeout(() => { readCurrentQuestion(); }, 800);
         }
 
         function resetGame() {
-            document.getElementById('gameover-overlay').style.display = 'none';
-            document.getElementById('clear-overlay').style.display = 'none';
-            isJumping = false; 
-            gameState = 'ready';
-            
-            const mainBtn = document.getElementById('main-action-btn');
-            mainBtn.innerText = '🚀 다시 시작!';
-            mainBtn.style.backgroundColor = '#ffca28';
-            mainBtn.style.borderColor = '#ff9800';
-            mainBtn.style.boxShadow = '0 6px 0 #ff9800, 0 10px 15px rgba(0,0,0,0.2)';
-            mainBtn.style.color = '#d84315';
-            
-            document.getElementById('feedback-text').innerText = '';
+            document.getElementById('gameover-overlay').style.display = 'none'; document.getElementById('clear-overlay').style.display = 'none'; isJumping = false; gameState = 'ready';
+            const mainBtn = document.getElementById('main-action-btn'); mainBtn.innerText = '🚀 다시 시작!'; mainBtn.style.backgroundColor = '#ffca28'; mainBtn.style.borderColor = '#ff9800'; mainBtn.style.boxShadow = '0 4px 0 #ff9800, 0 5px 10px rgba(0,0,0,0.2)'; mainBtn.style.color = '#d84315'; document.getElementById('feedback-text').innerText = '';
         }
 
-        function saveReward(earnedCoins, gameId) {
-            let currentCoins = parseInt(localStorage.getItem('hangeul_park_coins') || '0');
-            localStorage.setItem('hangeul_park_coins', currentCoins + earnedCoins);
-
-            let clearedGames = JSON.parse(localStorage.getItem('hangeul_park_cleared') || '{}');
-            let currentCount = clearedGames[gameId];
-            if (typeof currentCount !== 'number') currentCount = 0;
-            
-            clearedGames[gameId] = currentCount + 1;
-            localStorage.setItem('hangeul_park_cleared', JSON.stringify(clearedGames));
-        }
+        function saveReward(earnedCoins, gameId) { let currentCoins = parseInt(localStorage.getItem('hangeul_park_coins') || '0'); localStorage.setItem('hangeul_park_coins', currentCoins + earnedCoins); let clearedGames = JSON.parse(localStorage.getItem('hangeul_park_cleared') || '{}'); let currentCount = clearedGames[gameId]; if (typeof currentCount !== 'number') currentCount = 0; clearedGames[gameId] = currentCount + 1; localStorage.setItem('hangeul_park_cleared', JSON.stringify(clearedGames)); }
     </script>
 </body>
 </html>

@@ -21,194 +21,87 @@
             overflow-x: hidden;
         }
 
-        /* =========================================
-           🌟 1. 오프닝(대문) 화면 스타일
-           ========================================= */
+        /* 🌟 세로 모드 경고창 (가로 유도) */
+        #landscape-warning {
+            display: none;
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+            background: #1e3c72; z-index: 999999;
+            flex-direction: column; justify-content: center; align-items: center;
+            color: white; text-align: center; font-family: 'Jua', sans-serif;
+        }
+        #landscape-warning .icon { font-size: 80px; animation: rotatePhone 1.5s infinite ease-in-out; margin-bottom: 20px;}
+        #landscape-warning p { font-size: 24px; font-family: 'Malgun Gothic', sans-serif;}
+        @keyframes rotatePhone { 0% { transform: rotate(0deg); } 50% { transform: rotate(-90deg); } 100% { transform: rotate(-90deg); } }
+        
+        @media screen and (orientation: portrait) {
+            #landscape-warning { display: flex !important; }
+        }
+
+        /* 오프닝 화면 */
         #opening-section {
-            position: fixed;
-            top: 0; left: 0;
-            width: 100vw; height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: flex-end;
-            padding-bottom: 12%; 
-            box-sizing: border-box;
-            background-image: url('bg/bg-opening.png');
-            background-size: cover;
-            background-position: center;
-            background-repeat: no-repeat;
-            z-index: 9999;
-            transition: opacity 1.5s ease-in-out, transform 1.5s ease-in-out;
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+            display: flex; justify-content: center; align-items: flex-end;
+            padding-bottom: 12%; box-sizing: border-box;
+            background-image: url('bg/bg-opening.png'); background-size: cover;
+            background-position: center; background-repeat: no-repeat;
+            z-index: 9999; transition: opacity 1.5s ease-in-out, transform 1.5s ease-in-out;
         }
 
         .jelly-btn {
-            background-color: #ff69b4; 
-            color: white;
-            text-decoration: none;
-            font-family: 'Jua', sans-serif;
-            font-size: 40px;
-            font-weight: bold;
-            padding: 20px 60px;
-            border-radius: 60px;
-            border: 6px solid #c71585;
-            box-shadow: 0 12px 0 #c71585, 0 20px 25px rgba(0,0,0,0.4);
-            cursor: pointer;
+            background-color: #ff69b4; color: white; text-decoration: none;
+            font-family: 'Jua', sans-serif; font-size: clamp(24px, 5vw, 40px); /* 🌟 반응형 폰트 */
+            font-weight: bold; padding: 20px 60px; border-radius: 60px; border: 6px solid #c71585;
+            box-shadow: 0 12px 0 #c71585, 0 20px 25px rgba(0,0,0,0.4); cursor: pointer;
             animation: bounceFloat 2.5s infinite ease-in-out;
             text-shadow: -2px -2px 0 #c71585, 2px -2px 0 #c71585, -2px 2px 0 #c71585, 2px 2px 0 #c71585;
             transition: all 0.1s;
         }
 
-        .jelly-btn:active {
-            transform: translateY(12px);
-            box-shadow: 0 0px 0 #c71585, 0 5px 10px rgba(0,0,0,0.4);
-            animation: none; 
-        }
+        .jelly-btn:active { transform: translateY(12px); box-shadow: 0 0px 0 #c71585, 0 5px 10px rgba(0,0,0,0.4); animation: none; }
+        @keyframes bounceFloat { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-15px); } }
 
-        @keyframes bounceFloat {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-15px); }
-        }
-
-        /* =========================================
-           🌟 2. 로비(메인 맵) 화면 스타일
-           ========================================= */
+        /* 로비 화면 */
         #lobby-section {
-            width: 100%;
-            height: 100vh;
-            display: none; 
-            flex-direction: column;
-            align-items: center;
-            padding: 20px;
-            box-sizing: border-box;
-            opacity: 0;
-            transition: opacity 1.5s ease-in-out;
-            position: relative; /* 자식 요소 절대 배치를 위해 추가 */
+            width: 100%; height: 100vh; display: none; flex-direction: column; align-items: center;
+            padding: 20px; box-sizing: border-box; opacity: 0; transition: opacity 1.5s ease-in-out; position: relative;
         }
 
-        /* 🌟 대시보드(학습 분석) 버튼 스타일 - 아이들 눈에 덜 띄도록 우측 상단 반투명 배치 */
         .dashboard-btn {
-            position: absolute;
-            top: 20px;
-            right: 20px;
-            background: rgba(0, 0, 0, 0.4);
-            color: #ddd;
-            text-decoration: none;
-            padding: 10px 15px;
-            border-radius: 12px;
-            font-size: 16px;
-            font-weight: bold;
-            font-family: 'Malgun Gothic', sans-serif;
-            border: 2px solid rgba(255, 255, 255, 0.2);
-            z-index: 100;
-            transition: all 0.2s;
-            backdrop-filter: blur(5px);
+            position: absolute; top: 20px; right: 20px; background: rgba(0, 0, 0, 0.4); color: #ddd;
+            text-decoration: none; padding: 10px 15px; border-radius: 12px; font-size: 16px; font-weight: bold;
+            font-family: 'Malgun Gothic', sans-serif; border: 2px solid rgba(255, 255, 255, 0.2);
+            z-index: 100; transition: all 0.2s; backdrop-filter: blur(5px);
         }
-        
-        .dashboard-btn:hover {
-            background: rgba(255, 255, 255, 0.95);
-            color: #1e3c72;
-            border-color: #FFD700;
-            transform: scale(1.05);
-            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
-        }
+        .dashboard-btn:hover { background: rgba(255, 255, 255, 0.95); color: #1e3c72; border-color: #FFD700; transform: scale(1.05); box-shadow: 0 5px 15px rgba(0,0,0,0.3); }
 
         header {
-            display: inline-flex;
-            justify-content: center;
-            align-items: center;
-            margin-bottom: 25px;
-            margin-top: 10px;
-            padding: 15px 50px;
-            background: rgba(20, 30, 70, 0.6);
-            backdrop-filter: blur(10px);
-            border-radius: 50px;
-            border: 4px solid #FFD700;
-            box-shadow: 0 0 25px rgba(255, 215, 0, 0.6), inset 0 0 15px rgba(255, 215, 0, 0.3);
-            z-index: 10;
-            flex-shrink: 0;
+            display: inline-flex; justify-content: center; align-items: center; margin-bottom: 25px; margin-top: 10px;
+            padding: 15px 50px; background: rgba(20, 30, 70, 0.6); backdrop-filter: blur(10px); border-radius: 50px;
+            border: 4px solid #FFD700; box-shadow: 0 0 25px rgba(255, 215, 0, 0.6), inset 0 0 15px rgba(255, 215, 0, 0.3);
+            z-index: 10; flex-shrink: 0;
         }
 
-        .title {
-            font-family: 'Jua', sans-serif;
-            font-size: 40px;
-            color: #FFF;
-            text-shadow: 0 0 10px #FFD700, 0 0 20px #FF8C00, 3px 3px 0 #8e44ad;
-            margin: 0;
-            letter-spacing: 2px;
-        }
+        .title { font-family: 'Jua', sans-serif; font-size: 40px; color: #FFF; text-shadow: 0 0 10px #FFD700, 0 0 20px #FF8C00, 3px 3px 0 #8e44ad; margin: 0; letter-spacing: 2px; }
 
-        /* 🌟 하단 컨트롤 패널 (사용 방법 버튼 추가) */
         .footer-controls {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            gap: 20px;
-            margin-top: 20px;
-            margin-bottom: 10px;
-            padding: 15px 30px;
-            background: rgba(15, 20, 40, 0.7);
-            backdrop-filter: blur(8px);
-            border-radius: 50px;
-            border: 2px solid rgba(255, 255, 255, 0.3);
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-            z-index: 10;
-            flex-shrink: 0;
-            flex-wrap: wrap; /* 모바일 대응 */
+            display: flex; justify-content: center; align-items: center; gap: 20px; margin-top: 20px; margin-bottom: 10px;
+            padding: 15px 30px; background: rgba(15, 20, 40, 0.7); backdrop-filter: blur(8px); border-radius: 50px;
+            border: 2px solid rgba(255, 255, 255, 0.3); box-shadow: 0 10px 30px rgba(0,0,0,0.5); z-index: 10; flex-shrink: 0; flex-wrap: wrap;
         }
 
-        .global-score {
-            background: rgba(255, 255, 255, 0.95);
-            padding: 10px 20px;
-            border-radius: 30px;
-            font-size: 20px;
-            font-weight: bold;
-            color: #1e3c72;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.5);
-            border: 3px solid #FFD700;
-        }
-
-        .shop-btn {
-            background: linear-gradient(135deg, #ff9800, #e65100);
-            color: white;
-            border: 3px solid #FFF;
-            padding: 10px 25px;
-            border-radius: 30px;
-            font-size: 18px;
-            font-family: 'Jua', sans-serif;
-            cursor: pointer;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
-            transition: transform 0.2s;
-        }
+        .global-score { background: rgba(255, 255, 255, 0.95); padding: 10px 20px; border-radius: 30px; font-size: 20px; font-weight: bold; color: #1e3c72; box-shadow: 0 4px 10px rgba(0,0,0,0.5); border: 3px solid #FFD700; }
+        .shop-btn { background: linear-gradient(135deg, #ff9800, #e65100); color: white; border: 3px solid #FFF; padding: 10px 25px; border-radius: 30px; font-size: 18px; font-family: 'Jua', sans-serif; cursor: pointer; box-shadow: 0 4px 15px rgba(0,0,0,0.5); transition: transform 0.2s; }
         .shop-btn:hover { transform: scale(1.1); }
-        .help-btn { background: linear-gradient(135deg, #4caf50, #2e7d32); } /* 초록색 도움말 버튼 */
+        .help-btn { background: linear-gradient(135deg, #4caf50, #2e7d32); }
 
-        /* 🌟 실제 게임 맵 영역 */
         .park-map {
-            position: relative;
-            width: 100%;
-            max-width: 1200px;
-            height: 100%;
-            max-height: 650px;
-            background-image: url('bg/bg-lobby.png');
-            background-size: cover;
-            background-position: center;
-            border-radius: 30px;
-            box-shadow: 0 15px 40px rgba(0,0,0,0.6);
-            border: 8px solid rgba(255, 255, 255, 0.2);
-            overflow: hidden;
-            flex-shrink: 1;
+            position: relative; width: 100%; max-width: 1200px; height: 100%; max-height: 650px;
+            background-image: url('bg/bg-lobby.png'); background-size: cover; background-position: center;
+            border-radius: 30px; box-shadow: 0 15px 40px rgba(0,0,0,0.6); border: 8px solid rgba(255, 255, 255, 0.2);
+            overflow: hidden; flex-shrink: 1;
         }
 
-        .game-link {
-            position: absolute;
-            transform: translate(-50%, -50%);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            text-decoration: none;
-            transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            z-index: 10;
-        }
+        .game-link { position: absolute; transform: translate(-50%, -50%); display: flex; flex-direction: column; align-items: center; text-decoration: none; transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275); z-index: 10; }
         .game-link:hover { transform: translate(-50%, -50%) scale(1.15); z-index: 20; }
 
         .float-1 { animation: floatAnim 3s ease-in-out infinite; }
@@ -217,93 +110,63 @@
         .float-4 { animation: floatAnim 3.2s ease-in-out infinite 0.2s; }
         .float-5 { animation: floatAnim 3.6s ease-in-out infinite 0.8s; }
 
-        @keyframes floatAnim {
-            0%, 100% { margin-top: 0; }
-            50% { margin-top: -15px; }
-        }
+        @keyframes floatAnim { 0%, 100% { margin-top: 0; } 50% { margin-top: -15px; } }
 
         .game-icon { font-size: 60px; margin-bottom: 0px; filter: drop-shadow(0 5px 10px rgba(0,0,0,0.6)); }
-
-        .game-title {
-            font-family: 'Jua', sans-serif;
-            font-size: 26px;
-            color: #FFF;
-            text-shadow: -2px -2px 0 #333, 2px -2px 0 #333, -2px 2px 0 #333, 2px 2px 0 #333, 0 5px 10px rgba(0,0,0,0.8);
-            white-space: nowrap;
-            letter-spacing: 1px;
-        }
-
+        .game-title { font-family: 'Jua', sans-serif; font-size: 26px; color: #FFF; text-shadow: -2px -2px 0 #333, 2px -2px 0 #333, -2px 2px 0 #333, 2px 2px 0 #333, 0 5px 10px rgba(0,0,0,0.8); white-space: nowrap; letter-spacing: 1px; }
         .color-ghost { color: #e0b0ff; text-shadow: -2px -2px 0 #4a235a, 2px -2px 0 #4a235a, -2px 2px 0 #4a235a, 2px 2px 0 #4a235a, 0 5px 10px rgba(0,0,0,0.8); }
         .color-frog { color: #a5d6a7; text-shadow: -2px -2px 0 #1b5e20, 2px -2px 0 #1b5e20, -2px 2px 0 #1b5e20, 2px 2px 0 #1b5e20, 0 5px 10px rgba(0,0,0,0.8); }
         .color-sketch { color: #ffe082; text-shadow: -2px -2px 0 #e65100, 2px -2px 0 #e65100, -2px 2px 0 #e65100, 2px 2px 0 #e65100, 0 5px 10px rgba(0,0,0,0.8); }
         .color-combine { color: #81d4fa; text-shadow: -2px -2px 0 #01579b, 2px -2px 0 #01579b, -2px 2px 0 #01579b, 2px 2px 0 #01579b, 0 5px 10px rgba(0,0,0,0.8); }
         .color-boss { color: #ff8a80; text-shadow: -2px -2px 0 #b71c1c, 2px -2px 0 #b71c1c, -2px 2px 0 #b71c1c, 2px 2px 0 #b71c1c, 0 5px 10px rgba(0,0,0,0.8); }
 
-        .enter-badge {
-            margin-top: 5px;
-            background: #ff6b6b;
-            color: white;
-            padding: 4px 15px;
-            border-radius: 20px;
-            font-size: 15px;
-            font-weight: bold;
-            font-family: 'Malgun Gothic', sans-serif;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.5);
-            border: 2px solid white;
-            transition: background 0.3s;
-        }
+        .enter-badge { margin-top: 5px; background: #ff6b6b; color: white; padding: 4px 15px; border-radius: 20px; font-size: 15px; font-weight: bold; font-family: 'Malgun Gothic', sans-serif; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.5); border: 2px solid white; transition: background 0.3s; }
 
-        /* =========================================
-           🌟 3. 사용 방법 (도움말 모달) 스타일
-           ========================================= */
-        #help-modal {
-            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
-            background: rgba(0, 0, 0, 0.7); backdrop-filter: blur(5px);
-            display: none; justify-content: center; align-items: center; z-index: 10000;
-        }
-        .help-content {
-            background: #fff; width: 95%; max-width: 900px; max-height: 85vh;
-            border-radius: 30px; padding: 30px; box-shadow: 0 20px 50px rgba(0,0,0,0.5);
-            overflow-y: auto; text-align: left; position: relative;
-        }
+        /* 도움말 모달 */
+        #help-modal { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0, 0, 0, 0.7); backdrop-filter: blur(5px); display: none; justify-content: center; align-items: center; z-index: 10000; }
+        .help-content { background: #fff; width: 95%; max-width: 900px; max-height: 85vh; border-radius: 30px; padding: 30px; box-shadow: 0 20px 50px rgba(0,0,0,0.5); overflow-y: auto; text-align: left; position: relative; }
         .help-content::-webkit-scrollbar { width: 10px; }
         .help-content::-webkit-scrollbar-thumb { background: #ff9800; border-radius: 10px; }
-        
         .help-title { text-align: center; color: #e91e63; font-size: 36px; margin-top: 0; margin-bottom: 20px; font-family: 'Jua', sans-serif; }
-        
         .help-grid { display: grid; grid-template-columns: 1fr; gap: 15px; }
-        @media (min-width: 768px) { .help-grid { grid-template-columns: 1fr 1fr; } } /* 태블릿 이상 가로 배치 */
-
-        .help-card {
-            background: #fff8e1; border: 4px solid #ffb74d; border-radius: 20px; padding: 15px;
-            display: flex; gap: 15px; align-items: center; box-shadow: 0 5px 10px rgba(0,0,0,0.05);
-            transition: transform 0.2s;
-        }
+        @media (min-width: 768px) { .help-grid { grid-template-columns: 1fr 1fr; } }
+        .help-card { background: #fff8e1; border: 4px solid #ffb74d; border-radius: 20px; padding: 15px; display: flex; gap: 15px; align-items: center; box-shadow: 0 5px 10px rgba(0,0,0,0.05); transition: transform 0.2s; }
         .help-card:hover { transform: translateY(-5px); box-shadow: 0 8px 15px rgba(0,0,0,0.15); background: #ffecb3; }
-        
         .help-emoji { font-size: 50px; flex-shrink: 0; filter: drop-shadow(0 3px 5px rgba(0,0,0,0.2)); }
         .help-text h3 { margin: 0 0 5px 0; color: #d84315; font-size: 22px; font-family: 'Jua', sans-serif; }
         .help-text p { margin: 0; color: #5d4037; font-size: 15px; font-weight: bold; line-height: 1.4; word-break: keep-all; }
         .help-text .edu { color: #2e7d32; font-size: 13px; margin-top: 6px; background: #c8e6c9; display: inline-block; padding: 4px 10px; border-radius: 15px; }
-        
-        .close-help-btn {
-            display: block; margin: 25px auto 0; padding: 12px 40px; font-size: 22px; font-family: 'Jua', sans-serif;
-            background-color: #9e9e9e; color: white; border: none; border-radius: 30px; cursor: pointer; box-shadow: 0 6px 0 #757575; transition: 0.1s;
-        }
+        .close-help-btn { display: block; margin: 25px auto 0; padding: 12px 40px; font-size: 22px; font-family: 'Jua', sans-serif; background-color: #9e9e9e; color: white; border: none; border-radius: 30px; cursor: pointer; box-shadow: 0 6px 0 #757575; transition: 0.1s; }
         .close-help-btn:active { transform: translateY(6px); box-shadow: 0 0 0 #757575; }
+
+        /* 🌟 모바일 자동 크기 조절 (미디어 쿼리) */
+        @media (max-width: 900px) {
+            header { padding: 10px 20px; }
+            .title { font-size: 28px; }
+            .game-icon { font-size: 45px; }
+            .game-title { font-size: 18px; white-space: normal; text-align: center; line-height: 1.2;}
+            .enter-badge { font-size: 12px; padding: 2px 8px; }
+            .shop-btn, .global-score { font-size: 14px; padding: 8px 15px; }
+            .dashboard-btn { font-size: 12px; padding: 6px 10px; top: 10px; right: 10px;}
+        }
     </style>
 </head>
 <body>
 
-    <!-- 🌟 오프닝(대문) 섹션 -->
+    <!-- 🌟 화면 돌림 유도 오버레이 -->
+    <div id="landscape-warning">
+        <div class="icon">📱</div>
+        <h2>화면을 가로로 눕혀주세요!</h2>
+        <p>놀이공원은 가로 모드에서 가장 재미있어요.</p>
+    </div>
+
+    <!-- 오프닝 섹션 -->
     <div id="opening-section">
         <button id="start-btn" class="jelly-btn">✨ 놀이공원 입장하기 ✨</button>
     </div>
 
-    <!-- 🌟 로비(메인 맵) 섹션 -->
+    <!-- 로비 섹션 -->
     <div id="lobby-section">
-        
-        <!-- 🌟 선생님/학부모용 학습 분석 대시보드 진입 버튼 -->
         <a href="dashboard.html" class="dashboard-btn">📊 학습 분석</a>
 
         <header>
@@ -348,7 +211,6 @@
             </a>
         </div>
 
-        <!-- 🌟 하단 컨트롤 패널 -->
         <div class="footer-controls">
             <button class="shop-btn help-btn" onclick="openHelpModal()">❓ 사용 방법</button>
             <div class="global-score">내 보물: <span id="total-coins">0</span> 💎</div>
@@ -356,12 +218,10 @@
         </div>
     </div>
 
-    <!-- 🌟 사용 방법 (도움말 모달) -->
     <div id="help-modal">
         <div class="help-content">
             <h2 class="help-title">🎪 8가지 활동 안내</h2>
             <div class="help-grid">
-                
                 <div class="help-card">
                     <div class="help-emoji">👻</div>
                     <div class="help-text">
@@ -370,7 +230,6 @@
                         <span class="edu">🎯 낱말을 읽고 정확하게 발음하기</span>
                     </div>
                 </div>
-                
                 <div class="help-card">
                     <div class="help-emoji">🔍</div>
                     <div class="help-text">
@@ -379,7 +238,6 @@
                         <span class="edu">🎯 단어를 듣고 뜻 이해하며 단어 실력 기르기</span>
                     </div>
                 </div>
-
                 <div class="help-card">
                     <div class="help-emoji">🐸</div>
                     <div class="help-text">
@@ -388,7 +246,6 @@
                         <span class="edu">🎯 비슷한 모양의 글자를 구별하고 읽기</span>
                     </div>
                 </div>
-
                 <div class="help-card">
                     <div class="help-emoji">✏️</div>
                     <div class="help-text">
@@ -397,7 +254,6 @@
                         <span class="edu">🎯 자음과 모음의 모양을 익히고 바르게 쓰기</span>
                     </div>
                 </div>
-
                 <div class="help-card">
                     <div class="help-emoji">🎨</div>
                     <div class="help-text">
@@ -406,7 +262,6 @@
                         <span class="edu">🎯 원하는 단어를 말하고 직접 쓰기 연습</span>
                     </div>
                 </div>
-
                 <div class="help-card">
                     <div class="help-emoji">🍲</div>
                     <div class="help-text">
@@ -415,7 +270,6 @@
                         <span class="edu">🎯 한글 글자의 조합 원리 이해하기</span>
                     </div>
                 </div>
-
                 <div class="help-card">
                     <div class="help-emoji">🚂</div>
                     <div class="help-text">
@@ -424,7 +278,6 @@
                         <span class="edu">🎯 풍부한 단어 실력 기르기</span>
                     </div>
                 </div>
-
                 <div class="help-card">
                     <div class="help-emoji">🎡</div>
                     <div class="help-text">
@@ -433,14 +286,12 @@
                         <span class="edu">🎯 성취감 획득 및 창의적인 표현력 기르기</span>
                     </div>
                 </div>
-
             </div>
             <button class="close-help-btn" onclick="closeHelpModal()">닫기</button>
         </div>
     </div>
 
     <script>
-        // 전역 BGM 오디오 객체 설정 (루프 재생)
         let bgmAudio = new Audio('source/bg-opening.mp3');
         bgmAudio.loop = true;
         let isBgmPlaying = false;
@@ -449,7 +300,6 @@
             const opening = document.getElementById('opening-section');
             const lobby = document.getElementById('lobby-section');
             
-            // 세션 스토리지를 확인하여 이미 인트로를 보았는지 체크
             if (sessionStorage.getItem('introSeen') === 'true') {
                 opening.style.display = 'none';
                 lobby.style.display = 'flex';
@@ -469,13 +319,11 @@
             }
         });
 
-        // 오프닝 화면에서 '입장하기' 클릭 시 트랜지션
         document.getElementById('start-btn').addEventListener('click', () => {
             const opening = document.getElementById('opening-section');
             const lobby = document.getElementById('lobby-section');
             
             sessionStorage.setItem('introSeen', 'true');
-
             document.getElementById('start-btn').style.display = 'none';
 
             if (!isBgmPlaying) {
@@ -483,11 +331,9 @@
                 isBgmPlaying = true;
             }
 
-            // 오프닝 화면 위로 스윽 사라지는 애니메이션
             opening.style.transform = 'translateY(-100vh)';
             opening.style.opacity = '0';
 
-            // 로비 화면 등장
             setTimeout(() => {
                 opening.style.display = 'none';
                 lobby.style.display = 'flex';
@@ -495,7 +341,6 @@
             }, 1200); 
         });
 
-        // 페이지 데이터 로드
         window.onload = () => {
             let savedCoins = localStorage.getItem('hangeul_park_coins') || '0';
             document.getElementById('total-coins').innerText = savedCoins;
@@ -519,14 +364,8 @@
             });
         };
 
-        // 🌟 사용 방법 모달 제어 스크립트
-        function openHelpModal() {
-            document.getElementById('help-modal').style.display = 'flex';
-        }
-
-        function closeHelpModal() {
-            document.getElementById('help-modal').style.display = 'none';
-        }
+        function openHelpModal() { document.getElementById('help-modal').style.display = 'flex'; }
+        function closeHelpModal() { document.getElementById('help-modal').style.display = 'none'; }
     </script>
 </body>
 </html>
