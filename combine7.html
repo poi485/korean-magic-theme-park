@@ -3,13 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>AI 한글 솥단지 - 태블릿 최적화</title>
+    <title>AI 한글 솥단지 - 스크롤 지원 완벽 최적화</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Jua&display=swap');
 
         body { 
             font-family: 'Jua', 'Malgun Gothic', sans-serif; text-align: center; margin: 0; padding: 0;
-            touch-action: none; min-height: 100vh; min-height: 100dvh; overflow-y: auto; overflow-x: hidden; /* 🌟 높이가 부족할 경우 스크롤 허용 */
+            touch-action: pan-y; /* 🌟 세로 스크롤 허용 */
+            min-height: 100vh; min-height: 100dvh; height: auto; /* 🌟 화면이 내용물에 맞춰 늘어나도록 설정 */
+            overflow-y: auto; overflow-x: hidden; 
             background-image: url('bg/bg-combine.png'); background-size: cover; background-position: center;
             background-attachment: fixed; display: flex; flex-direction: column; align-items: center; box-sizing: border-box;
         }
@@ -21,60 +23,60 @@
         @keyframes rotatePhone { 0% { transform: rotate(0deg); } 50% { transform: rotate(-90deg); } 100% { transform: rotate(-90deg); } }
         @media screen and (orientation: portrait) { #landscape-warning { display: flex !important; } }
         
-        #intro-screen { position: absolute; top: 0; left: 0; width: 100%; height: 100vh; display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 100; background: rgba(0, 0, 0, 0.4); transition: opacity 1s; }
+        #intro-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100vh; display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 100; background: rgba(0, 0, 0, 0.4); transition: opacity 1s; }
         #start-btn { background-color: #9b59b6; color: white; font-size: clamp(24px, 5vw, 32px); font-weight: bold; padding: 15px 40px; border: none; border-radius: 50px; cursor: pointer; box-shadow: 0 8px 0 #71368a; transition: all 0.1s; animation: float 2s infinite ease-in-out; font-family: 'Jua', sans-serif;}
         #start-btn:active { transform: translateY(8px); box-shadow: 0 0px 0 #71368a; }
         #witch-greeting { font-size: clamp(28px, 6vw, 40px); font-weight: bold; color: #fff; text-shadow: 0 4px 10px rgba(0,0,0,0.8); margin-bottom: 40px; display: none; font-family: 'Jua', sans-serif;}
         @keyframes float { 0% { transform: translateY(0px); } 50% { transform: translateY(-15px); } 100% { transform: translateY(0px); } }
 
-        #game-ui { display: none; flex-direction: column; width: 100%; min-height: 100%; padding: 5px 10px; opacity: 0; transition: opacity 1.5s; box-sizing: border-box;}
+        /* 🌟 높이를 100%로 강제 고정하지 않고 내용에 맞춰 늘어나게 수정 */
+        #game-ui { display: none; flex-direction: column; width: 100%; min-height: 100%; height: auto; padding: 10px 10px 40px 10px; opacity: 0; transition: opacity 1.5s; box-sizing: border-box;}
 
-        /* 🌟 반응형 텍스트 및 여백 조절 */
-        .header-area { flex-shrink: 0; display: flex; flex-direction: column; align-items: center; margin-bottom: 5px;}
-        h1 { color: #fff; font-size: clamp(22px, 4vw, 32px); margin: 5px 0 5px 0; text-shadow: 0 4px 10px rgba(0,0,0,0.3); font-family: 'Jua', sans-serif; }
-        .guide { font-size: clamp(14px, 2.5vw, 18px); color: #fff; margin-bottom: 5px; font-weight: bold; text-shadow: 0 2px 5px rgba(0,0,0,0.5); font-family: 'Malgun Gothic', sans-serif; }
+        .header-area { flex-shrink: 0; display: flex; flex-direction: column; align-items: center; margin-bottom: 10px;}
+        h1 { color: #fff; font-size: clamp(24px, 4vw, 36px); margin: 5px 0 5px 0; text-shadow: 0 4px 10px rgba(0,0,0,0.3); font-family: 'Jua', sans-serif; }
+        .guide { font-size: clamp(14px, 2.5vw, 20px); color: #fff; margin-bottom: 5px; font-weight: bold; text-shadow: 0 2px 5px rgba(0,0,0,0.5); font-family: 'Malgun Gothic', sans-serif; }
 
-        #mission-banner { display: none; background: rgba(106, 27, 154, 0.85); color: #fff; font-size: clamp(16px, 3vw, 22px); font-family: 'Jua', sans-serif; padding: 5px 20px; border-radius: 30px; border: 3px dashed #e1bee7; margin: 0 auto 5px auto; box-shadow: 0 5px 15px rgba(0,0,0,0.4); animation: float 3s infinite ease-in-out; }
-        .mission-char { color: #ffeb3b; font-size: clamp(24px, 4.5vw, 32px); text-shadow: 0 2px 5px rgba(0,0,0,0.5); margin: 0 5px; }
+        #mission-banner { display: none; background: rgba(106, 27, 154, 0.85); color: #fff; font-size: clamp(16px, 3vw, 24px); font-family: 'Jua', sans-serif; padding: 5px 25px; border-radius: 30px; border: 3px dashed #e1bee7; margin: 0 auto 10px auto; box-shadow: 0 5px 15px rgba(0,0,0,0.4); animation: float 3s infinite ease-in-out; }
+        .mission-char { color: #ffeb3b; font-size: clamp(24px, 4.5vw, 36px); text-shadow: 0 2px 5px rgba(0,0,0,0.5); margin: 0 5px; }
 
-        .action-btn-top { position: absolute; top: 5px; left: 10px; background: #ff6b6b; color: white; text-decoration: none; padding: 5px 10px; border-radius: 20px; font-size: clamp(12px, 2vw, 16px); font-weight: bold; box-shadow: 0 4px 10px rgba(0,0,0,0.5); z-index: 9999; border: 2px solid white; font-family: 'Jua', sans-serif;}
+        .action-btn-top { position: absolute; top: 10px; left: 10px; background: #ff6b6b; color: white; text-decoration: none; padding: 6px 12px; border-radius: 20px; font-size: clamp(12px, 2vw, 16px); font-weight: bold; box-shadow: 0 4px 10px rgba(0,0,0,0.5); z-index: 9999; border: 2px solid white; font-family: 'Jua', sans-serif;}
 
-        /* 🌟 글자 선택 영역 극단적 압축 */
-        #selection-board { display: flex; justify-content: space-between; width: 100%; max-width: 900px; margin: 0 auto 5px auto; gap: clamp(5px, 1.5vw, 10px); flex-shrink: 0; }
-        .panel { flex: 1; background: rgba(255, 255, 255, 0.85); border-radius: 12px; padding: clamp(5px, 1vw, 10px); box-shadow: 0 5px 10px rgba(0,0,0,0.15); backdrop-filter: blur(5px); }
-        .panel h2 { font-size: clamp(14px, 2.5vw, 18px); margin: 0 0 5px 0; border-bottom: 2px solid #eee; padding-bottom: 3px; font-family: 'Jua', sans-serif;}
+        /* 🌟 글자 선택 영역: 넉넉하게 크기 복구 및 줄어들지 않게 방어 */
+        #selection-board { display: flex; justify-content: space-between; width: 100%; max-width: 1000px; margin: 0 auto 15px auto; gap: clamp(5px, 1.5vw, 15px); flex-shrink: 0; }
+        .panel { flex: 1; background: rgba(255, 255, 255, 0.85); border-radius: 15px; padding: clamp(8px, 1.5vw, 15px); box-shadow: 0 5px 10px rgba(0,0,0,0.15); backdrop-filter: blur(5px); }
+        .panel h2 { font-size: clamp(16px, 2.5vw, 20px); margin: 0 0 8px 0; border-bottom: 2px solid #eee; padding-bottom: 5px; font-family: 'Jua', sans-serif;}
         
-        .grid-box { display: grid; grid-template-columns: repeat(4, 1fr); gap: clamp(3px, 0.5vw, 5px); }
-        .letter-btn { background-color: #f8f9fa; border: 2px solid #ddd; border-radius: 8px; font-size: clamp(14px, 2.5vw, 18px); font-weight: bold; padding: clamp(4px, 1vw, 8px) 0; cursor: pointer; transition: all 0.1s; color: #333; font-family: 'Malgun Gothic', sans-serif;}
+        .grid-box { display: grid; grid-template-columns: repeat(4, 1fr); gap: clamp(4px, 1vw, 8px); }
+        .letter-btn { background-color: #f8f9fa; border: 2px solid #ddd; border-radius: 8px; font-size: clamp(16px, 3.5vw, 24px); font-weight: bold; padding: clamp(6px, 1.5vw, 12px) 0; cursor: pointer; transition: all 0.1s; color: #333; font-family: 'Malgun Gothic', sans-serif;}
         .letter-btn:active { transform: translateY(3px); box-shadow: 0 0px 0 transparent !important; }
 
         .cho-btn { background-color: #e6e6fa; border-color: #d8bfd8; box-shadow: 0 3px 0 #d8bfd8; } 
         .jung-btn { background-color: #ffffe0; border-color: #eee8aa; box-shadow: 0 3px 0 #eee8aa; }   
         .jong-btn { background-color: #e0ffff; border-color: #afeeee; box-shadow: 0 3px 0 #afeeee; }
-        .empty-jong-btn { background-color: #f5f5f5; border-color: #ccc; grid-column: span 4; color: #888; font-size: clamp(12px, 2vw, 15px); box-shadow: 0 3px 0 #ccc; }
+        .empty-jong-btn { background-color: #f5f5f5; border-color: #ccc; grid-column: span 4; color: #888; font-size: clamp(14px, 2.5vw, 18px); box-shadow: 0 3px 0 #ccc; }
 
-        /* 🌟 솥단지 영역 크기 조절 */
+        /* 🌟 솥단지 영역: 최소 높이를 보장하고, 하단에 여백을 주어 스크롤 시 공간 확보 */
         #cauldron-area {
-            background: rgba(255, 255, 255, 0.9); width: 100%; max-width: 700px; margin: 0 auto; padding: 10px;
-            border-radius: 15px; border: 4px dashed #ffb6c1; box-shadow: 0 10px 20px rgba(0,0,0,0.2); backdrop-filter: blur(5px);
-            position: relative; flex: 1; min-height: 180px; display: flex; flex-direction: column; justify-content: center; align-items: center; box-sizing: border-box;
+            background: rgba(255, 255, 255, 0.9); width: 100%; max-width: 800px; margin: 0 auto 30px auto; padding: 20px 10px;
+            border-radius: 20px; border: 4px dashed #ffb6c1; box-shadow: 0 10px 20px rgba(0,0,0,0.2); backdrop-filter: blur(5px);
+            position: relative; flex-shrink: 0; min-height: 250px; display: flex; flex-direction: column; justify-content: center; align-items: center; box-sizing: border-box;
         }
 
-        .slots { display: flex; justify-content: center; align-items: center; font-size: clamp(24px, 5vw, 40px); font-weight: bold; gap: clamp(10px, 2vw, 15px); margin-bottom: 10px; color: #555; width: 100%; }
-        .slot-box { width: clamp(45px, 10vw, 70px); height: clamp(45px, 10vw, 70px); border: 3px solid #eee; border-radius: 10px; display: flex; justify-content: center; align-items: center; background: #fafafa; transition: all 0.2s; font-size: clamp(22px, 4.5vw, 36px); font-family: 'Malgun Gothic', sans-serif;}
+        .slots { display: flex; justify-content: center; align-items: center; font-size: clamp(30px, 6vw, 50px); font-weight: bold; gap: clamp(10px, 3vw, 25px); margin-bottom: 20px; color: #555; width: 100%; }
+        .slot-box { width: clamp(60px, 12vw, 90px); height: clamp(60px, 12vw, 90px); border: 3px solid #eee; border-radius: 15px; display: flex; justify-content: center; align-items: center; background: #fafafa; transition: all 0.2s; font-size: clamp(28px, 5vw, 45px); font-family: 'Malgun Gothic', sans-serif;}
         .highlight { border-color: #ff4500 !important; background-color: #ffe4e1 !important; transform: scale(1.15); box-shadow: 0 0 15px rgba(255, 69, 0, 0.4); color: #ff4500; }
 
-        #mix-gif { display: none; width: clamp(100px, 25vh, 200px); height: auto; margin: 0 auto 5px auto; border-radius: 15px; box-shadow: 0 10px 20px rgba(142, 68, 173, 0.5); animation: popInVideo 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
+        #mix-gif { display: none; width: clamp(120px, 25vh, 250px); height: auto; margin: 0 auto 15px auto; border-radius: 20px; box-shadow: 0 10px 20px rgba(142, 68, 173, 0.5); animation: popInVideo 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
         @keyframes popInVideo { 0% { transform: scale(0.5); opacity: 0; } 80% { transform: scale(1.05); opacity: 1; } 100% { transform: scale(1); opacity: 1; } }
 
-        .action-btn { padding: clamp(8px, 2vw, 12px) clamp(15px, 4vw, 30px); font-size: clamp(16px, 3.5vw, 22px); font-family: 'Jua', sans-serif; color: white; border: none; border-radius: 30px; cursor: pointer; transition: all 0.1s; margin: 0 5px; flex-shrink: 0;}
-        .action-btn:active { transform: translateY(4px); box-shadow: 0 0px 0 transparent !important; }
+        .action-btn { padding: clamp(10px, 2vw, 15px) clamp(20px, 5vw, 40px); font-size: clamp(18px, 4vw, 26px); font-family: 'Jua', sans-serif; color: white; border: none; border-radius: 50px; cursor: pointer; transition: all 0.1s; margin: 0 5px; flex-shrink: 0;}
+        .action-btn:active { transform: translateY(5px); box-shadow: 0 0px 0 transparent !important; }
         #combine-btn { background-color: #ff69b4; box-shadow: 0 6px 0 #c71585; }
         #reset-btn { background-color: #20b2aa; box-shadow: 0 6px 0 #008080; display: none; }
 
-        #result-text { font-size: clamp(50px, 12vw, 90px); font-weight: 900; margin-top: 5px; display: none; cursor: pointer; transition: transform 0.1s; user-select: none; animation: bounceIn 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275); font-family: 'Malgun Gothic', sans-serif; }
+        #result-text { font-size: clamp(70px, 15vw, 120px); font-weight: 900; margin-top: 15px; display: none; cursor: pointer; transition: transform 0.1s; user-select: none; animation: bounceIn 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275); font-family: 'Malgun Gothic', sans-serif; }
         #result-text:active { transform: scale(0.9) !important; }
-        #replay-hint { font-size: clamp(12px, 2.5vw, 16px); font-weight: bold; color: #888; margin-top: 5px; display: none; animation: fadeIn 1s; font-family: 'Malgun Gothic', sans-serif;}
+        #replay-hint { font-size: clamp(14px, 3vw, 18px); font-weight: bold; color: #888; margin-top: 10px; display: none; animation: fadeIn 1s; font-family: 'Malgun Gothic', sans-serif;}
 
         @keyframes bounceIn { 0% { transform: scale(0.3); opacity: 0; } 50% { transform: scale(1.1); } 100% { transform: scale(1); opacity: 1; } }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
@@ -94,12 +96,12 @@
     </div>
 
     <div id="mode-select-modal" style="z-index: 10001; background: rgba(0,0,0,0.8); display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; justify-content: center; align-items: center; flex-direction: column;">
-        <div style="background: #fff; width: 90%; max-width: 500px; padding: 25px; border-radius: 20px; border: 5px solid #9b59b6; box-shadow: 0 10px 30px rgba(0,0,0,0.5);">
+        <div style="background: #fff; width: 90%; max-width: 500px; padding: 30px; border-radius: 25px; border: 5px solid #9b59b6; box-shadow: 0 10px 30px rgba(0,0,0,0.5);">
             <h2 style="font-size: clamp(24px, 5vw, 32px); color: #8e44ad; margin-top: 0; font-family: 'Jua', sans-serif;">🧙‍♀️ 마녀의 특별한 부탁!</h2>
             <p style="font-size: clamp(16px, 3.5vw, 20px); font-weight: bold; color: #333; font-family: 'Malgun Gothic', sans-serif;">아까 헷갈렸던 글자를 다시 만들어볼까요?</p>
             <div style="display: flex; gap: 10px; justify-content: center; margin-top: 20px; flex-wrap: wrap;">
-                <button class="action-btn" style="background-color: #ff9800; box-shadow: 0 4px 0 #e65100; font-size: clamp(14px, 3vw, 18px);" onclick="startMissionMode()">도전할래요! 💪</button>
-                <button class="action-btn" style="background-color: #9e9e9e; box-shadow: 0 4px 0 #757575; font-size: clamp(14px, 3vw, 18px);" onclick="startFreeMode()">자유롭게 할래요 🎨</button>
+                <button class="action-btn" style="background-color: #ff9800; box-shadow: 0 4px 0 #e65100; font-size: clamp(16px, 3.5vw, 20px);" onclick="startMissionMode()">도전할래요! 💪</button>
+                <button class="action-btn" style="background-color: #9e9e9e; box-shadow: 0 4px 0 #757575; font-size: clamp(16px, 3.5vw, 20px);" onclick="startFreeMode()">자유롭게 할래요 🎨</button>
             </div>
         </div>
     </div>
@@ -195,6 +197,11 @@
             if (isAnimating) return; state[type] = letter; document.getElementById(`slot-${type}`).innerText = letter;
             if(type === 'cho') speak(phonicCho[letter]); else if(type === 'jung') speak(phonicJung[letter]); else if(type === 'jong' && letter !== '') speak(phonicJong[letter]); else if(type === 'jong' && letter === '') speak('없음');
             document.getElementById('result-text').style.display = 'none'; document.getElementById('replay-hint').style.display = 'none'; document.getElementById('reset-btn').style.display = 'none'; document.getElementById('combine-btn').style.display = 'inline-block';
+            
+            // 버튼 클릭 시 솥단지가 있는 하단으로 자연스럽게 스크롤
+            if(state.cho && state.jung) {
+                document.getElementById('cauldron-area').scrollIntoView({behavior: "smooth", block: "center"});
+            }
         }
 
         document.getElementById('combine-btn').addEventListener('click', () => {
@@ -220,6 +227,9 @@
                 else { speak("앗, " + finalChar + "가 만들어졌어요.", true); resultBox.style.color = "#ff4500"; replayHint.innerText = `😅 앗! '${finalChar}'(이)가 되었어요. 다시 '${currentMissionChar}'(을)를 만들어볼까요?`; replayHint.style.color = "#ff4500"; logWeakWord(finalChar); }
             } else { speak(finalChar, true); resultBox.style.color = "#ff4500"; replayHint.innerText = "👆 글자를 누르면 다시 들을 수 있어요!"; replayHint.style.color = "#888"; saveReward(5, 'game_combine'); }
             isAnimating = false; document.getElementById('reset-btn').style.display = 'inline-block';
+            
+            // 결과가 나오면 맨 밑으로 확실하게 스크롤
+            window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
         }
 
         document.getElementById('result-text').addEventListener('click', function() { if (this.innerText) speak(this.innerText, true); });
@@ -227,6 +237,9 @@
         document.getElementById('reset-btn').addEventListener('click', () => {
             state = { cho: "", jung: "", jong: "" }; document.getElementById('slot-cho').innerText = ""; document.getElementById('slot-jung').innerText = ""; document.getElementById('slot-jong').innerText = ""; document.getElementById('result-text').style.display = 'none'; document.getElementById('replay-hint').style.display = 'none'; document.getElementById('reset-btn').style.display = 'none'; document.getElementById('combine-btn').style.display = 'inline-block';
             if (!currentMissionChar) { startFreeMode(); } speak("새로 만들어볼까요?", true);
+            
+            // 다시 만들기를 누르면 맨 위로 스크롤
+            window.scrollTo({ top: 0, behavior: 'smooth' });
         });
 
         function saveReward(earnedCoins, gameId) { let currentCoins = parseInt(localStorage.getItem('hangeul_park_coins') || '0'); localStorage.setItem('hangeul_park_coins', currentCoins + earnedCoins); let clearedGames = JSON.parse(localStorage.getItem('hangeul_park_cleared') || '{}'); let currentCount = clearedGames[gameId]; if (typeof currentCount !== 'number') currentCount = 0; clearedGames[gameId] = currentCount + 1; localStorage.setItem('hangeul_park_cleared', JSON.stringify(clearedGames)); }

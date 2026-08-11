@@ -3,14 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>AI 퐁당퐁당 징검다리 - 모바일 스크롤 방지 완벽 적용</title>
+    <title>AI 퐁당퐁당 징검다리 - 화면 찌부러짐 완벽 해결본</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Jua&display=swap');
 
         body { 
             font-family: 'Jua', 'Malgun Gothic', sans-serif; text-align: center; margin: 0; padding: 0; 
-            touch-action: none; user-select: none; 
-            min-height: 100vh; min-height: 100dvh; overflow: hidden; /* 🌟 전체 스크롤 차단 */
+            touch-action: pan-y; /* 🌟 세로 스크롤 허용 */
+            min-height: 100vh; min-height: 100dvh; 
+            overflow-y: auto; overflow-x: hidden; /* 🌟 화면이 부족하면 자연스럽게 스크롤 되도록 변경 */
             background-image: url('bg/bg-frog.png'); background-size: cover; background-position: center;
             background-attachment: fixed; background-color: #e0f7fa; display: flex; flex-direction: column;
         }
@@ -33,7 +34,8 @@
 
         @keyframes float { 0%, 100% { transform: translateY(0px); } 50% { transform: translateY(-15px); } }
 
-        #game-ui { display: none; flex-direction: column; align-items: center; width: 100%; height: 100%; padding: 10px; box-sizing: border-box; opacity: 0; transition: opacity 1.5s; position: relative; }
+        /* 🌟 높이를 100%로 억제하지 않고, 내용물에 맞춰 늘어나게 flex: 1 적용 */
+        #game-ui { display: none; flex-direction: column; align-items: center; width: 100%; flex: 1; padding: 10px; box-sizing: border-box; opacity: 0; transition: opacity 1.5s; position: relative; margin-bottom: 20px;}
         
         .action-btn-top { position: absolute; top: 5px; left: 10px; background: #ff6b6b; color: white; text-decoration: none; padding: 6px 12px; border-radius: 20px; font-weight: bold; font-size: clamp(12px, 2.5vw, 16px); box-shadow: 0 4px 10px rgba(0,0,0,0.2); z-index: 9999; border: 2px solid white; font-family: 'Jua', sans-serif;}
 
@@ -44,21 +46,27 @@
         #main-action-btn { padding: 6px 20px; font-size: clamp(16px, 3.5vw, 20px); font-family: 'Jua', sans-serif; background-color: #ffca28; color: #d84315; border: 3px solid #ff9800; border-radius: 30px; cursor: pointer; box-shadow: 0 4px 0 #ff9800, 0 8px 12px rgba(0,0,0,0.2); margin-bottom: 5px; transition: all 0.2s; flex-shrink: 0;}
         #main-action-btn:active { transform: translateY(4px); box-shadow: 0 0 0 #ff9800, 0 3px 5px rgba(0,0,0,0.2); }
 
-        #river-area { position: relative; max-width: 800px; width: 100%; flex: 1; margin: 0 auto; background: linear-gradient(180deg, rgba(129, 212, 250, 0.8) 0%, rgba(0, 188, 212, 0.9) 100%); border-radius: 20px; border: 4px solid rgba(255, 255, 255, 0.5); box-shadow: inset 0 10px 20px rgba(0,0,0,0.3), 0 10px 20px rgba(0,0,0,0.3); overflow: hidden; backdrop-filter: blur(5px); box-sizing: border-box;}
+        /* 🌟 강물 영역: min-height: 480px 를 주어 4줄이 무조건 겹치지 않게 여유 공간 확보! */
+        #river-area { 
+            position: relative; max-width: 800px; width: 100%; flex: 1; 
+            min-height: 480px; /* 🌟 찌부러짐의 원흉 제거: 무조건 480px 이상의 높이 보장 */
+            margin: 0 auto; background: linear-gradient(180deg, rgba(129, 212, 250, 0.8) 0%, rgba(0, 188, 212, 0.9) 100%); 
+            border-radius: 20px; border: 4px solid rgba(255, 255, 255, 0.5); box-shadow: inset 0 10px 20px rgba(0,0,0,0.3), 0 10px 20px rgba(0,0,0,0.3); overflow: hidden; backdrop-filter: blur(5px); box-sizing: border-box;
+        }
 
         #world { display: flex; flex-direction: column-reverse; width: 100%; position: absolute; bottom: 0; left: 0; transition: transform 0.6s cubic-bezier(0.25, 0.8, 0.25, 1); }
 
-        /* 🌟 연잎(로우) 높이를 모바일 화면 크기에 맞춰 반응형으로 설정 */
-        .row { display: flex; justify-content: space-evenly; align-items: center; height: clamp(70px, 15vh, 120px); width: 100%; }
+        /* 🌟 JS가 이 row의 높이를 정확히 계산하여 픽셀(px)로 덮어씌울 것입니다. */
+        .row { display: flex; justify-content: space-evenly; align-items: center; width: 100%; flex-shrink: 0;}
 
         .start-rock { width: clamp(100px, 20vw, 150px); height: clamp(50px, 10vh, 80px); background: radial-gradient(circle at 30% 30%, #95a5a6, #555); border: 4px solid #333; border-radius: 50%; box-shadow: 0 6px 0 #333, 0 10px 15px rgba(0,0,0,0.5); display: flex; justify-content: center; align-items: center; color: white; font-size: clamp(16px, 3.5vw, 24px); text-shadow: 1px 1px 0 #000; }
         .finish-land { width: 80%; height: clamp(60px, 12vh, 90px); background: linear-gradient(180deg, #aed581, #558b2f); border: 4px solid #33691e; border-radius: 20px; box-shadow: 0 6px 0 #33691e, 0 10px 15px rgba(0,0,0,0.5); display: flex; justify-content: center; align-items: center; color: white; font-size: clamp(24px, 5vw, 36px); font-weight: bold; text-shadow: 2px 2px 0 #1b5e20; margin: 0 auto; }
 
-        .leaf-btn { background: linear-gradient(145deg, #66bb6a, #43a047); border: 3px solid #1b5e20; border-radius: 50% 50% 50% 10px; width: clamp(80px, 18vw, 120px); height: clamp(45px, 10vh, 70px); font-size: clamp(14px, 3vw, 22px); color: white; cursor: pointer; box-shadow: 0 4px 0 #1b5e20, 0 6px 10px rgba(0,0,0,0.4); display: flex; justify-content: center; align-items: center; transition: transform 0.1s, box-shadow 0.1s, filter 0.3s; text-shadow: 2px 2px 0 #1b5e20; }
+        .leaf-btn { background: linear-gradient(145deg, #66bb6a, #43a047); border: 3px solid #1b5e20; border-radius: 50% 50% 50% 10px; width: clamp(80px, 18vw, 130px); height: clamp(45px, 8vh, 70px); font-size: clamp(14px, 3vw, 22px); color: white; cursor: pointer; box-shadow: 0 4px 0 #1b5e20, 0 6px 10px rgba(0,0,0,0.4); display: flex; justify-content: center; align-items: center; transition: transform 0.1s, box-shadow 0.1s, filter 0.3s; text-shadow: 2px 2px 0 #1b5e20; position: relative;}
         .leaf-btn:active { transform: translateY(4px); box-shadow: 0 0px 0 #1b5e20, 0 3px 5px rgba(0,0,0,0.4); }
         .inactive-row .leaf-btn { filter: grayscale(30%) brightness(80%) opacity(0.8); cursor: not-allowed; transform: scale(0.95); box-shadow: 0 3px 0 #1b5e20, 0 4px 5px rgba(0,0,0,0.2); }
 
-        #animal-wrapper { position: absolute; bottom: 15px; left: 50%; transform: translateX(-50%); transition: bottom 0.5s ease-out, left 0.5s ease-in-out; z-index: 10; }
+        #animal-wrapper { position: absolute; left: 50%; transform: translateX(-50%); transition: bottom 0.5s ease-out, left 0.5s ease-in-out; z-index: 10; }
         #animal { font-size: clamp(40px, 8vh, 70px); transition: transform 0.3s; filter: drop-shadow(0 6px 8px rgba(0,0,0,0.4)); animation: breathe 2s infinite ease-in-out; }
 
         @keyframes breathe { 0%, 100% { transform: scale(1) translateY(0); } 50% { transform: scale(1.05) translateY(-5px); } }
@@ -154,23 +162,43 @@
         function speak(text, rate = 0.85) { window.speechSynthesis.cancel(); const utterThis = new SpeechSynthesisUtterance(text); utterThis.lang = 'ko-KR'; utterThis.rate = rate; utterThis.pitch = 1.1; if (targetVoice) utterThis.voice = targetVoice; window.speechSynthesis.speak(utterThis); }
         function shuffleArray(array) { for (let i = array.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [array[i], array[j]] = [array[j], array[i]]; } return array; }
 
+        // 🌟 강물 크기를 정확히 4등분하여 모든 줄의 높이를 똑같이 맞춥니다.
         function getDynamicRowHeight() {
-            const world = document.getElementById('world');
-            return world.clientHeight / 4; // 화면에 약 4칸이 보이도록 비율 계산
+            const river = document.getElementById('river-area');
+            return river.clientHeight / 4; 
         }
 
-        function createRow(index) {
-            const rowDiv = document.createElement('div'); rowDiv.className = 'row'; rowDiv.id = 'row-' + index;
-            if (index === 0) { rowDiv.style.justifyContent = 'center'; const rock = document.createElement('div'); rock.className = 'start-rock'; rock.innerText = "출발!"; rowDiv.appendChild(rock); rowData[index] = null; } 
-            else if (index === MAX_STAGE + 1) { rowDiv.style.justifyContent = 'center'; const land = document.createElement('div'); land.className = 'finish-land'; land.innerText = "🚩 도착!"; rowDiv.appendChild(land); rowData[index] = null; }
+        function createRow(index, dynHeight) {
+            const rowDiv = document.createElement('div'); 
+            rowDiv.className = 'row'; 
+            rowDiv.id = 'row-' + index;
+            rowDiv.style.height = dynHeight + 'px'; // 🌟 높이 고정 주입!
+
+            if (index === 0) { 
+                rowDiv.style.justifyContent = 'center'; 
+                const rock = document.createElement('div'); rock.className = 'start-rock'; rock.innerText = "출발!"; 
+                rowDiv.appendChild(rock); rowData[index] = null; 
+            } 
+            else if (index === MAX_STAGE + 1) { 
+                rowDiv.style.justifyContent = 'center'; 
+                const land = document.createElement('div'); land.className = 'finish-land'; land.innerText = "🚩 도착!"; 
+                rowDiv.appendChild(land); rowData[index] = null; 
+            }
             else {
                 const qData = currentSessionWords[index - 1]; const numLeaves = Math.floor(Math.random() * 3) + 2; 
                 let leaves = [qData.answer]; if (numLeaves >= 2) leaves.push(qData.distractor); if (numLeaves >= 3) leaves.push(qData.onsetDistractor);
                 if (numLeaves === 4) { let randomWord; do { randomWord = allWordSets[Math.floor(Math.random() * allWordSets.length)].answer; } while (leaves.includes(randomWord)); leaves.push(randomWord); }
                 leaves = shuffleArray(leaves); rowData[index] = { answer: qData.answer };
+                
                 if (index > currentRowIndex + 1) { rowDiv.classList.add('inactive-row'); }
                 rowDiv.style.justifyContent = 'space-evenly';
-                leaves.forEach((word, leafPos) => { const btn = document.createElement('div'); btn.className = 'leaf-btn'; const rot = (Math.random() * 16 - 8).toFixed(1); btn.style.transform = `rotate(${rot}deg)`; btn.innerText = word; btn.onclick = () => handleLeafClick(word, leafPos, index, btn, numLeaves); rowDiv.appendChild(btn); });
+                
+                leaves.forEach((word, leafPos) => { 
+                    const btn = document.createElement('div'); btn.className = 'leaf-btn'; 
+                    const rot = (Math.random() * 16 - 8).toFixed(1); btn.style.transform = `rotate(${rot}deg)`; btn.innerText = word; 
+                    btn.onclick = () => handleLeafClick(word, leafPos, index, btn); 
+                    rowDiv.appendChild(btn); 
+                });
             }
             return rowDiv;
         }
@@ -190,42 +218,83 @@
             const world = document.getElementById('world');
             Array.from(world.children).forEach(child => { if(child.id !== 'animal-wrapper') world.removeChild(child); });
             rowData = []; currentRowIndex = 0;
-            for (let i = 0; i < 4; i++) { world.appendChild(createRow(i)); }
+            
+            // 🌟 강물 높이 계산 후 모든(12개) 징검다리를 한 번에 깔아서 위쪽 빈 공간 방지!
+            const dynHeight = getDynamicRowHeight();
+            for (let i = 0; i <= MAX_STAGE + 1; i++) { 
+                world.appendChild(createRow(i, dynHeight)); 
+            }
 
-            const wrapper = document.getElementById('animal-wrapper'); wrapper.style.bottom = '15px'; wrapper.style.left = '50%'; document.getElementById('animal').classList.remove('fall-water'); world.style.transform = `translateY(0px)`;
-            document.getElementById('feedback-text').innerText = '준비, 출발!'; setTimeout(() => { document.getElementById('feedback-text').innerText = ''; }, 1000);
-            setTimeout(() => { readCurrentQuestion(); }, 800);
+            setTimeout(() => {
+                const wrapper = document.getElementById('animal-wrapper'); 
+                wrapper.style.bottom = (dynHeight * 0.25) + 'px'; 
+                wrapper.style.left = '50%'; 
+                document.getElementById('animal').classList.remove('fall-water'); 
+                world.style.transform = `translateY(0px)`;
+                
+                document.getElementById('feedback-text').innerText = '준비, 출발!'; 
+                setTimeout(() => { document.getElementById('feedback-text').innerText = ''; }, 1000);
+                setTimeout(() => { readCurrentQuestion(); }, 800);
+            }, 50);
         }
 
         function readCurrentQuestion() { if (currentRowIndex < MAX_STAGE) { speak(rowData[currentRowIndex + 1].answer); } }
 
-        function handleLeafClick(selectedWord, leafPos, rowIndex, btnElement, numLeaves) {
+        function handleLeafClick(selectedWord, leafPos, rowIndex, btnElement) {
             if (gameState !== 'playing' || rowIndex !== currentRowIndex + 1 || isJumping) return;
-            isJumping = true; const wrapper = document.getElementById('animal-wrapper'); const animal = document.getElementById('animal'); const feedback = document.getElementById('feedback-text'); const targetData = rowData[rowIndex]; const targetLeftPercent = (100 / (numLeaves + 1)) * (leafPos + 1);
+            isJumping = true; 
+            const wrapper = document.getElementById('animal-wrapper'); 
+            const animal = document.getElementById('animal'); 
+            const feedback = document.getElementById('feedback-text'); 
+            const targetData = rowData[rowIndex]; 
             
             const dynHeight = getDynamicRowHeight();
+            
+            // 🌟 연잎의 실제 위치(픽셀)를 계산하고, 퍼센트로 변환하여 화면 크기 변경 시에도 중앙 유지!
+            const parentWidth = btnElement.parentElement.offsetWidth;
+            const targetLeftPx = btnElement.offsetLeft + (btnElement.offsetWidth / 2);
+            const targetLeftPercent = (targetLeftPx / parentWidth) * 100;
 
             if (selectedWord === targetData.answer) {
                 feedback.innerText = `🎉 ${rowIndex}단계 통과!`; feedback.style.color = "#ffeb3b";
-                currentSafeLeft = targetLeftPercent + '%'; wrapper.style.bottom = (rowIndex * dynHeight + 15) + 'px'; wrapper.style.left = currentSafeLeft; 
+                
+                currentSafeLeft = targetLeftPercent + '%';
+                wrapper.style.bottom = (rowIndex * dynHeight + (dynHeight * 0.25)) + 'px'; 
+                wrapper.style.left = currentSafeLeft; 
                 playJumpSound();
 
                 setTimeout(() => {
                     currentRowIndex++;
-                    document.getElementById('world').style.transform = `translateY(${currentRowIndex * dynHeight}px)`;
-                    const nextRow = document.getElementById('row-' + (currentRowIndex + 1)); if(nextRow) nextRow.classList.remove('inactive-row');
-                    if (currentRowIndex + 3 <= MAX_STAGE + 1) { document.getElementById('world').appendChild(createRow(currentRowIndex + 3)); }
+                    
+                    // 🌟 맵을 바닥으로 쳐박지 않고, 항상 아래쪽 여유 공간 확보 (화면 1칸 아래로 내림)
+                    const shiftY = Math.max(0, currentRowIndex - 1) * dynHeight;
+                    document.getElementById('world').style.transform = `translateY(${shiftY}px)`;
+                    
+                    const nextRow = document.getElementById('row-' + (currentRowIndex + 1)); 
+                    if(nextRow) nextRow.classList.remove('inactive-row');
+                    
                     if (currentRowIndex === MAX_STAGE) {
                         setTimeout(() => {
-                            isJumping = true; playJumpSound(); wrapper.style.bottom = ((MAX_STAGE + 1) * dynHeight) + 'px'; wrapper.style.left = '50%'; 
+                            isJumping = true; playJumpSound(); 
+                            wrapper.style.bottom = ((MAX_STAGE + 1) * dynHeight + (dynHeight * 0.25)) + 'px'; 
+                            wrapper.style.left = '50%'; 
+                            const finalShiftY = Math.max(0, MAX_STAGE - 1) * dynHeight;
+                            document.getElementById('world').style.transform = `translateY(${finalShiftY}px)`;
                             setTimeout(() => { gameState = 'clear'; isJumping = false; document.getElementById('clear-overlay').style.display = 'flex'; speak("축하합니다! 동물원 도착!"); saveReward(10, 'game_frog'); }, 600);
                         }, 800);
-                    } else { feedback.innerText = ""; isJumping = false; setTimeout(() => { readCurrentQuestion(); }, 500); }
+                    } else { 
+                        feedback.innerText = ""; isJumping = false; setTimeout(() => { readCurrentQuestion(); }, 500); 
+                    }
                 }, 600); 
 
             } else {
                 gameState = 'gameover'; const failedWordData = currentSessionWords[rowIndex - 1]; logWeakWord(failedWordData);
-                wrapper.style.bottom = (rowIndex * dynHeight + 15) + 'px'; wrapper.style.left = targetLeftPercent + '%'; playJumpSound();
+                
+                // 🌟 오답일 때는 안전 좌표(currentSafeLeft)를 덮어쓰지 않고 타겟 위치로 점프만!
+                wrapper.style.bottom = (rowIndex * dynHeight + (dynHeight * 0.25)) + 'px'; 
+                wrapper.style.left = targetLeftPercent + '%'; 
+                playJumpSound();
+                
                 setTimeout(() => {
                     animal.classList.add('fall-water'); btnElement.classList.add('fall-water'); playSplashSound(); speak("앗, 물에 빠졌어요.");
                     setTimeout(() => { document.getElementById('score-text').innerText = currentRowIndex; document.getElementById('gameover-overlay').style.display = 'flex'; isJumping = false; }, 1000);
@@ -236,10 +305,15 @@
         function continueGame() {
             document.getElementById('gameover-overlay').style.display = 'none'; const wrapper = document.getElementById('animal-wrapper'); const animal = document.getElementById('animal');
             document.querySelectorAll('.leaf-btn').forEach(btn => btn.classList.remove('fall-water')); animal.classList.remove('fall-water');
+            
             const dynHeight = getDynamicRowHeight();
-            wrapper.style.bottom = (currentRowIndex * dynHeight + 15) + 'px'; wrapper.style.left = currentSafeLeft;
+            
+            // 🌟 기억해둔 올바른 위치(currentSafeLeft)와 이전 줄(currentRowIndex)로 정확하게 복귀!
+            wrapper.style.bottom = (currentRowIndex * dynHeight + (dynHeight * 0.25)) + 'px'; 
+            wrapper.style.left = currentSafeLeft;
             isJumping = false; gameState = 'playing';
-            const feedback = document.getElementById('feedback-text'); feedback.innerText = '힘내요! 다시 들어봐요!'; feedback.style.color = '#ffeb3b'; setTimeout(() => { readCurrentQuestion(); }, 800);
+            
+            const feedback = document.getElementById('feedback-text'); feedback.innerText = '원래 자리로 뿅! 다시 들어봐요!'; feedback.style.color = '#ffeb3b'; setTimeout(() => { readCurrentQuestion(); }, 800);
         }
 
         function resetGame() {
@@ -248,6 +322,27 @@
         }
 
         function saveReward(earnedCoins, gameId) { let currentCoins = parseInt(localStorage.getItem('hangeul_park_coins') || '0'); localStorage.setItem('hangeul_park_coins', currentCoins + earnedCoins); let clearedGames = JSON.parse(localStorage.getItem('hangeul_park_cleared') || '{}'); let currentCount = clearedGames[gameId]; if (typeof currentCount !== 'number') currentCount = 0; clearedGames[gameId] = currentCount + 1; localStorage.setItem('hangeul_park_cleared', JSON.stringify(clearedGames)); }
+        
+        // 🌟 창 크기가 변할 때(회전 등) 모든 높이와 개구리 위치를 다시 계산하여 정렬
+        window.addEventListener('resize', () => {
+            if (gameState === 'playing' || gameState === 'gameover' || gameState === 'clear') {
+                const dynHeight = getDynamicRowHeight();
+                document.querySelectorAll('.row').forEach(row => { row.style.height = dynHeight + 'px'; });
+                
+                const shiftY = Math.max(0, currentRowIndex - 1) * dynHeight;
+                document.getElementById('world').style.transform = `translateY(${shiftY}px)`;
+                
+                const wrapper = document.getElementById('animal-wrapper');
+                
+                if (gameState === 'clear') {
+                    wrapper.style.bottom = ((MAX_STAGE + 1) * dynHeight + (dynHeight * 0.25)) + 'px';
+                } else if (gameState === 'gameover') {
+                    wrapper.style.bottom = ((currentRowIndex + 1) * dynHeight + (dynHeight * 0.25)) + 'px';
+                } else {
+                    wrapper.style.bottom = (currentRowIndex * dynHeight + (dynHeight * 0.25)) + 'px';
+                }
+            }
+        });
     </script>
 </body>
 </html>
