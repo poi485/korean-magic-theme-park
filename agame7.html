@@ -3,19 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>깜깜한 유령의 집 - 모바일 완벽 최적화</title>
+    <title>깜깜한 유령의 집 - 반응형 완벽 보완</title>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
         
         body { 
             font-family: 'Malgun Gothic', '맑은 고딕', sans-serif; color: white; margin: 0; padding: 0; touch-action: none; 
-            min-height: 100vh; min-height: 100dvh; /* 🌟 모바일 하단바 제외 실제 높이 적용 */
-            overflow-y: auto; overflow-x: hidden; /* 🌟 높이가 부족할 경우 스크롤 허용 */
+            min-height: 100vh; min-height: 100dvh;
+            overflow-y: auto; overflow-x: hidden;
             background-image: url('bg/bg-gh.png'); background-size: cover; background-position: center; background-attachment: fixed; background-color: #12091c;
             display: flex; flex-direction: column;
         }
 
-        /* 🌟 세로 모드 경고창 (가로 유도) */
         #landscape-warning {
             display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: #12091c; z-index: 999999;
             flex-direction: column; justify-content: center; align-items: center; color: white; text-align: center;
@@ -34,7 +33,7 @@
         #game-ui { display: none; flex-direction: column; align-items: center; justify-content: flex-start; height: 100%; padding: 10px; width: 100%; opacity: 0; transition: opacity 1.5s; box-sizing: border-box; position: relative;}
 
         .header-area { display: flex; flex-direction: column; align-items: center; width: 100%; margin-bottom: 5px; flex-shrink: 0; position: relative;}
-        h1 { color: #e67e22; font-size: clamp(22px, 4vw, 32px); margin: 0 0 5px 0; text-shadow: 0 4px 15px rgba(230, 126, 34, 0.9); }
+        h1 { color: #e67e22; font-size: clamp(20px, 4vw, 32px); margin: 0 0 5px 0; text-shadow: 0 4px 15px rgba(230, 126, 34, 0.9); }
         .guide-box { background-color: rgba(0, 0, 0, 0.6); padding: 5px 15px; border-radius: 10px; text-align: center; border: 2px dashed #8e44ad; }
         .guide { font-size: clamp(12px, 2.5vw, 16px); color: #dfe6e9; font-weight: bold; line-height: 1.3; }
         .guide span { display: block; }
@@ -45,13 +44,14 @@
         .score-bounce { animation: popBounce 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
 
         #game-container {
-            position: relative; width: 100%; max-width: 800px; 
-            max-height: 60vh; /* 🌟 높이 제한: 너무 커져서 잘리는 현상 방지 */
-            flex: 1; /* 남은 화면 꽉 채우기 */
+            position: relative; 
+            width: 100%; max-width: 800px; 
+            /* 🌟 남은 세로 공간을 꽉 채우되, 너무 길어지지 않게 비율 유지 */
+            height: 100%; max-height: calc(100vh - 150px); min-height: 300px;
             background: rgba(10, 5, 15, 0.85); border: 4px solid #4a235a; border-radius: 15px;
             box-shadow: 0 15px 30px rgba(0,0,0,0.9), inset 0 0 50px rgba(0,0,0,0.9); overflow: hidden;
             display: flex; justify-content: center; align-items: center; backdrop-filter: blur(8px);
-            margin-bottom: 20px;
+            margin-bottom: 20px; padding: 5px; 
         }
 
         #start-screen { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: radial-gradient(circle at 50% 50%, rgba(74, 35, 90, 0.9) 0%, rgba(10, 5, 15, 0.95) 100%); z-index: 50; display: flex; flex-direction: column; align-items: center; justify-content: center; }
@@ -59,38 +59,46 @@
         .level-btn { width: 80%; max-width: 250px; padding: 12px 0; margin: 6px 0; font-size: clamp(16px, 3.5vw, 22px); font-weight: bold; color: white; background: #8e44ad; border: 3px solid #9b59b6; border-radius: 30px; cursor: pointer; box-shadow: 0 6px 10px rgba(0,0,0,0.3); transition: 0.2s; }
         .level-btn:active { transform: scale(0.95); }
 
-        /* 🌟 미로 그리드 - 모바일 세로/가로 비율 완벽 대응 */
+        /* 🌟 미로 그리드 - 부모 요소에 꽉 차는 정사각형 비율 */
         #maze-grid {
-            display: grid; gap: 2px; width: 95%; height: 95%; 
-            max-width: 100%; max-height: 100%; aspect-ratio: 1 / 1; /* 가로세로 동일 비율 유지 */
+            display: grid; gap: 2px; 
+            width: 100%; height: 100%; 
+            aspect-ratio: 1 / 1; 
+            max-width: 100%; max-height: 100%; 
             margin: auto; 
         }
 
-        .cell { border-radius: 6px; display: flex; justify-content: center; align-items: center; transition: background-color 0.4s, filter 0.4s; }
+        .cell { 
+            border-radius: 6px; display: flex; justify-content: center; align-items: center; 
+            transition: background-color 0.4s, filter 0.4s; overflow: hidden; position: relative;
+        }
+        
         .visited.path { background-color: rgba(91, 44, 111, 0.7); box-shadow: inset 0 0 10px rgba(255, 255, 255, 0.1); border: 2px solid #8e44ad; cursor: pointer; }
         .visited.exit { background-color: rgba(91, 44, 111, 0.7); border: 2px solid #8e44ad; cursor: pointer; }
         .fog { filter: brightness(0.4) sepia(0.5) hue-rotate(250deg); border: 1px solid #2d1838; cursor: pointer; }
         .fog.wall { background-color: rgba(30, 15, 38, 0.8); background-image: repeating-linear-gradient(45deg, transparent, transparent 8px, rgba(0,0,0,0.5) 8px, rgba(0,0,0,0.5) 16px); }
         .fog.path { background-color: rgba(62, 27, 77, 0.8); box-shadow: 0 0 20px rgba(0,0,0,0.8) inset; }
-        .fog .monster-icon { animation: float 2s infinite, spookyGlow 3s infinite alternate; filter: drop-shadow(0 0 5px rgba(230, 126, 34, 0.5)); }
+        
+        /* 🌟 이모지 애니메이션 및 효과 */
+        .fog .monster-icon { animation: float 2s infinite, spookyGlow 3s infinite alternate; filter: drop-shadow(0 0 5px rgba(230, 126, 34, 0.5)); line-height: 1;}
         .darkness { background-color: rgba(5, 2, 8, 0.95) !important; border: 1px solid #050208 !important; cursor: default; }
         .darkness * { display: none; } 
 
-        #player { animation: popBounce 0.4s; z-index: 5; filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.8)); }
-        .exit-icon { filter: drop-shadow(0 0 15px #2ecc71); animation: pulseExit 1.5s infinite alternate; }
+        #player { animation: popBounce 0.4s; z-index: 5; filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.8)); line-height: 1; }
+        .exit-icon { filter: drop-shadow(0 0 15px #2ecc71); animation: pulseExit 1.5s infinite alternate; line-height: 1;}
 
         /* 전투 화면 오버레이 */
         #combat-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(10, 5, 15, 0.95); z-index: 20; display: none; flex-direction: column; align-items: center; justify-content: center; border-radius: 12px; }
-        #combat-feedback { font-size: clamp(18px, 4vw, 26px); font-weight: bold; color: #2ecc71; margin-bottom: 15px; text-shadow: 0 2px 5px rgba(0,0,0,0.5); text-align: center; }
-        #combat-monster { font-size: clamp(60px, 15vw, 80px); cursor: pointer; transition: transform 0.2s; filter: drop-shadow(0 0 30px rgba(230, 126, 34, 0.4)); }
+        #combat-feedback { font-size: clamp(16px, 4vw, 26px); font-weight: bold; color: #2ecc71; margin-bottom: 15px; text-shadow: 0 2px 5px rgba(0,0,0,0.5); text-align: center; }
+        #combat-monster { font-size: clamp(50px, 12vw, 80px); cursor: pointer; transition: transform 0.2s; filter: drop-shadow(0 0 30px rgba(230, 126, 34, 0.4)); }
         #combat-monster:active { transform: scale(0.9); }
         #combat-mic-area { margin-top: 15px; display: flex; flex-direction: column; align-items: center; opacity: 0.5; pointer-events: none; transition: opacity 0.3s; }
         #combat-mic-btn { font-size: clamp(24px, 6vw, 35px); width: clamp(50px, 12vw, 70px); height: clamp(50px, 12vw, 70px); border-radius: 50%; background-color: #d35400; border: 4px solid #e67e22; cursor: pointer; display: flex; justify-content: center; align-items: center; }
         .recording { animation: pulseMic 1s infinite alternate; }
-        #combat-stt-result { margin-top: 8px; font-size: clamp(16px, 3.5vw, 22px); font-weight: bold; color: #f1c40f; min-height: 25px; text-align: center;}
+        #combat-stt-result { margin-top: 8px; font-size: clamp(14px, 3.5vw, 22px); font-weight: bold; color: #f1c40f; min-height: 25px; text-align: center;}
 
         #combat-stone-area { display: flex; gap: 8px; margin-top: 10px; visibility: hidden; opacity: 0; transition: opacity 0.5s; flex-wrap: wrap; justify-content: center;}
-        .stone { background: #fdf5e6; border: 3px solid #d35400; width: clamp(80px, 20vw, 130px); height: clamp(40px, 10vw, 60px); border-radius: 10px; display: flex; justify-content: center; align-items: center; font-size: clamp(16px, 4vw, 22px); font-weight: 900; color: #c0392b; cursor: pointer; box-shadow: 3px 6px 10px rgba(0,0,0,0.8); transition: transform 0.2s, filter 0.2s; text-align: center; word-break: keep-all; }
+        .stone { background: #fdf5e6; border: 3px solid #d35400; width: clamp(70px, 18vw, 130px); height: clamp(35px, 8vw, 60px); border-radius: 10px; display: flex; justify-content: center; align-items: center; font-size: clamp(14px, 4vw, 22px); font-weight: 900; color: #c0392b; cursor: pointer; box-shadow: 3px 6px 10px rgba(0,0,0,0.8); transition: transform 0.2s, filter 0.2s; text-align: center; word-break: keep-all; }
         .stone:active { transform: scale(0.95); }
 
         #gem-reward { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) scale(0); font-size: clamp(80px, 20vw, 150px); pointer-events: none; z-index: 100; }
@@ -108,12 +116,12 @@
 
         /* 탈출 성공 화면 */
         #clear-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(10, 5, 15, 0.95); z-index: 200; display: none; flex-direction: column; align-items: center; justify-content: center; border-radius: 12px; overflow: hidden; }
-        #clear-overlay h2 { font-size: clamp(36px, 8vw, 55px); color: #f1c40f; text-shadow: 0 3px 10px rgba(241, 196, 15, 0.6); margin-bottom: 20px; }
-        #clear-overlay p { font-size: clamp(16px, 3.5vw, 26px); color: #fff; background: rgba(142, 68, 173, 0.5); padding: 15px 20px; border-radius: 20px; border: 3px solid #9b59b6; margin-bottom: 30px; font-weight: bold; line-height: 1.5; text-align: center; }
-        .firework-particle { position: absolute; width: 12px; height: 12px; border-radius: 50%; pointer-events: none; animation: fireworkBurst 1.5s cubic-bezier(0.1, 0.8, 0.3, 1) forwards; z-index: 201; }
+        #clear-overlay h2 { font-size: clamp(30px, 6vw, 55px); color: #f1c40f; text-shadow: 0 3px 10px rgba(241, 196, 15, 0.6); margin-bottom: 20px; }
+        #clear-overlay p { font-size: clamp(16px, 3.5vw, 26px); color: #fff; background: rgba(142, 68, 173, 0.5); padding: 10px 15px; border-radius: 15px; border: 2px solid #9b59b6; margin-bottom: 30px; font-weight: bold; line-height: 1.4; text-align: center; }
+        .firework-particle { position: absolute; width: 8px; height: 8px; border-radius: 50%; pointer-events: none; animation: fireworkBurst 1.5s cubic-bezier(0.1, 0.8, 0.3, 1) forwards; z-index: 201; }
         @keyframes fireworkBurst { 0% { transform: translate(0, 0) scale(1); opacity: 1; } 100% { transform: translate(var(--tx), var(--ty)) scale(0); opacity: 0; } }
         
-        .action-btn { padding: 10px 20px; font-size: 16px; font-weight: bold; color: white; text-decoration: none; border-radius: 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.5); display: inline-block; cursor: pointer; border: 2px solid white; transition: 0.2s;}
+        .action-btn { padding: 10px 20px; font-size: clamp(14px, 3vw, 16px); font-weight: bold; color: white; text-decoration: none; border-radius: 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.5); display: inline-block; cursor: pointer; border: 2px solid white; transition: 0.2s;}
         .action-btn:active { transform: scale(0.95); }
 
     </style>
@@ -255,18 +263,51 @@
             let weakWords = JSON.parse(localStorage.getItem('hangeul_weak_words') || '[]');
             if (weakWords.length > 0) { weakWords = weakWords.sort(() => Math.random() - 0.5); shuffledWords = shuffledWords.filter(item => !weakWords.some(w => w.target === item.target)); shuffledWords = [...weakWords, ...shuffledWords]; }
             currentStageIndex = 0; document.getElementById('start-screen').style.display = 'none'; document.getElementById('top-bar').style.visibility = 'visible';
-            const grid = document.getElementById('maze-grid'); grid.style.gridTemplateColumns = `repeat(${mapSize}, 1fr)`; grid.style.gridTemplateRows = `repeat(${mapSize}, 1fr)`; renderMaze();
+            
+            const grid = document.getElementById('maze-grid'); 
+            grid.style.gridTemplateColumns = `repeat(${mapSize}, 1fr)`; 
+            grid.style.gridTemplateRows = `repeat(${mapSize}, 1fr)`; 
+            
+            renderMaze();
         }
 
         function renderMaze() {
             const grid = document.getElementById('maze-grid'); grid.innerHTML = '';
-            let cellFontSize = mapSize === 5 ? 'clamp(30px, 8vw, 60px)' : (mapSize === 7 ? 'clamp(20px, 6vw, 45px)' : 'clamp(15px, 4vw, 35px)');
+            
+            // 🌟 컨테이너의 크기를 먼저 가져옵니다.
+            const containerWidth = document.getElementById('game-container').clientWidth;
+            const containerHeight = document.getElementById('game-container').clientHeight;
+            // 🌟 짧은 쪽을 기준으로 각 셀의 크기를 계산합니다.
+            const minSize = Math.min(containerWidth, containerHeight);
+            const cellSize = minSize / mapSize;
+            
             for (let r = 0; r < mapSize; r++) {
                 for (let c = 0; c < mapSize; c++) {
-                    const cellVal = currentMap[r][c]; const cell = document.createElement('div'); cell.className = 'cell'; cell.style.fontSize = cellFontSize;
+                    const cellVal = currentMap[r][c]; const cell = document.createElement('div'); cell.className = 'cell'; 
+                    
+                    // 🌟 셀 크기에 비례하여 폰트 사이즈를 동적으로 설정합니다 (약 70% 크기)
+                    const emSize = (cellSize * 0.7) + 'px';
+                    
                     const isVisited = visited[r][c]; const isAdjacent = (Math.abs(playerPos.r - r) + Math.abs(playerPos.c - c) === 1);
-                    if (isVisited) { if (r === playerPos.r && c === playerPos.c) { cell.classList.add('visited', 'path'); cell.innerHTML = '<div id="player">🕵️</div>'; } else if (cellVal === 4) { cell.classList.add('visited', 'exit'); cell.innerHTML = '<div class="exit-icon">🚪</div>'; } else { cell.classList.add('visited', 'path'); } } 
-                    else if (isAdjacent) { cell.classList.add('fog'); if (cellVal === 0) { cell.classList.add('wall'); } else if (cellVal === 1 || cellVal === 4) { cell.classList.add('path'); const monEmoji = monsters[(r * mapSize + c) % monsters.length]; cell.innerHTML = `<div class="monster-icon">${monEmoji}</div>`; cell.dataset.monster = monEmoji; } } 
+                    if (isVisited) { 
+                        if (r === playerPos.r && c === playerPos.c) { 
+                            cell.classList.add('visited', 'path'); 
+                            cell.innerHTML = `<div id="player" style="font-size: ${emSize};">🕵️</div>`; 
+                        } else if (cellVal === 4) { 
+                            cell.classList.add('visited', 'exit'); 
+                            cell.innerHTML = `<div class="exit-icon" style="font-size: ${emSize};">🚪</div>`; 
+                        } else { cell.classList.add('visited', 'path'); } 
+                    } 
+                    else if (isAdjacent) { 
+                        cell.classList.add('fog'); 
+                        if (cellVal === 0) { cell.classList.add('wall'); } 
+                        else if (cellVal === 1 || cellVal === 4) { 
+                            cell.classList.add('path'); 
+                            const monEmoji = monsters[(r * mapSize + c) % monsters.length]; 
+                            cell.innerHTML = `<div class="monster-icon" style="font-size: ${emSize};">${monEmoji}</div>`; 
+                            cell.dataset.monster = monEmoji; 
+                        } 
+                    } 
                     else { cell.classList.add('darkness'); }
                     cell.onclick = () => tryMove(r, c); grid.appendChild(cell);
                 }
@@ -323,6 +364,13 @@
 
         function resetToMenu() { document.getElementById('clear-overlay').style.display = 'none'; document.getElementById('start-screen').style.display = 'flex'; document.getElementById('maze-grid').innerHTML = ''; document.getElementById('top-bar').style.visibility = 'hidden'; totalGems = 0; document.getElementById('gem-count').innerText = totalGems; }
         function saveReward(earnedCoins, gameId) { let currentCoins = parseInt(localStorage.getItem('hangeul_park_coins') || '0'); localStorage.setItem('hangeul_park_coins', currentCoins + earnedCoins); let clearedGames = JSON.parse(localStorage.getItem('hangeul_park_cleared') || '{}'); let currentCount = clearedGames[gameId]; if (typeof currentCount !== 'number') currentCount = 0; clearedGames[gameId] = currentCount + 1; localStorage.setItem('hangeul_park_cleared', JSON.stringify(clearedGames)); }
+        
+        // 🌟 브라우저 창 크기가 변할 때(회전 등) 미로를 다시 그려서 폰트 크기를 업데이트
+        window.addEventListener('resize', () => {
+            if (document.getElementById('game-ui').style.display === 'flex' && document.getElementById('start-screen').style.display === 'none') {
+                renderMaze();
+            }
+        });
     </script>
 </body>
 </html>
