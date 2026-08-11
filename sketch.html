@@ -9,7 +9,7 @@
 
         body { 
             font-family: 'Jua', 'Malgun Gothic', sans-serif; text-align: center; margin: 0; padding: 10px;
-            touch-action: none; height: 100vh; overflow: hidden; /* 🌟 모바일 세로 스크롤 완전 차단 */
+            touch-action: none; min-height: 100vh; min-height: 100dvh; overflow: hidden; /* 🌟 모바일 세로 스크롤 완전 차단 */
             background-image: url('bg/bg-sketch.png'); background-size: cover; background-position: center;
             background-attachment: fixed; background-color: #fce4ec; display: flex; flex-direction: column; align-items: center; box-sizing: border-box;
         }
@@ -31,44 +31,39 @@
         #game-ui { display: none; flex-direction: column; align-items: center; width: 100%; height: 100%; padding: 5px; box-sizing: border-box; opacity: 0; transition: opacity 1.5s; position: relative; }
 
         .header-area { flex-shrink: 0; margin-bottom: 5px; display: flex; flex-direction: column; align-items: center; width: 100%;}
-        h1 { margin: 0; font-size: clamp(24px, 4.5vw, 36px); color: #c71585; text-shadow: 2px 2px 0px #fff;}
+        h1 { margin: 0; font-size: clamp(20px, 4vw, 32px); color: #c71585; text-shadow: 2px 2px 0px #fff;}
 
         .action-btn-top { position: absolute; top: 5px; left: 10px; background: #ff6b6b; color: white; text-decoration: none; padding: 6px 12px; border-radius: 20px; font-size: clamp(12px, 2.5vw, 16px); font-weight: bold; box-shadow: 0 4px 10px rgba(0,0,0,0.2); z-index: 99; border: 2px solid white; font-family: 'Jua', sans-serif;}
         .gallery-btn-top { position: absolute; top: 5px; right: 10px; background: #ab47bc; color: white; text-decoration: none; padding: 6px 12px; border-radius: 20px; font-size: clamp(12px, 2.5vw, 16px); font-weight: bold; box-shadow: 0 4px 10px rgba(0,0,0,0.2); z-index: 99; border: 2px solid white; font-family: 'Jua', sans-serif; cursor: pointer;}
 
-        #recommend-banner { display: none; background: rgba(233, 30, 99, 0.85); color: #fff; font-size: clamp(14px, 3vw, 20px); font-weight: bold; padding: 6px 20px; border-radius: 20px; border: 2px dashed #fce4ec; margin-top: 5px; box-shadow: 0 4px 10px rgba(0,0,0,0.3); animation: pulseBanner 2s infinite alternate; }
+        #recommend-banner { display: none; background: rgba(233, 30, 99, 0.85); color: #fff; font-size: clamp(12px, 2.5vw, 18px); font-weight: bold; padding: 4px 15px; border-radius: 20px; border: 2px dashed #fce4ec; margin-top: 5px; box-shadow: 0 4px 10px rgba(0,0,0,0.3); animation: pulseBanner 2s infinite alternate; }
         @keyframes pulseBanner { 0% { transform: scale(1); } 100% { transform: scale(1.03); } }
 
-        .game-content-row { display: flex; flex-direction: row; justify-content: center; align-items: center; gap: clamp(10px, 3vw, 30px); width: 100%; max-width: 900px; flex: 1; min-height: 0; box-sizing: border-box; padding-top: 10px;}
+        .game-content-row { display: flex; flex-direction: row; justify-content: center; align-items: center; gap: clamp(10px, 2vw, 20px); width: 100%; max-width: 900px; flex: 1; min-height: 0; box-sizing: border-box; padding-top: 5px;}
 
         .left-panel { display: flex; flex-direction: column; align-items: center; flex: 1; height: 100%; justify-content: space-evenly; }
-        .right-panel { display: flex; flex-direction: column; align-items: center; justify-content: center; flex: 1; background: rgba(255, 255, 255, 0.6); backdrop-filter: blur(5px); border-radius: 25px; padding: 15px; border: 4px dashed #ffb6c1; box-shadow: 0 5px 15px rgba(0,0,0,0.1); height: 100%; box-sizing: border-box; }
+        .right-panel { display: flex; flex-direction: column; align-items: center; justify-content: center; flex: 1; background: rgba(255, 255, 255, 0.6); backdrop-filter: blur(5px); border-radius: 20px; padding: 10px; border: 4px dashed #ffb6c1; box-shadow: 0 5px 15px rgba(0,0,0,0.1); height: 95%; box-sizing: border-box; }
 
-        @media (max-width: 700px) {
-            .game-content-row { flex-direction: row; gap: 10px; } /* 🌟 모바일에서도 가로모드이므로 좌우 분할 유지! */
-            .right-panel { padding: 10px; border-width: 2px; }
-        }
-
-        #mic-btn { font-size: clamp(16px, 3.5vw, 22px); font-family: 'Jua', sans-serif; color: #d81b60; padding: 8px 20px; border-radius: 30px; background: rgba(255, 205, 210, 0.95); border: 3px solid #fff; cursor: pointer; box-shadow: 0 4px 10px rgba(233, 30, 99, 0.3); transition: 0.2s; margin-bottom: 5px; flex-shrink: 0;}
+        #mic-btn { font-size: clamp(14px, 3vw, 20px); font-family: 'Jua', sans-serif; color: #d81b60; padding: 6px 15px; border-radius: 30px; background: rgba(255, 205, 210, 0.95); border: 3px solid #fff; cursor: pointer; box-shadow: 0 4px 10px rgba(233, 30, 99, 0.3); transition: 0.2s; margin-bottom: 5px; flex-shrink: 0;}
         #mic-btn:active { transform: translateY(4px); box-shadow: 0 0px 0 rgba(233, 30, 99, 0.4); }
 
-        #result-text { font-size: clamp(24px, 5vw, 32px); color: #fff; min-height: 35px; text-shadow: 2px 2px 0px #e91e63, -1px -1px 0 #e91e63, 1px -1px 0 #e91e63, -1px 1px 0 #e91e63; letter-spacing: 2px; margin-bottom: 5px; flex-shrink: 0;}
+        #result-text { font-size: clamp(20px, 4vw, 28px); color: #fff; min-height: 30px; text-shadow: 2px 2px 0px #e91e63, -1px -1px 0 #e91e63, 1px -1px 0 #e91e63, -1px 1px 0 #e91e63; letter-spacing: 2px; margin-bottom: 5px; flex-shrink: 0;}
         
         #canvas-wrapper { position: relative; width: 100%; max-width: 320px; aspect-ratio: 4/3; margin: 0 auto; border: 4px solid #fff; background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(5px); border-radius: 20px; transition: max-width 0.3s ease; box-shadow: 0 10px 20px rgba(0,0,0,0.2), inset 0 0 10px rgba(255,182,193,0.5); flex-shrink: 1;}
         #bg-canvas, #drawing-canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border-radius: 16px; }
         #bg-canvas { pointer-events: none; }
         #drawing-canvas { cursor: crosshair; }
 
-        .btn-group { display: flex; gap: 10px; margin-top: 10px; flex-shrink: 0;}
-        .action-btn { padding: 8px 15px; font-size: clamp(14px, 3vw, 18px); font-family: 'Jua', sans-serif; border: 2px solid #fff; border-radius: 20px; cursor: pointer; color: white; box-shadow: 0 4px 10px rgba(0,0,0,0.2); transition: 0.2s; }
+        .btn-group { display: flex; gap: 10px; margin-top: 5px; flex-shrink: 0;}
+        .action-btn { padding: 6px 12px; font-size: clamp(12px, 2.5vw, 16px); font-family: 'Jua', sans-serif; border: 2px solid #fff; border-radius: 20px; cursor: pointer; color: white; box-shadow: 0 4px 10px rgba(0,0,0,0.2); transition: 0.2s; }
         .action-btn:active { transform: translateY(4px); box-shadow: 0 0px 0 rgba(0,0,0,0.2); }
         #clear-btn { background-color: #81d4fa; color: #01579b; } 
         #check-btn { background-color: #69f0ae; color: #1b5e20; } 
 
-        #feedback-text { font-size: clamp(16px, 3.5vw, 24px); text-shadow: 2px 2px 0px #fff, 0 2px 5px rgba(0,0,0,0.3); color: #fff; margin-bottom: 10px; flex-shrink: 0; text-align: center; word-break: keep-all;}
+        #feedback-text { font-size: clamp(14px, 3vw, 20px); text-shadow: 2px 2px 0px #fff, 0 2px 5px rgba(0,0,0,0.3); color: #fff; margin-bottom: 10px; flex-shrink: 0; text-align: center; word-break: keep-all;}
 
         #reward-section { display: none; text-align: center; width: 100%; height: 100%; display: flex; flex-direction: column; justify-content: center; align-items: center;}
-        #loading-text { font-size: clamp(14px, 3vw, 20px); color: #9c27b0; text-shadow: 1px 1px 0px #fff; animation: blink 1.5s infinite; }
+        #loading-text { font-size: clamp(14px, 3vw, 18px); color: #9c27b0; text-shadow: 1px 1px 0px #fff; animation: blink 1.5s infinite; }
         @keyframes blink { 0% { opacity: 0.3; } 50% { opacity: 1; } 100% { opacity: 0.3; } }
         
         #ai-image { max-width: 100%; max-height: 80%; object-fit: contain; border-radius: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.3); border: 4px solid #fff; display: none; animation: popIn 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275); }

@@ -1,23 +1,34 @@
-HTML
 <!DOCTYPE html>
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>AI 끝말잇기 기차 - 모바일 스크롤 방지 및 최적화</title>
+    <title>AI 끝말잇기 기차 - 태블릿 최적화</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Jua&display=swap');
 
         body { 
             font-family: 'Jua', 'Malgun Gothic', sans-serif; 
-            text-align: center; margin: 0; padding: 0; height: 100vh;
-            box-sizing: border-box; overflow: hidden; /* 🌟 모바일 세로 스크롤 완전 차단 */
-            touch-action: none; user-select: none;
-            background-image: url('bg/bg-train.png'); background-size: cover; background-position: center; background-attachment: fixed; background-color: #81c784;
-            display: flex; flex-direction: column;
+            text-align: center; 
+            margin: 0; 
+            padding: 0; 
+            min-height: 100vh;
+            min-height: 100dvh; /* 🌟 모바일 하단바 제외 실제 높이 적용 */
+            box-sizing: border-box;
+            overflow-y: auto; /* 🌟 높이가 부족할 경우 스크롤 허용 */
+            overflow-x: hidden;
+            touch-action: manipulation;
+            user-select: none;
+            
+            background-image: url('bg/bg-train.png');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            background-color: #81c784;
+            display: flex;
+            flex-direction: column;
         }
 
-        /* 🌟 세로 모드 경고창 (가로 유도) */
         #landscape-warning { display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: #1e3c72; z-index: 999999; flex-direction: column; justify-content: center; align-items: center; color: white; text-align: center; font-family: 'Jua', sans-serif; }
         #landscape-warning .icon { font-size: 80px; animation: rotatePhone 1.5s infinite ease-in-out; margin-bottom: 20px;}
         #landscape-warning p { font-size: 24px; font-family: 'Malgun Gothic', sans-serif;}
@@ -30,17 +41,20 @@ HTML
         #train-greeting { font-size: clamp(24px, 5vw, 40px); font-family: 'Jua', sans-serif; color: #0288d1; text-shadow: 2px 2px 0px #fff, 0 4px 15px rgba(255,255,255,0.8); margin-bottom: 40px; display: none; text-align: center; }
         @keyframes float { 0% { transform: translateY(0px); } 50% { transform: translateY(-15px); } 100% { transform: translateY(0px); } }
 
-        #game-ui { display: none; flex-direction: column; width: 100%; height: 100%; padding: 10px; box-sizing: border-box; opacity: 0; transition: opacity 1.5s; position: relative; }
+        #game-ui { display: none; flex-direction: column; width: 100%; min-height: 100%; padding: 10px 15px; box-sizing: border-box; opacity: 0; transition: opacity 1.5s; position: relative; }
 
         .header-area { flex-shrink: 0; margin-bottom: 5px; display: flex; flex-direction: column; align-items: center;}
         h1 { color: #00838f; font-size: clamp(24px, 4vw, 36px); margin: 0 0 5px 0; text-shadow: 2px 2px 0px #fff, 0 2px 10px rgba(255,255,255,0.8); }
-        .top-guide-bar { font-size: clamp(14px, 3vw, 20px); color: #006064; background: rgba(255,255,255,0.95); padding: 5px 20px; border-radius: 50px; display: inline-block; margin: 0 auto; border: 2px solid #fff; box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
+        .top-guide-bar { font-size: clamp(14px, 3vw, 20px); color: #006064; background: rgba(255,255,255,0.95); padding: 5px 20px; border-radius: 50px; display: inline-block; margin: 0 auto 10px auto; border: 2px solid #fff; box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
         .action-btn-top { position: absolute; top: 5px; left: 10px; background: #ff6b6b; color: white; text-decoration: none; padding: 6px 12px; border-radius: 20px; font-size: clamp(12px, 2.5vw, 16px); font-weight: bold; box-shadow: 0 4px 10px rgba(0,0,0,0.5); z-index: 9999; border: 2px solid #fff; font-family: 'Jua', sans-serif; }
 
-        #track-area { flex: 1; width: 100%; box-sizing: border-box; background-color: rgba(255, 255, 255, 0.45); border-radius: 20px; border: 4px dashed #4caf50; display: flex; align-items: center; justify-content: flex-start; padding: 10px; overflow-x: auto; scroll-behavior: smooth; box-shadow: inset 0 5px 15px rgba(0,0,0,0.1), 0 10px 20px rgba(0,0,0,0.1); backdrop-filter: blur(5px); }
+        #track-area { 
+            flex: 1; width: 100%; min-height: 250px; /* 🌟 기차가 잘리지 않는 최소 높이 보장 */
+            box-sizing: border-box; background-color: rgba(255, 255, 255, 0.45); border-radius: 20px; border: 4px dashed #4caf50; display: flex; align-items: center; justify-content: flex-start; padding: 10px; overflow-x: auto; scroll-behavior: smooth; box-shadow: inset 0 5px 15px rgba(0,0,0,0.1), 0 10px 20px rgba(0,0,0,0.1); backdrop-filter: blur(5px); 
+        }
         #track-area::-webkit-scrollbar { display: none; }
 
-        #train-container { display: flex; align-items: flex-end; justify-content: flex-start; height: 90%; margin: 0 auto; padding-bottom: 20px;}
+        #train-container { display: flex; align-items: flex-end; justify-content: flex-start; height: 100%; margin: 0 auto; padding-bottom: 20px;}
         .train-enter { animation: slideInRight 1.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
         @keyframes slideInRight { 0% { transform: translateX(100vw); } 100% { transform: translateX(0); } }
         .train-leave { animation: slideOutLeft 2s ease-in-out forwards; }
@@ -66,19 +80,20 @@ HTML
 
         @keyframes popIn { 0% { transform: scale(0) translateY(50px); opacity: 0; } 80% { transform: scale(1.1) translateY(-10px); } 100% { transform: scale(1) translateY(0); opacity: 1; } }
 
-        #control-area { position: relative; height: clamp(90px, 15vw, 130px); display: flex; flex-direction: column; justify-content: center; align-items: center; margin-top: 10px; flex-shrink: 0; }
-        .control-row { display: flex; align-items: center; justify-content: center; gap: clamp(10px, 3vw, 30px); width: 100%;}
+        #control-area { position: relative; height: clamp(90px, 15vw, 130px); display: flex; flex-direction: column; justify-content: center; align-items: center; margin-top: 15px; flex-shrink: 0; }
+        .control-row { display: flex; align-items: center; justify-content: center; gap: clamp(10px, 3vw, 30px); width: 100%; margin-top: 10px;}
 
-        #mic-btn { width: clamp(60px, 12vw, 90px); height: clamp(60px, 12vw, 90px); background-color: #29b6f6; border: 4px solid #0288d1; border-radius: 50%; font-size: clamp(24px, 5vw, 40px); color: white; cursor: pointer; box-shadow: 0 5px 0 #0288d1, 0 10px 15px rgba(0,0,0,0.3); transition: all 0.2s; display: flex; justify-content: center; align-items: center; flex-shrink: 0; }
+        #mic-btn { width: clamp(60px, 12vw, 90px); height: clamp(60px, 12vw, 90px); background-color: #29b6f6; border: 4px solid #0288d1; border-radius: 50%; font-size: clamp(24px, 5vw, 40px); color: white; cursor: pointer; box-shadow: 0 5px 0 #0288d1, 0 10px 15px rgba(0,0,0,0.3); transition: all 0.2s; display: flex; justify-content: center; align-items: center; flex-shrink: 0; margin-bottom: 5px; }
         #mic-btn:active { transform: translateY(5px); box-shadow: 0 0 0 #0288d1, 0 5px 10px rgba(0,0,0,0.3); }
         .listening { animation: pulse 1s infinite alternate; background-color: #ff5252 !important; border-color: #d50000 !important; }
 
-        #help-btn { background-color: #ffca28; border: 3px solid #ff9800; border-radius: 20px; padding: clamp(6px, 1.5vw, 12px) clamp(12px, 2.5vw, 25px); font-size: clamp(14px, 3vw, 22px); font-weight: bold; color: #d35400; cursor: pointer; box-shadow: 0 4px 0 #ff9800, 0 8px 12px rgba(0,0,0,0.2); transition: all 0.2s; display: flex; align-items: center; font-family: 'Jua', sans-serif; white-space: nowrap; flex-shrink: 0; }
+        #help-btn { background-color: #ffca28; border: 3px solid #ff9800; border-radius: 20px; padding: clamp(6px, 1.5vw, 12px) clamp(12px, 2.5vw, 25px); font-size: clamp(14px, 3vw, 22px); font-weight: bold; color: #d35400; cursor: pointer; box-shadow: 0 4px 0 #ff9800, 0 8px 12px rgba(0,0,0,0.2); transition: all 0.2s; display: flex; align-items: center; font-family: 'Jua', sans-serif; white-space: nowrap; flex-shrink: 0; margin-bottom: 5px;}
         #help-btn:active { transform: translateY(4px); box-shadow: 0 0 0 #ff9800, 0 3px 5px rgba(0,0,0,0.2); }
 
         @keyframes pulse { 0% { transform: scale(1); } 100% { transform: scale(1.1); box-shadow: 0 5px 0 #d50000, 0 0 20px rgba(255, 82, 82, 0.8); } }
 
-        #feedback-box { position: absolute; top: -40px; font-size: clamp(14px, 3vw, 22px); font-weight: bold; color: #333; min-height: 30px; background: white; padding: 6px 20px; border-radius: 25px; border: 3px solid #ccc; box-shadow: 0 8px 15px rgba(0,0,0,0.2); transition: all 0.2s; display: flex; align-items: center; justify-content: center; z-index: 100; white-space: nowrap; }
+        /* 🌟 피드백 박스 위치 조정 */
+        #feedback-box { position: absolute; top: -35px; font-size: clamp(14px, 3vw, 22px); font-weight: bold; color: #333; min-height: 30px; background: white; padding: 6px 20px; border-radius: 25px; border: 3px solid #ccc; box-shadow: 0 8px 15px rgba(0,0,0,0.2); transition: all 0.2s; display: flex; align-items: center; justify-content: center; z-index: 100; white-space: nowrap; }
 
         .correct-text { color: #2e7d32 !important; border-color: #4caf50 !important; background: #e8f5e9 !important; }
         .wrong-text { color: #c62828 !important; border-color: #f44336 !important; background: #ffebee !important; }
@@ -100,9 +115,8 @@ HTML
     </div>
 
     <div id="game-ui">
-        <a href="index.html" class="action-btn-top">🏠 처음으로</a>
-
         <div class="header-area">
+            <a href="index.html" class="action-btn-top">🏠 처음으로</a>
             <h1>🚂 AI 끝말잇기 기차</h1>
             <div class="top-guide-bar">마이크를 누르고 단어를 말해 기차 6칸을 모아보세요! (<span id="car-count">0</span>/6)</div>
         </div>
@@ -126,7 +140,7 @@ HTML
             introBtn.style.display = 'none'; greeting.style.display = 'block';
             const introAudio = new Audio('source/os-train.mp3');
             introAudio.onended = () => { transitionToGame(); };
-            introAudio.play().catch(e => { console.log("오디오 재생 실패"); setTimeout(() => { if (document.getElementById('intro-screen').style.opacity !== '0') { transitionToGame(); } }, 2000); });
+            introAudio.play().catch(e => { console.log("오디오 재생 실패 (자동 전환합니다):", e); setTimeout(() => { if (document.getElementById('intro-screen').style.opacity !== '0') { transitionToGame(); } }, 2000); });
         });
 
         function transitionToGame() {

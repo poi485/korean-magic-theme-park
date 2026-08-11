@@ -9,7 +9,8 @@
 
         body { 
             font-family: 'Jua', 'Malgun Gothic', sans-serif; text-align: center; margin: 0; padding: 0; 
-            touch-action: none; user-select: none; height: 100vh; overflow: hidden; /* 🌟 전체 스크롤 차단 */
+            touch-action: none; user-select: none; 
+            min-height: 100vh; min-height: 100dvh; overflow: hidden; /* 🌟 전체 스크롤 차단 */
             background-image: url('bg/bg-frog.png'); background-size: cover; background-position: center;
             background-attachment: fixed; background-color: #e0f7fa; display: flex; flex-direction: column;
         }
@@ -37,42 +38,42 @@
         .action-btn-top { position: absolute; top: 5px; left: 10px; background: #ff6b6b; color: white; text-decoration: none; padding: 6px 12px; border-radius: 20px; font-weight: bold; font-size: clamp(12px, 2.5vw, 16px); box-shadow: 0 4px 10px rgba(0,0,0,0.2); z-index: 9999; border: 2px solid white; font-family: 'Jua', sans-serif;}
 
         .header-area { flex-shrink: 0; margin-bottom: 5px; display: flex; flex-direction: column; align-items: center;}
-        h1 { color: #fff; font-size: clamp(28px, 5vw, 40px); margin: 5px 0; text-shadow: 2px 2px 0px #00838f, -2px -2px 0 #00838f, 2px -2px 0 #00838f, -2px 2px 0 #00838f, 0 5px 10px rgba(0,0,0,0.5); letter-spacing: 2px; }
-        .guide { font-size: clamp(14px, 3vw, 20px); color: #006064; margin-bottom: 10px; background: rgba(255,255,255,0.95); padding: 5px 20px; border-radius: 30px; box-shadow: 0 4px 10px rgba(0,0,0,0.15); border: 2px solid #b2ebf2; display: inline-block; }
+        h1 { color: #fff; font-size: clamp(20px, 4vw, 32px); margin: 0 0 5px 0; text-shadow: 2px 2px 0px #00838f, -2px -2px 0 #00838f, 2px -2px 0 #00838f, -2px 2px 0 #00838f, 0 5px 10px rgba(0,0,0,0.5); letter-spacing: 2px; }
+        .guide { font-size: clamp(12px, 2.5vw, 18px); color: #006064; margin-bottom: 5px; background: rgba(255,255,255,0.95); padding: 5px 15px; border-radius: 30px; box-shadow: 0 4px 10px rgba(0,0,0,0.15); border: 2px solid #b2ebf2; display: inline-block; }
 
-        #main-action-btn { padding: 8px 25px; font-size: clamp(18px, 4vw, 24px); font-family: 'Jua', sans-serif; background-color: #ffca28; color: #d84315; border: 4px solid #ff9800; border-radius: 40px; cursor: pointer; box-shadow: 0 6px 0 #ff9800, 0 10px 15px rgba(0,0,0,0.2); margin-bottom: 10px; transition: all 0.2s; flex-shrink: 0;}
-        #main-action-btn:active { transform: translateY(6px); box-shadow: 0 0 0 #ff9800, 0 4px 6px rgba(0,0,0,0.2); }
+        #main-action-btn { padding: 6px 20px; font-size: clamp(16px, 3.5vw, 20px); font-family: 'Jua', sans-serif; background-color: #ffca28; color: #d84315; border: 3px solid #ff9800; border-radius: 30px; cursor: pointer; box-shadow: 0 4px 0 #ff9800, 0 8px 12px rgba(0,0,0,0.2); margin-bottom: 5px; transition: all 0.2s; flex-shrink: 0;}
+        #main-action-btn:active { transform: translateY(4px); box-shadow: 0 0 0 #ff9800, 0 3px 5px rgba(0,0,0,0.2); }
 
-        #river-area { position: relative; max-width: 800px; width: 100%; flex: 1; margin: 0 auto; background: linear-gradient(180deg, rgba(129, 212, 250, 0.8) 0%, rgba(0, 188, 212, 0.9) 100%); border-radius: 30px; border: 6px solid rgba(255, 255, 255, 0.5); box-shadow: inset 0 10px 20px rgba(0,0,0,0.3), 0 10px 20px rgba(0,0,0,0.3); overflow: hidden; backdrop-filter: blur(5px); box-sizing: border-box;}
+        #river-area { position: relative; max-width: 800px; width: 100%; flex: 1; margin: 0 auto; background: linear-gradient(180deg, rgba(129, 212, 250, 0.8) 0%, rgba(0, 188, 212, 0.9) 100%); border-radius: 20px; border: 4px solid rgba(255, 255, 255, 0.5); box-shadow: inset 0 10px 20px rgba(0,0,0,0.3), 0 10px 20px rgba(0,0,0,0.3); overflow: hidden; backdrop-filter: blur(5px); box-sizing: border-box;}
 
         #world { display: flex; flex-direction: column-reverse; width: 100%; position: absolute; bottom: 0; left: 0; transition: transform 0.6s cubic-bezier(0.25, 0.8, 0.25, 1); }
 
         /* 🌟 연잎(로우) 높이를 모바일 화면 크기에 맞춰 반응형으로 설정 */
-        .row { display: flex; justify-content: space-evenly; align-items: center; height: clamp(90px, 18vh, 150px); width: 100%; }
+        .row { display: flex; justify-content: space-evenly; align-items: center; height: clamp(70px, 15vh, 120px); width: 100%; }
 
-        .start-rock { width: clamp(120px, 25vw, 180px); height: clamp(60px, 12vw, 90px); background: radial-gradient(circle at 30% 30%, #95a5a6, #555); border: 4px solid #333; border-radius: 50%; box-shadow: 0 8px 0 #333, 0 10px 15px rgba(0,0,0,0.5); display: flex; justify-content: center; align-items: center; color: white; font-size: clamp(20px, 4vw, 28px); text-shadow: 1px 1px 0 #000; }
-        .finish-land { width: 80%; height: clamp(80px, 15vw, 110px); background: linear-gradient(180deg, #aed581, #558b2f); border: 6px solid #33691e; border-radius: 30px; box-shadow: 0 8px 0 #33691e, 0 10px 15px rgba(0,0,0,0.5); display: flex; justify-content: center; align-items: center; color: white; font-size: clamp(28px, 6vw, 40px); font-weight: bold; text-shadow: 2px 2px 0 #1b5e20; margin: 0 auto; }
+        .start-rock { width: clamp(100px, 20vw, 150px); height: clamp(50px, 10vh, 80px); background: radial-gradient(circle at 30% 30%, #95a5a6, #555); border: 4px solid #333; border-radius: 50%; box-shadow: 0 6px 0 #333, 0 10px 15px rgba(0,0,0,0.5); display: flex; justify-content: center; align-items: center; color: white; font-size: clamp(16px, 3.5vw, 24px); text-shadow: 1px 1px 0 #000; }
+        .finish-land { width: 80%; height: clamp(60px, 12vh, 90px); background: linear-gradient(180deg, #aed581, #558b2f); border: 4px solid #33691e; border-radius: 20px; box-shadow: 0 6px 0 #33691e, 0 10px 15px rgba(0,0,0,0.5); display: flex; justify-content: center; align-items: center; color: white; font-size: clamp(24px, 5vw, 36px); font-weight: bold; text-shadow: 2px 2px 0 #1b5e20; margin: 0 auto; }
 
-        .leaf-btn { background: linear-gradient(145deg, #66bb6a, #43a047); border: 3px solid #1b5e20; border-radius: 50% 50% 50% 10px; width: clamp(90px, 20vw, 130px); height: clamp(55px, 12vw, 80px); font-size: clamp(18px, 4vw, 28px); color: white; cursor: pointer; box-shadow: 0 6px 0 #1b5e20, 0 8px 10px rgba(0,0,0,0.4); display: flex; justify-content: center; align-items: center; transition: transform 0.1s, box-shadow 0.1s, filter 0.3s; text-shadow: 2px 2px 0 #1b5e20; }
-        .leaf-btn:active { transform: translateY(6px); box-shadow: 0 0px 0 #1b5e20, 0 3px 5px rgba(0,0,0,0.4); }
+        .leaf-btn { background: linear-gradient(145deg, #66bb6a, #43a047); border: 3px solid #1b5e20; border-radius: 50% 50% 50% 10px; width: clamp(80px, 18vw, 120px); height: clamp(45px, 10vh, 70px); font-size: clamp(14px, 3vw, 22px); color: white; cursor: pointer; box-shadow: 0 4px 0 #1b5e20, 0 6px 10px rgba(0,0,0,0.4); display: flex; justify-content: center; align-items: center; transition: transform 0.1s, box-shadow 0.1s, filter 0.3s; text-shadow: 2px 2px 0 #1b5e20; }
+        .leaf-btn:active { transform: translateY(4px); box-shadow: 0 0px 0 #1b5e20, 0 3px 5px rgba(0,0,0,0.4); }
         .inactive-row .leaf-btn { filter: grayscale(30%) brightness(80%) opacity(0.8); cursor: not-allowed; transform: scale(0.95); box-shadow: 0 3px 0 #1b5e20, 0 4px 5px rgba(0,0,0,0.2); }
 
-        #animal-wrapper { position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%); transition: bottom 0.5s ease-out, left 0.5s ease-in-out; z-index: 10; }
-        #animal { font-size: clamp(50px, 10vw, 80px); transition: transform 0.3s; filter: drop-shadow(0 6px 8px rgba(0,0,0,0.4)); animation: breathe 2s infinite ease-in-out; }
+        #animal-wrapper { position: absolute; bottom: 15px; left: 50%; transform: translateX(-50%); transition: bottom 0.5s ease-out, left 0.5s ease-in-out; z-index: 10; }
+        #animal { font-size: clamp(40px, 8vh, 70px); transition: transform 0.3s; filter: drop-shadow(0 6px 8px rgba(0,0,0,0.4)); animation: breathe 2s infinite ease-in-out; }
 
         @keyframes breathe { 0%, 100% { transform: scale(1) translateY(0); } 50% { transform: scale(1.05) translateY(-5px); } }
         @keyframes splash { 0% { transform: scale(1) rotate(0deg); opacity: 1; } 50% { transform: scale(0.5) translateY(50px) rotate(180deg); opacity: 0.5; } 100% { transform: scale(0) translateY(100px) rotate(360deg); opacity: 0; } }
         .fall-water { animation: splash 0.8s forwards !important; }
 
-        #feedback-text { font-size: clamp(20px, 4.5vw, 32px); color: #fff; margin-top: 10px; height: 35px; text-shadow: 2px 2px 0px #d84315, -1px -1px 0 #d84315, 1px -1px 0 #d84315, -1px 1px 0 #d84315; letter-spacing: 1px; flex-shrink: 0; }
+        #feedback-text { font-size: clamp(16px, 3.5vw, 26px); color: #fff; margin-top: 5px; height: 30px; text-shadow: 2px 2px 0px #d84315, -1px -1px 0 #d84315, 1px -1px 0 #d84315, -1px 1px 0 #d84315; letter-spacing: 1px; flex-shrink: 0; }
 
         .overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(5px); display: none; flex-direction: column; justify-content: center; align-items: center; z-index: 100; border-radius: 20px; }
-        .overlay h2 { font-size: clamp(40px, 8vw, 60px); margin: 0 0 10px 0; color: #ff4500; text-shadow: 2px 2px 0 #fff; text-align: center;}
-        .overlay p { font-size: clamp(18px, 4vw, 28px); color: #333; margin-bottom: 20px; background: #fff; padding: 10px 20px; border-radius: 15px; box-shadow: 0 5px 10px rgba(0,0,0,0.1); border: 3px solid #eee; text-align: center;}
+        .overlay h2 { font-size: clamp(30px, 6vw, 50px); margin: 0 0 10px 0; color: #ff4500; text-shadow: 2px 2px 0 #fff; text-align: center;}
+        .overlay p { font-size: clamp(16px, 3.5vw, 24px); color: #333; margin-bottom: 20px; background: #fff; padding: 10px 20px; border-radius: 15px; box-shadow: 0 5px 10px rgba(0,0,0,0.1); border: 3px solid #eee; text-align: center;}
         
-        .retry-btn { padding: 10px 25px; font-size: clamp(18px, 4vw, 26px); font-family: 'Jua', sans-serif; background-color: #32cd32; color: white; border: 4px solid #2e7d32; border-radius: 40px; cursor: pointer; box-shadow: 0 6px 0 #2e7d32, 0 10px 15px rgba(50,205,50,0.4); transition: 0.2s; }
-        .retry-btn:active { transform: translateY(6px); box-shadow: 0 0 0 #2e7d32, 0 3px 5px rgba(50,205,50,0.4); }
-        .btn-blue { background-color: #29b6f6; border-color: #0288d1; box-shadow: 0 6px 0 #0288d1, 0 10px 15px rgba(41,182,246,0.4); }
+        .retry-btn { padding: 8px 20px; font-size: clamp(16px, 3.5vw, 22px); font-family: 'Jua', sans-serif; background-color: #32cd32; color: white; border: 3px solid #2e7d32; border-radius: 30px; cursor: pointer; box-shadow: 0 4px 0 #2e7d32, 0 8px 12px rgba(50,205,50,0.4); transition: 0.2s; }
+        .retry-btn:active { transform: translateY(4px); box-shadow: 0 0 0 #2e7d32, 0 3px 5px rgba(50,205,50,0.4); }
+        .btn-blue { background-color: #29b6f6; border-color: #0288d1; box-shadow: 0 4px 0 #0288d1, 0 8px 12px rgba(41,182,246,0.4); }
         .btn-blue:active { box-shadow: 0 0 0 #0288d1, 0 3px 5px rgba(41,182,246,0.4); }
     </style>
 </head>
@@ -191,7 +192,7 @@
             rowData = []; currentRowIndex = 0;
             for (let i = 0; i < 4; i++) { world.appendChild(createRow(i)); }
 
-            const wrapper = document.getElementById('animal-wrapper'); wrapper.style.bottom = '20px'; wrapper.style.left = '50%'; document.getElementById('animal').classList.remove('fall-water'); world.style.transform = `translateY(0px)`;
+            const wrapper = document.getElementById('animal-wrapper'); wrapper.style.bottom = '15px'; wrapper.style.left = '50%'; document.getElementById('animal').classList.remove('fall-water'); world.style.transform = `translateY(0px)`;
             document.getElementById('feedback-text').innerText = '준비, 출발!'; setTimeout(() => { document.getElementById('feedback-text').innerText = ''; }, 1000);
             setTimeout(() => { readCurrentQuestion(); }, 800);
         }
@@ -206,7 +207,7 @@
 
             if (selectedWord === targetData.answer) {
                 feedback.innerText = `🎉 ${rowIndex}단계 통과!`; feedback.style.color = "#ffeb3b";
-                currentSafeLeft = targetLeftPercent + '%'; wrapper.style.bottom = (rowIndex * dynHeight + 20) + 'px'; wrapper.style.left = currentSafeLeft; 
+                currentSafeLeft = targetLeftPercent + '%'; wrapper.style.bottom = (rowIndex * dynHeight + 15) + 'px'; wrapper.style.left = currentSafeLeft; 
                 playJumpSound();
 
                 setTimeout(() => {
@@ -224,7 +225,7 @@
 
             } else {
                 gameState = 'gameover'; const failedWordData = currentSessionWords[rowIndex - 1]; logWeakWord(failedWordData);
-                wrapper.style.bottom = (rowIndex * dynHeight + 20) + 'px'; wrapper.style.left = targetLeftPercent + '%'; playJumpSound();
+                wrapper.style.bottom = (rowIndex * dynHeight + 15) + 'px'; wrapper.style.left = targetLeftPercent + '%'; playJumpSound();
                 setTimeout(() => {
                     animal.classList.add('fall-water'); btnElement.classList.add('fall-water'); playSplashSound(); speak("앗, 물에 빠졌어요.");
                     setTimeout(() => { document.getElementById('score-text').innerText = currentRowIndex; document.getElementById('gameover-overlay').style.display = 'flex'; isJumping = false; }, 1000);
@@ -236,7 +237,7 @@
             document.getElementById('gameover-overlay').style.display = 'none'; const wrapper = document.getElementById('animal-wrapper'); const animal = document.getElementById('animal');
             document.querySelectorAll('.leaf-btn').forEach(btn => btn.classList.remove('fall-water')); animal.classList.remove('fall-water');
             const dynHeight = getDynamicRowHeight();
-            wrapper.style.bottom = (currentRowIndex * dynHeight + 20) + 'px'; wrapper.style.left = currentSafeLeft;
+            wrapper.style.bottom = (currentRowIndex * dynHeight + 15) + 'px'; wrapper.style.left = currentSafeLeft;
             isJumping = false; gameState = 'playing';
             const feedback = document.getElementById('feedback-text'); feedback.innerText = '힘내요! 다시 들어봐요!'; feedback.style.color = '#ffeb3b'; setTimeout(() => { readCurrentQuestion(); }, 800);
         }
