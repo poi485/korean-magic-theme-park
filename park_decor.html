@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>마법의 놀이동산 꾸미기 - 실시간 공유 갤러리</title>
+    <title>마법의 놀이동산 꾸미기</title>
     <style>
         body {
             font-family: 'Malgun Gothic', sans-serif;
@@ -114,7 +114,7 @@
 </head>
 <body>
 
-    <!-- 🌟 화면 돌림 유도 오버레이 -->
+    <!-- 화면 돌림 유도 오버레이 -->
     <div id="landscape-warning">
         <div class="icon">📱</div>
         <h2>화면을 가로로 눕혀주세요!</h2>
@@ -174,7 +174,7 @@
         </div>
     </div>
 
-    <!-- 🌟 파이어베이스 데이터베이스 모듈 스크립트 -->
+    <!-- 파이어베이스 데이터베이스 모듈 스크립트 -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
         import { getFirestore, collection, addDoc, getDocs } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
@@ -191,7 +191,7 @@
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
-        // 🌟 실시간 웹 파이어베이스 갤러리 기능 (동명이인 자동 구분 적용)
+        // 실시간 웹 파이어베이스 갤러리 기능 (동명이인 자동 구분 적용)
         window.uploadPark = async function() {
             if (placedList.length === 0) return alert("앗! 아직 공터가 텅 비어있어요. 먼저 아이템을 예쁘게 꾸며주세요!");
             const authorName = prompt("우와, 정말 멋진 놀이동산이네요! 작가님의 이름을 적어주세요:");
@@ -289,10 +289,10 @@
         }
     </script>
 
-    <!-- 🌟 게임 플레이 로직 스크립트 -->
+    <!-- 게임 플레이 로직 스크립트 -->
     <script>
         // ====================================================
-        // 🌟 배경 음악 설정 (볼륨 조절 및 무한 반복)
+        // 배경 음악 설정 (볼륨 조절 및 무한 반복)
         // ====================================================
         let decorBgm = new Audio('source/bg-dec.mp3'); 
         decorBgm.loop = true;   
@@ -357,7 +357,7 @@
         renderPark();
         renderInventory();
 
-        // 🌟 뾱 소리 함수
+        // 효과음 소리 함수
         let audioCtx = null;
         function playPopSound() {
             if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -379,7 +379,7 @@
             osc.stop(audioCtx.currentTime + 0.1);
         }
 
-        // 🌟 관리자 치트키
+        // 관리자 콘솔
         let adminClickCount = 0;
         let adminClickTimer = null;
         document.getElementById('admin-cheat-btn').addEventListener('click', () => {
@@ -391,7 +391,7 @@
                 currentCoins = 5000;
                 localStorage.setItem('hangeul_park_coins', currentCoins);
                 document.getElementById('park-coins').innerText = currentCoins;
-                alert("✨ [관리자 모드] 보물이 5,000개 충전되었습니다! 플렉스 하세요! ✨");
+                alert("✨ [관리자 모드] 보물이 5,000개 충전되었습니다! 테스트 하세요! ✨");
                 adminClickCount = 0;
             }
         });

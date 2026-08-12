@@ -3,20 +3,20 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>깜깜한 유령의 집 - 스크롤 허용 완벽 최적화</title>
+    <title>유령의 집</title>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
         
         body { 
             font-family: 'Malgun Gothic', '맑은 고딕', sans-serif; color: white; margin: 0; padding: 0; 
-            touch-action: pan-y; /* 🌟 세로 스크롤 허용 */
-            min-height: 100vh; min-height: 100dvh; height: auto; /* 🌟 내용물에 따라 늘어나도록 설정 */
-            overflow-y: auto; overflow-x: hidden; /* 🌟 억지로 쑤셔넣지 않고 스크롤 활성화 */
+            touch-action: pan-y; /* 세로 스크롤 허용 */
+            min-height: 100vh; min-height: 100dvh; height: auto; /* 내용물에 따라 늘어나도록 설정 */
+            overflow-y: auto; overflow-x: hidden; /* 억지로 쑤셔넣지 않고 스크롤 활성화 */
             background-image: url('bg/bg-gh.png'); background-size: cover; background-position: center; background-attachment: fixed; background-color: #12091c;
             display: flex; flex-direction: column;
         }
 
-        /* 🌟 세로 모드 경고창 (가로 유도) */
+        /* 세로 모드 경고창 (가로 유도) */
         #landscape-warning {
             display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: #12091c; z-index: 999999;
             flex-direction: column; justify-content: center; align-items: center; color: white; text-align: center;
@@ -32,7 +32,7 @@
 
         @keyframes float { 0% { transform: translateY(0px); } 50% { transform: translateY(-15px); } 100% { transform: translateY(0px); } }
 
-        /* 🌟 100%로 억제하지 않고 내용에 맞춰 늘어나게 flex: 1 적용 */
+        /* 100%로 억제하지 않고 내용에 맞춰 늘어나게 flex: 1 적용 */
         #game-ui { display: none; flex-direction: column; align-items: center; justify-content: flex-start; min-height: 100%; height: auto; padding: 10px 10px 40px 10px; width: 100%; opacity: 0; transition: opacity 1.5s; box-sizing: border-box; position: relative;}
 
         .header-area { display: flex; flex-direction: column; align-items: center; width: 100%; margin-bottom: 5px; flex-shrink: 0; position: relative;}
@@ -46,12 +46,12 @@
         #score-board { background: rgba(142, 68, 173, 0.7); border: 2px solid #9b59b6; border-radius: 15px; padding: 5px 10px; font-size: clamp(14px, 3vw, 20px); font-weight: bold; color: #fff; box-shadow: 0 4px 15px rgba(0,0,0,0.5); display: flex; align-items: center; gap: 8px; backdrop-filter: blur(5px); }
         .score-bounce { animation: popBounce 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
 
-        /* 🌟 게임 컨테이너: 어떤 기기에서든 1:1 완벽한 정사각형 유지 (스크롤 허용) */
+        /* 게임 컨테이너: 어떤 기기에서든 1:1 정사각형 유지 (스크롤 허용) */
         #game-container {
             position: relative; 
             width: 100%; 
-            max-width: 650px; /* 🌟 맵이 너무 거대해지지 않도록 최대 넓이 고정 */
-            aspect-ratio: 1 / 1; /* 🌟 무조건 정사각형 유지 */
+            max-width: 650px; /* 맵이 너무 거대해지지 않도록 최대 넓이 고정 */
+            aspect-ratio: 1 / 1; /* 무조건 정사각형 유지 */
             margin: 0 auto 20px auto;
             background: rgba(10, 5, 15, 0.85); border: 4px solid #4a235a; border-radius: 15px;
             box-shadow: 0 15px 30px rgba(0,0,0,0.9), inset 0 0 50px rgba(0,0,0,0.9); overflow: hidden;
@@ -65,7 +65,7 @@
         .level-btn { width: 80%; max-width: 250px; padding: 12px 0; margin: 6px 0; font-size: clamp(16px, 3.5vw, 22px); font-weight: bold; color: white; background: #8e44ad; border: 3px solid #9b59b6; border-radius: 30px; cursor: pointer; box-shadow: 0 6px 10px rgba(0,0,0,0.3); transition: 0.2s; }
         .level-btn:active { transform: scale(0.95); }
 
-        /* 🌟 미로 그리드 - 100% 꽉 채우기 */
+        /* 미로 그리드 - 100% 꽉 채우기 */
         #maze-grid {
             display: grid; gap: 2px; 
             width: 100%; height: 100%; 
@@ -278,13 +278,13 @@
         function renderMaze() {
             const grid = document.getElementById('maze-grid'); grid.innerHTML = '';
             
-            // 🌟 자바스크립트로 화면 가용 공간을 정확하게 측정하여 완벽한 1:1 비율을 유지하고 폰트 사이즈를 부여
+            // 자바스크립트로 화면 가용 공간을 측정하여 1:1 비율 유지 및 폰트 사이즈 부여
             const container = document.getElementById('game-container');
             const availableWidth = container.clientWidth - 10; 
             
-            // 컨테이너 폭에 맞춰 셀 하나의 너비를 계산
+            // 컨테이너 폭에 맞춰 셀 하나의 너비 계산
             const cellSize = availableWidth / mapSize;
-            const emSize = (cellSize * 0.6) + 'px'; // 셀 너비의 60%를 폰트 크기로 지정!
+            const emSize = (cellSize * 0.6) + 'px'; // 셀 너비의 60%를 폰트 크기로 지정
             
             for (let r = 0; r < mapSize; r++) {
                 for (let c = 0; c < mapSize; c++) {
@@ -342,7 +342,7 @@
         function handleSTTFail() { playSound('wrong'); document.getElementById('combat-feedback').innerText = "다시 말해볼까요?"; document.getElementById('combat-feedback').style.color = "#e74c3c"; logWeakWord(shuffledWords[currentStageIndex % shuffledWords.length]); }
 
         function showStones() {
-            const stoneArea = document.getElementById('combat-stone-area'); const data = shuffledWords[currentStageIndex % shuffledWords.length]; const trapsList = data.traps || data.초aps;
+            const stoneArea = document.getElementById('combat-stone-area'); const data = shuffledWords[currentStageIndex % shuffledWords.length]; const trapsList = data.traps;
             let words = [data.target, trapsList[0], trapsList[1]]; words.sort(() => Math.random() - 0.5);
             words.forEach(word => { const stone = document.createElement('div'); stone.className = 'stone'; stone.innerText = word; stone.onclick = () => checkStone(word, stone); stoneArea.appendChild(stone); });
             stoneArea.style.visibility = "visible"; stoneArea.style.opacity = "1";
@@ -369,7 +369,7 @@
         function resetToMenu() { document.getElementById('clear-overlay').style.display = 'none'; document.getElementById('start-screen').style.display = 'flex'; document.getElementById('maze-grid').innerHTML = ''; document.getElementById('top-bar').style.visibility = 'hidden'; totalGems = 0; document.getElementById('gem-count').innerText = totalGems; }
         function saveReward(earnedCoins, gameId) { let currentCoins = parseInt(localStorage.getItem('hangeul_park_coins') || '0'); localStorage.setItem('hangeul_park_coins', currentCoins + earnedCoins); let clearedGames = JSON.parse(localStorage.getItem('hangeul_park_cleared') || '{}'); let currentCount = clearedGames[gameId]; if (typeof currentCount !== 'number') currentCount = 0; clearedGames[gameId] = currentCount + 1; localStorage.setItem('hangeul_park_cleared', JSON.stringify(clearedGames)); }
         
-        // 🌟 브라우저 창 크기가 변할 때 미로를 다시 그림 (불필요한 계산을 줄임)
+        // 브라우저 창 크기가 변할 때 미로를 다시 그림
         window.addEventListener('resize', () => {
             if (document.getElementById('game-ui').style.display === 'flex' && document.getElementById('start-screen').style.display === 'none') {
                 renderMaze();

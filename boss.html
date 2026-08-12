@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>AI 끝말잇기 기차 - 태블릿 최적화</title>
+    <title>끝말잇기 기차</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Jua&display=swap');
 
@@ -13,9 +13,9 @@
             margin: 0; 
             padding: 0; 
             min-height: 100vh;
-            min-height: 100dvh; /* 🌟 모바일 하단바 제외 실제 높이 적용 */
+            min-height: 100dvh; /* 모바일 하단바 제외 실제 높이 적용 */
             box-sizing: border-box;
-            overflow-y: auto; /* 🌟 높이가 부족할 경우 스크롤 허용 */
+            overflow-y: auto; /* 높이가 부족할 경우 스크롤 허용 */
             overflow-x: hidden;
             touch-action: manipulation;
             user-select: none;
@@ -49,7 +49,7 @@
         .action-btn-top { position: absolute; top: 5px; left: 10px; background: #ff6b6b; color: white; text-decoration: none; padding: 6px 12px; border-radius: 20px; font-size: clamp(12px, 2.5vw, 16px); font-weight: bold; box-shadow: 0 4px 10px rgba(0,0,0,0.5); z-index: 9999; border: 2px solid #fff; font-family: 'Jua', sans-serif; }
 
         #track-area { 
-            flex: 1; width: 100%; min-height: 250px; /* 🌟 기차가 잘리지 않는 최소 높이 보장 */
+            flex: 1; width: 100%; min-height: 250px; /* 기차가 잘리지 않는 최소 높이 보장 */
             box-sizing: border-box; background-color: rgba(255, 255, 255, 0.45); border-radius: 20px; border: 4px dashed #4caf50; display: flex; align-items: center; justify-content: flex-start; padding: 10px; overflow-x: auto; scroll-behavior: smooth; box-shadow: inset 0 5px 15px rgba(0,0,0,0.1), 0 10px 20px rgba(0,0,0,0.1); backdrop-filter: blur(5px); 
         }
         #track-area::-webkit-scrollbar { display: none; }
@@ -92,7 +92,7 @@
 
         @keyframes pulse { 0% { transform: scale(1); } 100% { transform: scale(1.1); box-shadow: 0 5px 0 #d50000, 0 0 20px rgba(255, 82, 82, 0.8); } }
 
-        /* 🌟 피드백 박스 위치 조정 */
+        /* 피드백 박스 위치 조정 */
         #feedback-box { position: absolute; top: -35px; font-size: clamp(14px, 3vw, 22px); font-weight: bold; color: #333; min-height: 30px; background: white; padding: 6px 20px; border-radius: 25px; border: 3px solid #ccc; box-shadow: 0 8px 15px rgba(0,0,0,0.2); transition: all 0.2s; display: flex; align-items: center; justify-content: center; z-index: 100; white-space: nowrap; }
 
         .correct-text { color: #2e7d32 !important; border-color: #4caf50 !important; background: #e8f5e9 !important; }

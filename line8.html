@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>마법의 별자리 선 긋기 - 터치 및 비율 완벽 최적화</title>
+    <title>마법의 별자리 선 긋기</title>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
         body { 
@@ -49,7 +49,7 @@
 
         #center-area { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; gap: 10px; padding: 10px; box-sizing: border-box; min-width: 0;}
         
-        /* 🌟 그리기 캔버스 영역: 16:10 비율로 변경하여 SVG 좌표계(800x500)와 완벽 일치 */
+        /* 그리기 캔버스 영역: 16:10 비율로 변경하여 SVG 좌표계(800x500)와 완벽 일치 */
         #game-container { 
             position: relative; width: 100%; max-width: 700px; 
             aspect-ratio: 16 / 10; 
@@ -107,7 +107,7 @@
         <div id="center-area">
             <div id="game-container">
                 <div id="empty-message">옆에서 그리고 싶은 글자를 골라봐!</div>
-                <!-- 🌟 preserveAspectRatio="none" 속성 추가: 부모 크기에 맞춰 선이 유동적으로 늘어남 -->
+                <!-- preserveAspectRatio="none" 속성 추가: 부모 크기에 맞춰 선이 유동적으로 늘어남 -->
                 <svg id="svg-layer" viewBox="0 0 800 500" preserveAspectRatio="none">
                     <line id="guide-line" class="guide-line" x1="0" y1="0" x2="0" y2="0" opacity="0"></line>
                     <line id="temp-line" class="temp-line" x1="0" y1="0" x2="0" y2="0" opacity="0"></line>
@@ -218,7 +218,7 @@
             const grid = document.getElementById(containerId);
             list.forEach(c => {
                 let btn = document.createElement('button'); btn.className = 'letter-btn'; btn.id = `btn-${c}`; btn.innerText = c;
-                if (recommendedLetters.has(c)) { btn.innerHTML = c + '<span class="rec-badge">💡추천</span>'; btn.style.boxShadow = '0 0 10px rgba(255, 82, 82, 0.5)'; }
+                if (recommendedLetters.has(c)) { btn.innerHTML = c + '<span class="rec-badge">추천</span>'; btn.style.boxShadow = '0 0 10px rgba(255, 82, 82, 0.5)'; }
                 btn.onclick = () => loadLetter(c, btn); grid.appendChild(btn);
             });
         }
@@ -247,7 +247,6 @@
         const wrapper = document.createElement('div'); wrapper.style.position = 'absolute'; 
         wrapper.style.left = `${(x / 800) * 100}%`; wrapper.style.top = `${(y / 500) * 100}%`; 
         
-        // 🌟 Z-index 향상 및 pointer-events 강제 활성화 
         wrapper.style.zIndex = isStart ? "100" : "90";
         wrapper.style.pointerEvents = "auto";
         
@@ -286,7 +285,6 @@
     container.addEventListener('pointermove', (e) => {
         if (!isDrawing) return;
         const rect = container.getBoundingClientRect(); 
-        // 화면 크기가 변해도 800x500 논리 좌표로 변환
         const scaleX = 800 / rect.width;
         const scaleY = 500 / rect.height;
         const mouseX = (e.clientX - rect.left) * scaleX; 

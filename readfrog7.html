@@ -3,20 +3,20 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>AI 퐁당퐁당 징검다리 - 화면 찌부러짐 완벽 해결본</title>
+    <title>퐁당퐁당 징검다리</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Jua&display=swap');
 
         body { 
             font-family: 'Jua', 'Malgun Gothic', sans-serif; text-align: center; margin: 0; padding: 0; 
-            touch-action: pan-y; /* 🌟 세로 스크롤 허용 */
+            touch-action: pan-y; /* 세로 스크롤 허용 */
             min-height: 100vh; min-height: 100dvh; 
-            overflow-y: auto; overflow-x: hidden; /* 🌟 화면이 부족하면 자연스럽게 스크롤 되도록 변경 */
+            overflow-y: auto; overflow-x: hidden; /* 화면이 부족하면 자연스럽게 스크롤 되도록 변경 */
             background-image: url('bg/bg-frog.png'); background-size: cover; background-position: center;
             background-attachment: fixed; background-color: #e0f7fa; display: flex; flex-direction: column;
         }
 
-        /* 🌟 세로 모드 경고창 (가로 유도) */
+        /* 세로 모드 경고창 (가로 유도) */
         #landscape-warning {
             display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
             background: #00838f; z-index: 999999; flex-direction: column; justify-content: center; align-items: center;
@@ -34,7 +34,7 @@
 
         @keyframes float { 0%, 100% { transform: translateY(0px); } 50% { transform: translateY(-15px); } }
 
-        /* 🌟 높이를 100%로 억제하지 않고, 내용물에 맞춰 늘어나게 flex: 1 적용 */
+        /* 높이를 100%로 억제하지 않고, 내용물에 맞춰 늘어나게 flex: 1 적용 */
         #game-ui { display: none; flex-direction: column; align-items: center; width: 100%; flex: 1; padding: 10px; box-sizing: border-box; opacity: 0; transition: opacity 1.5s; position: relative; margin-bottom: 20px;}
         
         .action-btn-top { position: absolute; top: 5px; left: 10px; background: #ff6b6b; color: white; text-decoration: none; padding: 6px 12px; border-radius: 20px; font-weight: bold; font-size: clamp(12px, 2.5vw, 16px); box-shadow: 0 4px 10px rgba(0,0,0,0.2); z-index: 9999; border: 2px solid white; font-family: 'Jua', sans-serif;}
@@ -46,17 +46,17 @@
         #main-action-btn { padding: 6px 20px; font-size: clamp(16px, 3.5vw, 20px); font-family: 'Jua', sans-serif; background-color: #ffca28; color: #d84315; border: 3px solid #ff9800; border-radius: 30px; cursor: pointer; box-shadow: 0 4px 0 #ff9800, 0 8px 12px rgba(0,0,0,0.2); margin-bottom: 5px; transition: all 0.2s; flex-shrink: 0;}
         #main-action-btn:active { transform: translateY(4px); box-shadow: 0 0 0 #ff9800, 0 3px 5px rgba(0,0,0,0.2); }
 
-        /* 🌟 강물 영역: min-height: 480px 를 주어 4줄이 무조건 겹치지 않게 여유 공간 확보! */
+        /* 강물 영역: min-height: 480px 를 주어 4줄이 무조건 겹치지 않게 여유 공간 확보 */
         #river-area { 
             position: relative; max-width: 800px; width: 100%; flex: 1; 
-            min-height: 480px; /* 🌟 찌부러짐의 원흉 제거: 무조건 480px 이상의 높이 보장 */
+            min-height: 480px; /* 찌부러짐의 원흉 제거: 무조건 480px 이상의 높이 보장 */
             margin: 0 auto; background: linear-gradient(180deg, rgba(129, 212, 250, 0.8) 0%, rgba(0, 188, 212, 0.9) 100%); 
             border-radius: 20px; border: 4px solid rgba(255, 255, 255, 0.5); box-shadow: inset 0 10px 20px rgba(0,0,0,0.3), 0 10px 20px rgba(0,0,0,0.3); overflow: hidden; backdrop-filter: blur(5px); box-sizing: border-box;
         }
 
         #world { display: flex; flex-direction: column-reverse; width: 100%; position: absolute; bottom: 0; left: 0; transition: transform 0.6s cubic-bezier(0.25, 0.8, 0.25, 1); }
 
-        /* 🌟 JS가 이 row의 높이를 정확히 계산하여 픽셀(px)로 덮어씌울 것입니다. */
+        /* JS가 이 row의 높이를 정확히 계산하여 픽셀(px)로 덮어씌울 것입니다. */
         .row { display: flex; justify-content: space-evenly; align-items: center; width: 100%; flex-shrink: 0;}
 
         .start-rock { width: clamp(100px, 20vw, 150px); height: clamp(50px, 10vh, 80px); background: radial-gradient(circle at 30% 30%, #95a5a6, #555); border: 4px solid #333; border-radius: 50%; box-shadow: 0 6px 0 #333, 0 10px 15px rgba(0,0,0,0.5); display: flex; justify-content: center; align-items: center; color: white; font-size: clamp(16px, 3.5vw, 24px); text-shadow: 1px 1px 0 #000; }
@@ -95,34 +95,34 @@
 
     <div id="intro-screen">
         <div id="frog-greeting">"동물원 호숫가에 왔어요! 징검다리를 건너볼까요?"</div>
-        <button id="intro-btn">🐸 징검다리 건너기</button>
+        <button id="intro-btn">징검다리 건너기</button>
     </div>
 
     <div id="game-ui">
-        <a href="index.html" class="action-btn-top">🏠 처음으로</a>
+        <a href="index.html" class="action-btn-top">처음으로</a>
 
         <div class="header-area">
-            <h1>🐸 퐁당퐁당 징검다리</h1>
+            <h1>퐁당퐁당 징검다리</h1>
             <div class="guide">단어를 듣고 알맞은 연잎을 건너봐! (목표: 10단계)</div>
-            <button id="main-action-btn">🚀 게임 시작!</button>
+            <button id="main-action-btn">게임 시작!</button>
         </div>
 
         <div id="river-area">
             <div id="world">
-                <div id="animal-wrapper"><div id="animal">🐸</div></div>
+                <div id="animal-wrapper"><div id="animal">개구리</div></div>
             </div>
             
             <div id="gameover-overlay" class="overlay">
-                <h2>💦 풍덩!</h2>
+                <h2>풍덩!</h2>
                 <p>아쉽게도 물에 빠졌어요.<br>도착 기록: <span id="score-text" style="color:#ff4500;"></span>단계</p>
                 <div style="display: flex; gap: 10px; flex-wrap: wrap; justify-content: center;">
-                    <button class="retry-btn btn-blue" onclick="continueGame()">💙 이어서 하기</button>
-                    <button class="retry-btn" onclick="resetGame()">🚀 처음부터</button>
+                    <button class="retry-btn btn-blue" onclick="continueGame()">이어서 하기</button>
+                    <button class="retry-btn" onclick="resetGame()">처음부터</button>
                 </div>
             </div>
 
             <div id="clear-overlay" class="overlay">
-                <h2 style="color:#32cd32;">🎉 완주 성공! 🎉</h2>
+                <h2 style="color:#32cd32;">완주 성공!</h2>
                 <p>대단해요! 10개의 징검다리를 모두 건너<br>동물원에 도착했어요!</p>
                 <button class="retry-btn" onclick="resetGame()">다시 한 번 놀기</button>
             </div>
@@ -162,7 +162,7 @@
         function speak(text, rate = 0.85) { window.speechSynthesis.cancel(); const utterThis = new SpeechSynthesisUtterance(text); utterThis.lang = 'ko-KR'; utterThis.rate = rate; utterThis.pitch = 1.1; if (targetVoice) utterThis.voice = targetVoice; window.speechSynthesis.speak(utterThis); }
         function shuffleArray(array) { for (let i = array.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [array[i], array[j]] = [array[j], array[i]]; } return array; }
 
-        // 🌟 강물 크기를 정확히 4등분하여 모든 줄의 높이를 똑같이 맞춥니다.
+        /* 강물 크기를 정확히 4등분하여 모든 줄의 높이를 똑같이 맞춥니다. */
         function getDynamicRowHeight() {
             const river = document.getElementById('river-area');
             return river.clientHeight / 4; 
@@ -172,7 +172,7 @@
             const rowDiv = document.createElement('div'); 
             rowDiv.className = 'row'; 
             rowDiv.id = 'row-' + index;
-            rowDiv.style.height = dynHeight + 'px'; // 🌟 높이 고정 주입!
+            rowDiv.style.height = dynHeight + 'px'; /* 높이 고정 주입 */
 
             if (index === 0) { 
                 rowDiv.style.justifyContent = 'center'; 
@@ -181,7 +181,7 @@
             } 
             else if (index === MAX_STAGE + 1) { 
                 rowDiv.style.justifyContent = 'center'; 
-                const land = document.createElement('div'); land.className = 'finish-land'; land.innerText = "🚩 도착!"; 
+                const land = document.createElement('div'); land.className = 'finish-land'; land.innerText = "도착!"; 
                 rowDiv.appendChild(land); rowData[index] = null; 
             }
             else {
@@ -213,13 +213,13 @@
             if (mappedWeakWords.length > 0) { mappedWeakWords = mappedWeakWords.sort(() => Math.random() - 0.5); shuffledSets = shuffledSets.filter(item => !mappedWeakWords.some(w => w.answer === item.answer)); shuffledSets = [...mappedWeakWords, ...shuffledSets]; }
             currentSessionWords = shuffledSets.slice(0, MAX_STAGE);
 
-            document.getElementById('main-action-btn').innerText = '🔊 다시 듣기'; document.getElementById('main-action-btn').style.backgroundColor = '#64b5f6'; document.getElementById('main-action-btn').style.borderColor = '#0288d1'; document.getElementById('main-action-btn').style.boxShadow = '0 4px 0 #0288d1, 0 5px 10px rgba(0,0,0,0.2)'; document.getElementById('main-action-btn').style.color = '#fff';
+            document.getElementById('main-action-btn').innerText = '다시 듣기'; document.getElementById('main-action-btn').style.backgroundColor = '#64b5f6'; document.getElementById('main-action-btn').style.borderColor = '#0288d1'; document.getElementById('main-action-btn').style.boxShadow = '0 4px 0 #0288d1, 0 5px 10px rgba(0,0,0,0.2)'; document.getElementById('main-action-btn').style.color = '#fff';
 
             const world = document.getElementById('world');
             Array.from(world.children).forEach(child => { if(child.id !== 'animal-wrapper') world.removeChild(child); });
             rowData = []; currentRowIndex = 0;
             
-            // 🌟 강물 높이 계산 후 모든(12개) 징검다리를 한 번에 깔아서 위쪽 빈 공간 방지!
+            /* 강물 높이 계산 후 모든(12개) 징검다리를 한 번에 깔아서 위쪽 빈 공간 방지 */
             const dynHeight = getDynamicRowHeight();
             for (let i = 0; i <= MAX_STAGE + 1; i++) { 
                 world.appendChild(createRow(i, dynHeight)); 
@@ -250,13 +250,13 @@
             
             const dynHeight = getDynamicRowHeight();
             
-            // 🌟 연잎의 실제 위치(픽셀)를 계산하고, 퍼센트로 변환하여 화면 크기 변경 시에도 중앙 유지!
+            /* 연잎의 실제 위치(픽셀)를 계산하고, 퍼센트로 변환하여 화면 크기 변경 시에도 중앙 유지 */
             const parentWidth = btnElement.parentElement.offsetWidth;
             const targetLeftPx = btnElement.offsetLeft + (btnElement.offsetWidth / 2);
             const targetLeftPercent = (targetLeftPx / parentWidth) * 100;
 
             if (selectedWord === targetData.answer) {
-                feedback.innerText = `🎉 ${rowIndex}단계 통과!`; feedback.style.color = "#ffeb3b";
+                feedback.innerText = `${rowIndex}단계 통과!`; feedback.style.color = "#ffeb3b";
                 
                 currentSafeLeft = targetLeftPercent + '%';
                 wrapper.style.bottom = (rowIndex * dynHeight + (dynHeight * 0.25)) + 'px'; 
@@ -266,7 +266,7 @@
                 setTimeout(() => {
                     currentRowIndex++;
                     
-                    // 🌟 맵을 바닥으로 쳐박지 않고, 항상 아래쪽 여유 공간 확보 (화면 1칸 아래로 내림)
+                    /* 맵을 바닥으로 쳐박지 않고, 항상 아래쪽 여유 공간 확보 (화면 1칸 아래로 내림) */
                     const shiftY = Math.max(0, currentRowIndex - 1) * dynHeight;
                     document.getElementById('world').style.transform = `translateY(${shiftY}px)`;
                     
@@ -290,7 +290,7 @@
             } else {
                 gameState = 'gameover'; const failedWordData = currentSessionWords[rowIndex - 1]; logWeakWord(failedWordData);
                 
-                // 🌟 오답일 때는 안전 좌표(currentSafeLeft)를 덮어쓰지 않고 타겟 위치로 점프만!
+                /* 오답일 때는 안전 좌표(currentSafeLeft)를 덮어쓰지 않고 타겟 위치로 점프만 */
                 wrapper.style.bottom = (rowIndex * dynHeight + (dynHeight * 0.25)) + 'px'; 
                 wrapper.style.left = targetLeftPercent + '%'; 
                 playJumpSound();
@@ -308,7 +308,7 @@
             
             const dynHeight = getDynamicRowHeight();
             
-            // 🌟 기억해둔 올바른 위치(currentSafeLeft)와 이전 줄(currentRowIndex)로 정확하게 복귀!
+            /* 기억해둔 올바른 위치(currentSafeLeft)와 이전 줄(currentRowIndex)로 정확하게 복귀 */
             wrapper.style.bottom = (currentRowIndex * dynHeight + (dynHeight * 0.25)) + 'px'; 
             wrapper.style.left = currentSafeLeft;
             isJumping = false; gameState = 'playing';
@@ -318,12 +318,12 @@
 
         function resetGame() {
             document.getElementById('gameover-overlay').style.display = 'none'; document.getElementById('clear-overlay').style.display = 'none'; isJumping = false; gameState = 'ready';
-            const mainBtn = document.getElementById('main-action-btn'); mainBtn.innerText = '🚀 다시 시작!'; mainBtn.style.backgroundColor = '#ffca28'; mainBtn.style.borderColor = '#ff9800'; mainBtn.style.boxShadow = '0 4px 0 #ff9800, 0 5px 10px rgba(0,0,0,0.2)'; mainBtn.style.color = '#d84315'; document.getElementById('feedback-text').innerText = '';
+            const mainBtn = document.getElementById('main-action-btn'); mainBtn.innerText = '다시 시작!'; mainBtn.style.backgroundColor = '#ffca28'; mainBtn.style.borderColor = '#ff9800'; mainBtn.style.boxShadow = '0 4px 0 #ff9800, 0 5px 10px rgba(0,0,0,0.2)'; mainBtn.style.color = '#d84315'; document.getElementById('feedback-text').innerText = '';
         }
 
         function saveReward(earnedCoins, gameId) { let currentCoins = parseInt(localStorage.getItem('hangeul_park_coins') || '0'); localStorage.setItem('hangeul_park_coins', currentCoins + earnedCoins); let clearedGames = JSON.parse(localStorage.getItem('hangeul_park_cleared') || '{}'); let currentCount = clearedGames[gameId]; if (typeof currentCount !== 'number') currentCount = 0; clearedGames[gameId] = currentCount + 1; localStorage.setItem('hangeul_park_cleared', JSON.stringify(clearedGames)); }
         
-        // 🌟 창 크기가 변할 때(회전 등) 모든 높이와 개구리 위치를 다시 계산하여 정렬
+        /* 창 크기가 변할 때(회전 등) 모든 높이와 개구리 위치를 다시 계산하여 정렬 */
         window.addEventListener('resize', () => {
             if (gameState === 'playing' || gameState === 'gameover' || gameState === 'clear') {
                 const dynHeight = getDynamicRowHeight();

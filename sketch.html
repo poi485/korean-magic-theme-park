@@ -3,18 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>AI 한글 요술 스케치북 - 모바일 스크롤 완벽 방지</title>
+    <title>한글 요술 스케치북</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Jua&display=swap');
 
         body { 
             font-family: 'Jua', 'Malgun Gothic', sans-serif; text-align: center; margin: 0; padding: 10px;
-            touch-action: none; min-height: 100vh; min-height: 100dvh; overflow: hidden; /* 🌟 모바일 세로 스크롤 완전 차단 */
+            touch-action: none; min-height: 100vh; min-height: 100dvh; overflow: hidden; /* 모바일 세로 스크롤 완전 차단 */
             background-image: url('bg/bg-sketch.png'); background-size: cover; background-position: center;
             background-attachment: fixed; background-color: #fce4ec; display: flex; flex-direction: column; align-items: center; box-sizing: border-box;
         }
 
-        /* 🌟 세로 모드 경고창 (가로 유도) */
+        /* 세로 모드 경고창 (가로 유도) */
         #landscape-warning { display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: #e91e63; z-index: 999999; flex-direction: column; justify-content: center; align-items: center; color: white; text-align: center; font-family: 'Jua', sans-serif; }
         #landscape-warning .icon { font-size: 80px; animation: rotatePhone 1.5s infinite ease-in-out; margin-bottom: 20px;}
         #landscape-warning p { font-size: 24px; font-family: 'Malgun Gothic', sans-serif;}
@@ -69,7 +69,7 @@
         #ai-image { max-width: 100%; max-height: 80%; object-fit: contain; border-radius: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.3); border: 4px solid #fff; display: none; animation: popIn 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
         @keyframes popIn { 0% { transform: translateY(-30px) scale(0.5); opacity: 0; } 100% { transform: translateY(0) scale(1); opacity: 1; } }
 
-        /* 🌟 갤러리 모달 UI */
+        /* 갤러리 모달 UI */
         #gallery-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.7); backdrop-filter: blur(5px); display: none; justify-content: center; align-items: center; z-index: 9999; }
         .gallery-content { background: #fff; width: 90%; max-width: 600px; max-height: 90vh; border-radius: 20px; padding: 20px; box-shadow: 0 15px 30px rgba(0,0,0,0.5); text-align: center; display: flex; flex-direction: column;}
         .gallery-content h2 { margin-top: 0; color: #ab47bc; font-size: clamp(20px, 4vw, 28px); text-shadow: 1px 1px 0px #f3e5f5; flex-shrink: 0;}
@@ -98,21 +98,21 @@
 
     <div id="intro-screen">
         <div id="sketch-greeting">"여기는 마법의 기념품 가게야! 단어를 적고 멋진 선물을 받아가렴!"</div>
-        <button id="intro-btn">🎨 기념품 가게 들어가기</button>
+        <button id="intro-btn">기념품 가게 들어가기</button>
     </div>
 
     <div id="game-ui">
         <div class="header-area">
-            <a href="index.html" class="action-btn-top">🏠 처음으로</a>
-            <button class="gallery-btn-top" onclick="openAlbum()">🖼️ 내 앨범</button>
-            <h1>🎨 AI 요정 스케치북</h1>
+            <a href="index.html" class="action-btn-top">처음으로</a>
+            <button class="gallery-btn-top" onclick="openAlbum()">내 앨범</button>
+            <h1>AI 요정 스케치북</h1>
             <div id="recommend-banner"></div>
         </div>
 
         <div class="game-content-row">
             
             <div class="left-panel">
-                <button id="mic-btn">🎤 1. 단어 말하기</button>
+                <button id="mic-btn">1. 단어 말하기</button>
                 <div id="result-text">...</div>
 
                 <div id="canvas-wrapper">
@@ -121,15 +121,15 @@
                 </div>
                 
                 <div class="btn-group">
-                    <button id="clear-btn" class="action-btn">다시 쓰기 🧹</button>
-                    <button id="check-btn" class="action-btn">2. 검사하기 ✨</button>
+                    <button id="clear-btn" class="action-btn">다시 쓰기</button>
+                    <button id="check-btn" class="action-btn">2. 검사하기</button>
                 </div>
             </div>
 
             <div class="right-panel">
                 <div id="feedback-text">단어를 말하고 글씨를 써보세요!</div>
                 <div id="reward-section" style="display: none;">
-                    <div id="loading-text">🎨 요정이 선물을 만들고 있어요...</div>
+                    <div id="loading-text">요정이 선물을 만들고 있어요...</div>
                     <img id="ai-image" src="" alt="AI 생성 이미지">
                 </div>
             </div>
@@ -139,7 +139,7 @@
 
     <div id="gallery-modal">
         <div class="gallery-content">
-            <h2 id="album-title">🎨 내 요술 스케치북 앨범</h2>
+            <h2 id="album-title">내 요술 스케치북 앨범</h2>
             <div class="gallery-list" id="gallery-list"></div>
             <button class="close-modal-btn" id="album-close-btn" onclick="closeAlbum()">닫기</button>
 
@@ -147,9 +147,9 @@
                 <h3 id="detail-word">단어</h3>
                 <img id="detail-image" src="" alt="확대 이미지">
                 <div class="detail-btn-group">
-                    <button class="action-btn" style="background: #29b6f6;" onclick="downloadCurrentItem()">⬇️ 저장하기</button>
-                    <button class="action-btn" style="background: #ef5350;" onclick="deleteCurrentItem()">🗑️ 삭제하기</button>
-                    <button class="action-btn" style="background: #9e9e9e;" onclick="closeAlbumDetail()">🔙 목록으로</button>
+                    <button class="action-btn" style="background: #29b6f6;" onclick="downloadCurrentItem()">저장하기</button>
+                    <button class="action-btn" style="background: #ef5350;" onclick="deleteCurrentItem()">삭제하기</button>
+                    <button class="action-btn" style="background: #9e9e9e;" onclick="closeAlbumDetail()">목록으로</button>
                 </div>
             </div>
         </div>
@@ -176,7 +176,7 @@
 
         function initRecommendation() {
             let weakWords = JSON.parse(localStorage.getItem('hangeul_weak_words') || '[]'); let validWords = weakWords.filter(w => promptDictionary[w.target]);
-            if (validWords.length > 0) { currentRecWord = validWords[Math.floor(Math.random() * validWords.length)].target; const banner = document.getElementById('recommend-banner'); banner.innerHTML = `🧚‍♀️ 요정의 추천: <span style="color:#ffeb3b;">'${currentRecWord}'</span> 그려볼까요?`; banner.style.display = 'block'; } 
+            if (validWords.length > 0) { currentRecWord = validWords[Math.floor(Math.random() * validWords.length)].target; const banner = document.getElementById('recommend-banner'); banner.innerHTML = `요정의 추천: <span style="color:#ffeb3b;">'${currentRecWord}'</span> 그려볼까요?`; banner.style.display = 'block'; } 
             else { currentRecWord = null; document.getElementById('recommend-banner').style.display = 'none'; }
         }
 
@@ -230,12 +230,12 @@
             let totalEmptyArea = (bgData.length / 4) - targetPixels; let coverage = coveredPixels / targetPixels; let penaltyRatio = overdrawnPixels / totalEmptyArea; let matchRate = Math.max(0, (coverage * 100) - (penaltyRatio * 150));
             
             if (matchRate >= 60) {
-                if (currentRecWord && spokenWord === currentRecWord) { feedbackText.innerText = `🎉 추천 단어 완성! (${matchRate.toFixed(1)}%)`; let weakWords = JSON.parse(localStorage.getItem('hangeul_weak_words') || '[]'); weakWords = weakWords.filter(w => w.target !== currentRecWord); localStorage.setItem('hangeul_weak_words', JSON.stringify(weakWords)); currentRecWord = null; initRecommendation(); } 
-                else { feedbackText.innerText = `🎉 참 잘 썼어요! (${matchRate.toFixed(1)}%)`; }
+                if (currentRecWord && spokenWord === currentRecWord) { feedbackText.innerText = `추천 단어 완성! (${matchRate.toFixed(1)}%)`; let weakWords = JSON.parse(localStorage.getItem('hangeul_weak_words') || '[]'); weakWords = weakWords.filter(w => w.target !== currentRecWord); localStorage.setItem('hangeul_weak_words', JSON.stringify(weakWords)); currentRecWord = null; initRecommendation(); } 
+                else { feedbackText.innerText = `참 잘 썼어요! (${matchRate.toFixed(1)}%)`; }
                 feedbackText.style.color = "#ffeb3b"; rewardSection.style.display = "flex"; loadingText.style.display = "block"; aiImage.style.display = "none"; saveReward(10, 'game_sketch');
                 const baseItem = promptDictionary[spokenWord] || spokenWord; const prompt = `A single cute 3D Pixar style toy of ${baseItem}, vibrant pastel colors, pure solid white background, masterpiece. No text, no background scenery.`; const imageUrl = `https://image.pollinations.ai/prompt/${encodeURIComponent(prompt)}?width=800&height=800&nologo=true&model=flux`;
                 aiImage.onload = () => { loadingText.style.display = "none"; aiImage.style.display = "block"; saveToAlbum(spokenWord, imageUrl); }; aiImage.src = imageUrl;
-            } else { feedbackText.innerText = `😅 조금 더 꼼꼼히 써보세요! (${matchRate.toFixed(1)}%)`; feedbackText.style.color = "#ffcdd2"; rewardSection.style.display = "none"; }
+            } else { feedbackText.innerText = `조금 더 꼼꼼히 써보세요! (${matchRate.toFixed(1)}%)`; feedbackText.style.color = "#ffcdd2"; rewardSection.style.display = "none"; }
         });
 
         function saveReward(earnedCoins, gameId) { let currentCoins = parseInt(localStorage.getItem('hangeul_park_coins') || '0'); localStorage.setItem('hangeul_park_coins', currentCoins + earnedCoins); let clearedGames = JSON.parse(localStorage.getItem('hangeul_park_cleared') || '{}'); let currentCount = clearedGames[gameId] || 0; clearedGames[gameId] = currentCount + 1; localStorage.setItem('hangeul_park_cleared', JSON.stringify(clearedGames)); }
@@ -249,7 +249,7 @@
             document.getElementById('album-title').style.display = 'block'; document.getElementById('gallery-list').style.display = 'grid'; document.getElementById('album-close-btn').style.display = 'inline-block'; document.getElementById('album-detail-view').style.display = 'none'; document.getElementById('gallery-modal').style.display = 'flex';
         }
         function closeAlbum() { document.getElementById('gallery-modal').style.display = 'none'; }
-        function viewAlbumItem(index) { currentAlbumIndex = index; const item = albumData[index]; document.getElementById('album-title').style.display = 'none'; document.getElementById('gallery-list').style.display = 'none'; document.getElementById('album-close-btn').style.display = 'none'; document.getElementById('detail-image').src = item.url; document.getElementById('detail-word').innerText = `✨ ${item.word} ✨`; document.getElementById('album-detail-view').style.display = 'flex'; }
+        function viewAlbumItem(index) { currentAlbumIndex = index; const item = albumData[index]; document.getElementById('album-title').style.display = 'none'; document.getElementById('gallery-list').style.display = 'none'; document.getElementById('album-close-btn').style.display = 'none'; document.getElementById('detail-image').src = item.url; document.getElementById('detail-word', `✨ ${item.word} ✨`).innerText = `✨ ${item.word} ✨`; document.getElementById('album-detail-view').style.display = 'flex'; }
         function closeAlbumDetail() { openAlbum(); }
         function downloadCurrentItem() { if(currentAlbumIndex === null) return; const item = albumData[currentAlbumIndex]; const a = document.createElement('a'); a.href = item.url; a.download = `마법스케치북_${item.word}.png`; a.target = '_blank'; document.body.appendChild(a); a.click(); document.body.removeChild(a); }
         function deleteCurrentItem() { if(currentAlbumIndex === null) return; if(confirm("정말 지울까요?")) { albumData.splice(currentAlbumIndex, 1); localStorage.setItem('hangeul_sketch_album', JSON.stringify(albumData)); closeAlbumDetail(); } }
