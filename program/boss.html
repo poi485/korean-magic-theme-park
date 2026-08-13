@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>끝말잇기 기차</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Jua&display=swap');
+
+        body { 
+            font-family: 'Jua', 'Malgun Gothic', sans-serif; 
+            text-align: center; 
+            margin: 0; 
+            padding: 0; 
+            min-height: 100vh;
+            min-height: 100dvh; /* 모바일 하단바 제외 실제 높이 적용 */
+            box-sizing: border-box;
+            overflow-y: auto; /* 높이가 부족할 경우 스크롤 허용 */
+            overflow-x: hidden;
+            touch-action: manipulation;
+            user-select: none;
+            
+            background-image: url('../media/image/bg-train.png');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            background-color: #81c784;
+            display: flex;
+            flex-direction: column;
+        }
+
+        #landscape-warning { display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: #1e3c72; z-index: 999999; flex-direction: column; justify-content: center; align-items: center; color: white; text-align: center; font-family: 'Jua', sans-serif; }
+        #landscape-warning .icon { font-size: 80px; animation: rotatePhone 1.5s infinite ease-in-out; margin-bottom: 20px;}
+        #landscape-warning p { font-size: 24px; font-family: 'Malgun Gothic', sans-serif;}
+        @keyframes rotatePhone { 0% { transform: rotate(0deg); } 50% { transform: rotate(-90deg); } 100% { transform: rotate(-90deg); } }
+        @media screen and (orientation: portrait) { #landscape-warning { display: flex !important; } }
+        
+        #intro-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100vh; display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 1000; background: rgba(255, 255, 255, 0.4); backdrop-filter: blur(8px); transition: opacity 1s; }
+        #intro-btn { background-color: #29b6f6; color: white; font-size: clamp(24px, 5vw, 32px); font-family: 'Jua', sans-serif; padding: 15px 40px; border: 6px solid #0288d1; border-radius: 50px; cursor: pointer; box-shadow: 0 8px 0 #0288d1, 0 15px 20px rgba(0,0,0,0.3); transition: all 0.1s; animation: float 2s infinite ease-in-out; }
+        #intro-btn:active { transform: translateY(8px); box-shadow: 0 0 0 #0288d1, 0 5px 10px rgba(0,0,0,0.3); }
+        #train-greeting { font-size: clamp(24px, 5vw, 40px); font-family: 'Jua', sans-serif; color: #0288d1; text-shadow: 2px 2px 0px #fff, 0 4px 15px rgba(255,255,255,0.8); margin-bottom: 40px; display: none; text-align: center; }
+        @keyframes float { 0% { transform: translateY(0px); } 50% { transform: translateY(-15px); } 100% { transform: translateY(0px); } }
+
+        #game-ui { display: none; flex-direction: column; width: 100%; min-height: 100%; padding: 10px 15px; box-sizing: border-box; opacity: 0; transition: opacity 1.5s; position: relative; }
+
+        .header-area { flex-shrink: 0; margin-bottom: 5px; display: flex; flex-direction: column; align-items: center;}
+        h1 { color: #00838f; font-size: clamp(24px, 4vw, 36px); margin: 0 0 5px 0; text-shadow: 2px 2px 0px #fff, 0 2px 10px rgba(255,255,255,0.8); }
+        .top-guide-bar { font-size: clamp(14px, 3vw, 20px); color: #006064; background: rgba(255,255,255,0.95); padding: 5px 20px; border-radius: 50px; display: inline-block; margin: 0 auto 10px auto; border: 2px solid #fff; box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
+        .action-btn-top { position: absolute; top: 5px; left: 10px; background: #ff6b6b; color: white; text-decoration: none; padding: 6px 12px; border-radius: 20px; font-size: clamp(12px, 2.5vw, 16px); font-weight: bold; box-shadow: 0 4px 10px rgba(0,0,0,0.5); z-index: 9999; border: 2px solid #fff; font-family: 'Jua', sans-serif; }
+
+        #track-area { 
+            flex: 1; width: 100%; min-height: 250px; /* 기차가 잘리지 않는 최소 높이 보장 */
+            box-sizing: border-box; background-color: rgba(255, 255, 255, 0.45); border-radius: 20px; border: 4px dashed #4caf50; display: flex; align-items: center; justify-content: flex-start; padding: 10px; overflow-x: auto; scroll-behavior: smooth; box-shadow: inset 0 5px 15px rgba(0,0,0,0.1), 0 10px 20px rgba(0,0,0,0.1); backdrop-filter: blur(5px); 
+        }
+        #track-area::-webkit-scrollbar { display: none; }
+
+        #train-container { display: flex; align-items: flex-end; justify-content: flex-start; height: 100%; margin: 0 auto; padding-bottom: 20px;}
+        .train-enter { animation: slideInRight 1.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
+        @keyframes slideInRight { 0% { transform: translateX(100vw); } 100% { transform: translateX(0); } }
+        .train-leave { animation: slideOutLeft 2s ease-in-out forwards; }
+        @keyframes slideOutLeft { 0% { transform: translateX(0); } 100% { transform: translateX(-200vw); } }
+
+        .train-car { display: inline-flex; flex-direction: column; justify-content: flex-start; align-items: center; width: clamp(110px, 15vw, 160px); height: clamp(100px, 14vw, 150px); background-color: #ffca28; border: clamp(3px, 0.5vw, 6px) solid #ff8f00; border-radius: 15px; margin: 0 5px; position: relative; box-shadow: 0 6px 0 #ff8f00, 0 10px 15px rgba(0,0,0,0.3); flex-shrink: 0; animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; transform-origin: bottom center; padding-top: 10px; z-index: 2; }
+        .train-car:not(:last-child)::after { content: ''; position: absolute; right: -12px; top: 50%; width: 10px; height: 6px; background-color: #555; z-index: -1; border-radius: 3px; }
+        .wheels { position: absolute; bottom: -12px; left: 0; width: 100%; display: flex; justify-content: space-around; padding: 0 10px; box-sizing: border-box; }
+        .wheel { width: clamp(20px, 3vw, 36px); height: clamp(20px, 3vw, 36px); background-color: #333; border-radius: 50%; border: 2px solid #111; box-shadow: inset 0 0 5px rgba(255,255,255,0.3); position: relative; }
+        .wheel::after { content: ''; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 6px; height: 6px; background: #9e9e9e; border-radius: 50%; }
+
+        .engine { background-color: #e53935 !important; border-color: #b71c1c !important; box-shadow: 0 6px 0 #b71c1c, 0 10px 15px rgba(0,0,0,0.3) !important; border-radius: 15px 30px 10px 10px !important; padding-top: 15px; }
+        .engine .word-text { color: white; }
+        .engine-cab { position: absolute; top: -20px; right: -3px; width: 40px; height: 25px; background-color: #e53935; border: 3px solid #b71c1c; border-bottom: none; border-radius: 10px 10px 0 0; z-index: -1; }
+        .engine-window { position: absolute; top: -12px; right: 5px; width: 15px; height: 15px; background-color: #81d4fa; border: 2px solid #333; border-radius: 3px; box-shadow: inset 1px 1px 3px rgba(255,255,255,0.8); }
+        .chimney { position: absolute; top: -25px; left: 8px; width: 15px; height: 25px; background-color: #333; border-radius: 3px 3px 0 0; box-shadow: inset -2px 0 0 rgba(0,0,0,0.4); }
+        .smoke { position: absolute; top: -35px; left: 0px; width: 25px; height: 25px; background-color: rgba(255, 255, 255, 0.9); border-radius: 50%; animation: floatSmoke 1.5s infinite linear; z-index: 10; box-shadow: 0 0 5px rgba(255,255,255,0.5); }
+        @keyframes floatSmoke { 0% { transform: translateY(0) scale(0.5); opacity: 0; } 50% { opacity: 1; } 100% { transform: translateY(-30px) scale(1.8); opacity: 0; } }
+        .cowcatcher { position: absolute; bottom: 2px; left: -10px; width: 10px; height: 20px; background-color: #424242; clip-path: polygon(100% 0, 100% 100%, 0 100%); }
+
+        .emoji-art { font-size: clamp(30px, 6vw, 55px); margin-bottom: 0px; filter: drop-shadow(0 3px 5px rgba(0,0,0,0.2)); }
+        .word-text { font-size: clamp(16px, 3vw, 26px); font-weight: bold; color: #333; z-index: 5; }
+
+        @keyframes popIn { 0% { transform: scale(0) translateY(50px); opacity: 0; } 80% { transform: scale(1.1) translateY(-10px); } 100% { transform: scale(1) translateY(0); opacity: 1; } }
+
+        #control-area { position: relative; height: clamp(90px, 15vw, 130px); display: flex; flex-direction: column; justify-content: center; align-items: center; margin-top: 15px; flex-shrink: 0; }
+        .control-row { display: flex; align-items: center; justify-content: center; gap: clamp(10px, 3vw, 30px); width: 100%; margin-top: 10px;}
+
+        #mic-btn { width: clamp(60px, 12vw, 90px); height: clamp(60px, 12vw, 90px); background-color: #29b6f6; border: 4px solid #0288d1; border-radius: 50%; font-size: clamp(24px, 5vw, 40px); color: white; cursor: pointer; box-shadow: 0 5px 0 #0288d1, 0 10px 15px rgba(0,0,0,0.3); transition: all 0.2s; display: flex; justify-content: center; align-items: center; flex-shrink: 0; margin-bottom: 5px; }
+        #mic-btn:active { transform: translateY(5px); box-shadow: 0 0 0 #0288d1, 0 5px 10px rgba(0,0,0,0.3); }
+        .listening { animation: pulse 1s infinite alternate; background-color: #ff5252 !important; border-color: #d50000 !important; }
+
+        #help-btn { background-color: #ffca28; border: 3px solid #ff9800; border-radius: 20px; padding: clamp(6px, 1.5vw, 12px) clamp(12px, 2.5vw, 25px); font-size: clamp(14px, 3vw, 22px); font-weight: bold; color: #d35400; cursor: pointer; box-shadow: 0 4px 0 #ff9800, 0 8px 12px rgba(0,0,0,0.2); transition: all 0.2s; display: flex; align-items: center; font-family: 'Jua', sans-serif; white-space: nowrap; flex-shrink: 0; margin-bottom: 5px;}
+        #help-btn:active { transform: translateY(4px); box-shadow: 0 0 0 #ff9800, 0 3px 5px rgba(0,0,0,0.2); }
+
+        @keyframes pulse { 0% { transform: scale(1); } 100% { transform: scale(1.1); box-shadow: 0 5px 0 #d50000, 0 0 20px rgba(255, 82, 82, 0.8); } }
+
+        /* 피드백 박스 위치 조정 */
+        #feedback-box { position: absolute; top: -35px; font-size: clamp(14px, 3vw, 22px); font-weight: bold; color: #333; min-height: 30px; background: white; padding: 6px 20px; border-radius: 25px; border: 3px solid #ccc; box-shadow: 0 8px 15px rgba(0,0,0,0.2); transition: all 0.2s; display: flex; align-items: center; justify-content: center; z-index: 100; white-space: nowrap; }
+
+        .correct-text { color: #2e7d32 !important; border-color: #4caf50 !important; background: #e8f5e9 !important; }
+        .wrong-text { color: #c62828 !important; border-color: #f44336 !important; background: #ffebee !important; }
+        .warning-text { color: #ef6c00 !important; border-color: #ff9800 !important; background: #fff3e0 !important; }
+
+    </style>
+</head>
+<body>
+
+    <div id="landscape-warning">
+        <div class="icon">📱</div>
+        <h2>화면을 가로로 눕혀주세요!</h2>
+        <p>기차놀이는 가로 화면에서 해야 가장 재밌어요.</p>
+    </div>
+
+    <div id="intro-screen">
+        <div id="train-greeting">"야호! 신나는 롤러코스터 세상, 청룡 열차를 만들어보자!"</div>
+        <button id="intro-btn">🎢 청룡 열차 타러 가기</button>
+    </div>
+
+    <div id="game-ui">
+        <div class="header-area">
+            <a href="index.html" class="action-btn-top">🏠 처음으로</a>
+            <h1>🚂 AI 끝말잇기 기차</h1>
+            <div class="top-guide-bar">마이크를 누르고 단어를 말해 기차 6칸을 모아보세요! (<span id="car-count">0</span>/6)</div>
+        </div>
+
+        <div id="track-area">
+            <div id="train-container"></div>
+        </div>
+
+        <div id="control-area">
+            <div id="feedback-box">마이크 버튼을 누르고 시작하세요!</div>
+            <div class="control-row">
+                <button id="mic-btn">🎤</button>
+                <button id="help-btn" onclick="provideHint()">도와주세요 💡</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('intro-btn').addEventListener('click', () => {
+            const introBtn = document.getElementById('intro-btn'); const greeting = document.getElementById('train-greeting');
+            introBtn.style.display = 'none'; greeting.style.display = 'block';
+            const introAudio = new Audio('../media/sound/os-train.mp3');
+            introAudio.onended = () => { transitionToGame(); };
+            introAudio.play().catch(e => { console.log("오디오 재생 실패 (자동 전환합니다):", e); setTimeout(() => { if (document.getElementById('intro-screen').style.opacity !== '0') { transitionToGame(); } }, 2000); });
+        });
+
+        function transitionToGame() {
+            const intro = document.getElementById('intro-screen'); intro.style.opacity = '0';
+            setTimeout(() => { intro.style.display = 'none'; const gameUI = document.getElementById('game-ui'); gameUI.style.display = 'flex'; setTimeout(() => { gameUI.style.opacity = '1'; initGame(); }, 50); }, 1000);
+        }
+
+        const emojiDict = { "기차":"🚂", "사과":"🍎", "과자":"🍪", "자전거":"🚲", "거미":"🕷️", "미술":"🎨", "사자":"🦁", "바나나":"🍌", "나무":"🌳", "무지개":"🌈", "개구리":"🐸", "리본":"🎀", "오리":"🦆", "도넛":"🍩", "포도":"🍇", "다람쥐":"🐿️", "쥐":"🐭", "치즈":"🧀", "토끼":"🐰", "토마토":"🍅", "구두":"👞", "비누":"🧼", "하마":"🦛", "사탕":"🍬", "학교":"🏫", "비행기":"✈️", "가방":"🎒", "구름":"☁️", "감자":"🥔", "자동차":"🚗", "문어":"🐙", "보물":"💎", "개미":"🐜", "바다":"🌊", "우주":"🚀", "주스":"🥤", "수박":"🍉", "박쥐":"🦇", "지구":"🌍", "구슬":"🔮", "음식":"🍱", "식물":"🌿", "물감":"🎨", "기린":"🦒", "인형":"🧸", "나비":"🦋", "교복":"👔", "복숭아":"🍑", "아기":"👶", "돼지":"🐷", "지우개":"🧽", "연필":"✏️", "피아노":"🎹", "노트":"📓", "트럭":"🚚", "침대":"🛏️", "주택":"🏠", "택시":"🚕", "시계":"⌚", "계란":"🥚", "안경":"👓", "경찰차":"🚓", "차도":"🛣️", "음악":"🎵", "임금님":"👑", "임산부":"🤰", "신발":"👟" };
+        const rawWords = "가구 가위 가족 간식 갈매기 감기 강아지 거북이 거울 고기 고양이 고래 곰 공룡 과일 교실 구급차 그네 그림 기계 꼬리 꽃 나뭇잎 나사 낚시 날개 남자 남동생 냉장고 냄비 노루 노래 눈사람 다리 달팽이 닭 담요 대문 도마뱀 도서관 동그라미 동물 두부 딸기 라디오 로봇 마늘 마음 마을 모자 모기 목걸이 무 무당벌레 문 물 바가지 바지 박스 반딧불이 발 밤 방패 배추 뱀 병아리 보트 부엉이 부채 불 비 비옷 빗자루 빵 사슴 사진 산호 새우 색연필 샤프 소금 소풍 손목 손수건 수영장 숟가락 스케치북 신발 아버지 아이스크림 악어 야구 양말 양파 얼굴 여름 연못 열쇠 엽서 오이 오징어 옷장 우산 우유 유리창 은행 이불 인어공주 자두 장난감 장미 장화 저금통 전구 전화기 점토 접시 젓가락 주머니 주전자 쥐약 지갑 찌개 창문 책상 천사 청소기 체리 치과 치약 칫솔 카메라 코끼리 코뿔소 콩 크레파스 타조 텔레비전 텐트 파도 파리 파인애플 펭귄 포크 표범 필통 하늘 학원 할머니 할아버지 해바라기 햄스터 호랑이 호박 화분 화장실 휴지 복도 도덕 덕목 목소리 이빨 빨대 대나무 무술 술래잡기 기차표 표창 창고 고무 무지 지식 식사 사냥 양치기 기사 사과나무 무릎 대장 장군 군인 인사 사전 전부 부자 자유 유리 리코더 더위 위기 기분 분수 수건 건전지 지진 진흙 흙 장마 마당 당근 근육 육상 상어 어부 부모 모래 안심 심장 장소 소나무 무용 용기 기상 상품 품격 격투기 기적 적성 성능 능금 금요일 일요일 일기 체조 조개 개살구 구이 이발 발가락 락스 스키 키위 위장 장기 기원 원숭이 이마 마술 술잔 잔디 디스크 크림 프라이팬 팬더 더듬이 이슬 슬픔 품앗이 이사 사랑 랑데부 만화 화가 가루 루비 비빔밥 밥상 상자 자리 본드 드럼 럼주 주먹 먹이 이름 내일 일과 과목 목요일 일찍 음악 음표 임금님 임산부 신발";
+        const extraValidWords = rawWords.split(" "); const hintDictionary = [...new Set([...Object.keys(emojiDict), ...extraValidWords])]; const DEFAULT_EMOJI = "✨";
+        const badWords = ["섹스", "시발", "씨발", "병신", "개새", "지랄", "좆", "창녀", "존나", "새끼", "애미", "애비", "니미", "염병", "자지", "보지", "바보", "멍청이"];
+        const carColors = [ { bg: '#ffca28', border: '#ff8f00' }, { bg: '#66bb6a', border: '#388e3c' }, { bg: '#42a5f5', border: '#1976d2' }, { bg: '#ab47bc', border: '#7b1fa2' }, { bg: '#ff7043', border: '#e64a19' }, { bg: '#29b6f6', border: '#0288d1' } ];
+
+        function getAllowedStarts(lastChar) {
+            let allowed = [lastChar];
+            const ruleMap = { '랴':['야'], '략':['약'], '량':['양'], '려':['여'], '력':['역'], '련':['연'], '렬':['열'], '렴':['염'], '렵':['엽'], '령':['영'], '례':['예'], '료':['요'], '룡':['용'], '류':['유'], '륜':['윤'], '률':['율'], '리':['니','이'], '린':['닌','인'], '릴':['닐','일'], '림':['님','임'], '립':['닙','입'], '링':['닝','잉'], '녀':['여'], '녁':['역'], '년':['연'], '념':['염'], '녑':['엽'], '녕':['영'], '뇨':['요'], '뉴':['유'], '니':['이'], '님':['임'], '닙':['입'], '닝':['잉'], '닢':['잎'], '라':['나','아'], '락':['낙','악'], '란':['난','안'], '랄':['날','알'], '람':['남','암'], '랍':['납','압'], '랑':['낭','앙'], '래':['내','애'], '랭':['냉','앵'], '로':['노','오'], '록':['녹','옥'], '론':['논','온'], '롤':['놀','올'], '롬':['놈','옴'], '롭':['놉','옵'], '롱':['농','옹'], '뢰':['뇌','외'], '루':['누','우'], '룩':['눅','욱'], '룬':['눈','운'], '룰':['눌','울'], '룸':['눔','움'], '룹':['눕','웁'], '룽':['눙','웅'], '르':['느','으'], '륵':['늑','윽'], '른':['는','은'], '를':['늘','을'], '름':['늠','음'], '릅':['늡','읍'], '릉':['능','응'] };
+            if(ruleMap[lastChar]) { allowed = allowed.concat(ruleMap[lastChar]); } return allowed;
+        }
+
+        let usedWords = []; let currentWord = ""; let isListening = false; let audioCtx = null; let targetVoice = null;
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition; const recognition = new SpeechRecognition(); recognition.lang = 'ko-KR'; recognition.interimResults = false; recognition.maxAlternatives = 1;
+
+        function loadVoices() { const voices = window.speechSynthesis.getVoices(); const koVoices = voices.filter(v => v.lang.includes('ko')); targetVoice = koVoices.find(v => v.name.includes('Google')) || koVoices[0]; }
+        window.speechSynthesis.onvoiceschanged = loadVoices; loadVoices();
+
+        function playSound(type) {
+            if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)(); if (audioCtx.state === 'suspended') audioCtx.resume();
+            const osc = audioCtx.createOscillator(); const gain = audioCtx.createGain(); osc.connect(gain); gain.connect(audioCtx.destination);
+            if (type === 'correct') { osc.type = 'sine'; osc.frequency.setValueAtTime(600, audioCtx.currentTime); osc.frequency.exponentialRampToValueAtTime(1200, audioCtx.currentTime + 0.1); gain.gain.setValueAtTime(0.3, audioCtx.currentTime); gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3); osc.start(); osc.stop(audioCtx.currentTime + 0.3); } 
+            else if (type === 'wrong') { osc.type = 'triangle'; osc.frequency.setValueAtTime(300, audioCtx.currentTime); osc.frequency.exponentialRampToValueAtTime(150, audioCtx.currentTime + 0.3); gain.gain.setValueAtTime(0.3, audioCtx.currentTime); gain.gain.linearRampToValueAtTime(0.01, audioCtx.currentTime + 0.3); osc.start(); osc.stop(audioCtx.currentTime + 0.3); } 
+            else if (type === 'horn') { osc.type = 'square'; osc.frequency.setValueAtTime(350, audioCtx.currentTime); gain.gain.setValueAtTime(0.3, audioCtx.currentTime); gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.4); osc.frequency.setValueAtTime(350, audioCtx.currentTime + 0.5); gain.gain.setValueAtTime(0.3, audioCtx.currentTime + 0.5); gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 1.2); osc.start(); osc.stop(audioCtx.currentTime + 1.2); }
+        }
+
+        function speak(text) { window.speechSynthesis.cancel(); const utterThis = new SpeechSynthesisUtterance(text); utterThis.lang = 'ko-KR'; utterThis.rate = 0.85; utterThis.pitch = 1.2; if (targetVoice) utterThis.voice = targetVoice; window.speechSynthesis.speak(utterThis); }
+
+        function logWeakWord(wordStr) { let weakWords = JSON.parse(localStorage.getItem('hangeul_weak_words') || '[]'); if (!weakWords.some(item => item.target === wordStr)) { weakWords.push({ target: wordStr, traps: [] }); if (weakWords.length > 20) weakWords.shift(); localStorage.setItem('hangeul_weak_words', JSON.stringify(weakWords)); } }
+
+        function initGame() {
+            usedWords = []; const train = document.getElementById('train-container'); train.innerHTML = ''; train.className = 'train-enter'; document.getElementById('car-count').innerText = "0";
+            const feedback = document.getElementById('feedback-box'); feedback.className = ''; feedback.innerHTML = '마이크 버튼을 누르고 시작하세요!';
+            const startWords = ["기차", "사과", "바다", "학교", "가방", "나비", "우주", "거북이"];
+            let weakWords = JSON.parse(localStorage.getItem('hangeul_weak_words') || '[]'); let validWeakWords = weakWords.map(w => w.target).filter(w => emojiDict[w]); let startWord = "";
+            if (validWeakWords.length > 0) { startWord = validWeakWords[Math.floor(Math.random() * validWeakWords.length)]; } else { startWord = startWords[Math.floor(Math.random() * startWords.length)]; }
+            addTrainCar(startWord, true);
+        }
+
+        function addTrainCar(word, isEngine = false) {
+            usedWords.push(word); currentWord = word; document.getElementById('car-count').innerText = usedWords.length;
+            const train = document.getElementById('train-container'); const car = document.createElement('div'); car.className = `train-car ${isEngine ? 'engine' : ''}`;
+            if (!isEngine) { const randColor = carColors[Math.floor(Math.random() * carColors.length)]; car.style.backgroundColor = randColor.bg; car.style.borderColor = randColor.border; car.style.boxShadow = `0 6px 0 ${randColor.border}, 0 10px 15px rgba(0,0,0,0.3)`; }
+            const emoji = emojiDict[word] || DEFAULT_EMOJI; let extraParts = '';
+            if (isEngine) { extraParts = `<div class="engine-cab"></div><div class="engine-window"></div><div class="chimney"></div><div class="smoke"></div><div class="cowcatcher"></div>`; }
+            car.innerHTML = `${extraParts}<div class="emoji-art">${emoji}</div><div class="word-text">${word}</div><div class="wheels"><div class="wheel"></div><div class="wheel"></div></div>`;
+            train.appendChild(car); const trackArea = document.getElementById('track-area'); trackArea.scrollLeft = trackArea.scrollWidth; speak(word);
+            if (usedWords.length === 6) { setTimeout(triggerTrainDeparture, 1000); }
+        }
+
+        function triggerTrainDeparture() { playSound('horn'); speak("야호! 기차가 완성되었어요. 출발합니다!"); saveReward(10, 'game_boss'); const train = document.getElementById('train-container'); train.className = 'train-leave'; setTimeout(() => { const retry = confirm("6칸 완성! 칙칙폭폭 기차가 떠났습니다. 새 기차를 만들어 볼까요?"); if (retry) initGame(); else document.getElementById('feedback-box').innerText = "오늘 기차놀이 끝! 수고했어요."; }, 2500); }
+
+        function checkWordChain(spokenWord) {
+            if (usedWords.length >= 6) return; 
+            let cleanText = spokenWord.replace(/[.,!?]/g, '').trim(); let wordsArray = cleanText.split(' '); const lastChar = currentWord.slice(-1); const allowedStartChars = getAllowedStarts(lastChar); let targetWord = "";
+            for(let w of wordsArray) { let cleanW = w.replace(/[^가-힣]/g, ''); if (cleanW.length >= 2 && allowedStartChars.includes(cleanW.charAt(0))) { targetWord = cleanW; break; } }
+            if (!targetWord) { let lastWord = wordsArray[wordsArray.length - 1].replace(/[^가-힣]/g, ''); if (lastWord.length > 2 && (lastWord.endsWith('요') || lastWord.endsWith('다'))) { lastWord = lastWord.slice(0, -1); } targetWord = lastWord; }
+            const cleanWord = targetWord;
+            for (let bad of badWords) { if (cleanWord.includes(bad)) { playSound('wrong'); const feedback = document.getElementById('feedback-box'); feedback.innerHTML = `<span>바르고 고운 말을 사용해주세요! 🥺</span>`; feedback.className = 'warning-text'; speak("예쁜 말을 사용해주세요."); return; } }
+            if (cleanWord.length < 2) { logWeakWord(currentWord); failFeedback(`"${cleanWord || spokenWord}"? 두 글자 이상 말해주세요!`); return; }
+            if (usedWords.includes(cleanWord)) { logWeakWord(currentWord); failFeedback(`"${cleanWord}"는 이미 기차에 탔어요!`); return; }
+            const firstChar = cleanWord.charAt(0);  
+            if (!allowedStartChars.includes(firstChar)) { logWeakWord(currentWord); failFeedback(`'${lastChar}'(으)로 시작해야 해요! ("${cleanWord}")`); return; }
+            let weakWords = JSON.parse(localStorage.getItem('hangeul_weak_words') || '[]'); if (usedWords.length === 1 && weakWords.some(w => w.target === currentWord)) { weakWords = weakWords.filter(w => w.target !== currentWord); localStorage.setItem('hangeul_weak_words', JSON.stringify(weakWords)); }
+            successFeedback(cleanWord);
+        }
+
+        function successFeedback(word) { playSound('correct'); const feedback = document.getElementById('feedback-box'); feedback.innerHTML = `딩동댕! "${word}"`; feedback.className = 'correct-text'; addTrainCar(word); }
+        function failFeedback(msg) { playSound('wrong'); const feedback = document.getElementById('feedback-box'); feedback.innerHTML = `<span>${msg}</span>`; feedback.className = 'wrong-text'; speak("다시 생각해볼까요?"); }
+
+        function provideHint() {
+            const feedback = document.getElementById('feedback-box'); const lastChar = currentWord.slice(-1); const allowedStartChars = getAllowedStarts(lastChar);
+            const candidates = hintDictionary.filter(w => allowedStartChars.includes(w.charAt(0)) && !usedWords.includes(w) );
+            if (candidates.length > 0) { const hintWord = candidates[Math.floor(Math.random() * candidates.length)]; feedback.innerHTML = `<span style="color: #2e7d32;">💡 힌트: "${hintWord}" 어때요?</span>`; feedback.className = ''; speak(`이 단어는 어때요? ${hintWord}!`); logWeakWord(currentWord); } 
+            else { feedback.innerHTML = `<span>앗, 선생님도 생각나는 낱말이 없네요! 😭</span>`; feedback.className = ''; speak("앗, 너무 어려운 글자네요."); }
+        }
+
+        const micBtn = document.getElementById('mic-btn');
+        micBtn.addEventListener('click', () => { if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)(); if (isListening) { recognition.stop(); return; } try { recognition.start(); } catch(e) { console.log("인식 중 오류"); } });
+        recognition.onstart = function() { isListening = true; micBtn.classList.add('listening'); const feedback = document.getElementById('feedback-box'); feedback.innerHTML = `<span>듣고 있어요. 말씀해주세요!</span>`; feedback.className = ''; };
+        recognition.onresult = function(event) { const spokenWord = event.results[0][0].transcript; checkWordChain(spokenWord); };
+        recognition.onerror = function(event) { const feedback = document.getElementById('feedback-box'); feedback.innerHTML = `<span>잘 못 들었어요. 다시 눌러주세요!</span>`; feedback.className = 'wrong-text'; speak("다시 말해줄래요?"); };
+        recognition.onend = function() { isListening = false; micBtn.classList.remove('listening'); };
+
+        function saveReward(earnedCoins, gameId) { let currentCoins = parseInt(localStorage.getItem('hangeul_park_coins') || '0'); localStorage.setItem('hangeul_park_coins', currentCoins + earnedCoins); let clearedGames = JSON.parse(localStorage.getItem('hangeul_park_cleared') || '{}'); let currentCount = clearedGames[gameId]; if (typeof currentCount !== 'number') currentCount = 0; clearedGames[gameId] = currentCount + 1; localStorage.setItem('hangeul_park_cleared', JSON.stringify(clearedGames)); }
+    </script>
+</body>
+</html>

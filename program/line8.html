@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>마법의 별자리 선 긋기</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
+        body { 
+            background-color: #0B1026; color: white; touch-action: none; font-family: 'Malgun Gothic', sans-serif; margin: 0;
+            background-image: url('../media/image/bg-line.png'); background-size: cover; background-position: center; background-attachment: fixed;
+            height: 100vh; height: 100dvh; display: flex; flex-direction: column; overflow: hidden; 
+        }
+
+        #landscape-warning { display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: #0B1026; z-index: 999999; flex-direction: column; justify-content: center; align-items: center; color: white; text-align: center; }
+        #landscape-warning .icon { font-size: 80px; animation: rotatePhone 1.5s infinite ease-in-out; margin-bottom: 20px;}
+        @keyframes rotatePhone { 0% { transform: rotate(0deg); } 50% { transform: rotate(-90deg); } 100% { transform: rotate(-90deg); } }
+        @media screen and (orientation: portrait) { #landscape-warning { display: flex !important; } }
+
+        #intro-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100vh; display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 1000; background: rgba(11, 16, 38, 0.6); backdrop-filter: blur(8px); transition: opacity 1s; }
+        #intro-btn { background-color: #FFD700; color: #0B1026; font-size: clamp(24px, 5vw, 32px); font-weight: bold; padding: 15px 40px; border: 6px solid #FF8C00; border-radius: 50px; cursor: pointer; box-shadow: 0 8px 0 #FF8C00, 0 15px 20px rgba(0,0,0,0.5); transition: all 0.1s; animation: float 2s infinite ease-in-out; }
+        #intro-btn:active { transform: translateY(8px); box-shadow: 0 0 0 #FF8C00, 0 5px 10px rgba(0,0,0,0.5); }
+        #line-greeting { font-size: clamp(24px, 5vw, 40px); font-weight: bold; color: #FFD700; text-shadow: 2px 2px 0px #3A4A90, 0 4px 15px rgba(255,215,0,0.9); margin-bottom: 40px; display: none; text-align: center; }
+
+        @keyframes float { 0% { transform: translateY(0px); } 50% { transform: translateY(-15px); } 100% { transform: translateY(0px); } }
+
+        #game-ui { display: none; flex-direction: column; height: 100%; width: 100%; opacity: 0; transition: opacity 1.5s; position: relative;}
+        
+        .action-btn-top { position: absolute; top: 10px; left: 10px; background: #ff6b6b; color: white; text-decoration: none; padding: 6px 12px; border-radius: 20px; font-weight: bold; font-size: clamp(12px, 2.5vw, 16px); box-shadow: 0 4px 10px rgba(0,0,0,0.4); z-index: 9999; border: 2px solid white;}
+
+        header { height: clamp(40px, 8vh, 60px); display: flex; justify-content: center; align-items: center; background-color: rgba(26, 36, 81, 0.7); font-size: clamp(18px, 4vw, 26px); font-weight: bold; color: #FFD700; text-shadow: 0 0 10px rgba(255, 215, 0, 0.5); border-bottom: 2px solid rgba(58, 74, 144, 0.5); backdrop-filter: blur(5px); flex-shrink: 0; padding-top: 5px;}
+        
+        main { display: flex; flex: 1; overflow: hidden; }
+
+        .sidebar { width: clamp(100px, 18vw, 160px); background-color: rgba(18, 24, 54, 0.85); overflow-y: auto; padding: 10px; display: flex; flex-direction: column; gap: 8px; border-left: 1px solid rgba(58, 74, 144, 0.5); border-right: 1px solid rgba(58, 74, 144, 0.5); backdrop-filter: blur(5px); flex-shrink: 0;}
+        .sidebar::-webkit-scrollbar { width: 4px; }
+        .sidebar::-webkit-scrollbar-thumb { background: #4A5A90; border-radius: 5px; }
+        .sidebar-title { text-align: center; font-size: clamp(12px, 2.5vw, 14px); color: #A0B0FF; margin-bottom: 5px; font-weight: bold; background: rgba(0,0,0,0.3); padding: 5px; border-radius: 8px;}
+
+        .btn-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px; width: 100%; }
+
+        .letter-btn { background-color: rgba(42, 58, 112, 0.9); color: white; border: 2px solid #4A5A90; border-radius: 8px; padding: clamp(6px, 1.5vw, 10px) 0; font-size: clamp(16px, 3.5vw, 20px); font-weight: bold; cursor: pointer; transition: all 0.2s; position: relative; }
+        .letter-btn:hover, .letter-btn.active { background-color: #FFD700; color: #0B1026; border-color: #FFF; box-shadow: 0 0 10px #FFD700; }
+        
+        .rec-badge { position: absolute; top: -5px; left: -5px; background: #ff5252; color: white; font-size: 9px; padding: 2px 4px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.5); animation: bounceBadge 1s infinite alternate; z-index: 6; white-space: nowrap; }
+        .star-badge { position: absolute; top: -5px; right: -5px; font-size: 12px; color: #FFD700; filter: drop-shadow(0 0 5px #FFD700); animation: pop 0.3s ease-out; z-index: 5; }
+        @keyframes pop { 0% { transform: scale(0); } 80% { transform: scale(1.5); } 100% { transform: scale(1); } }
+        @keyframes bounceBadge { 0% { transform: translateY(0); } 100% { transform: translateY(-3px); } }
+
+        #center-area { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; gap: 10px; padding: 10px; box-sizing: border-box; min-width: 0;}
+        
+        /* 그리기 캔버스 영역: 16:10 비율로 변경하여 SVG 좌표계(800x500)와 완벽 일치 */
+        #game-container { 
+            position: relative; width: 100%; max-width: 700px; 
+            aspect-ratio: 16 / 10; 
+            background: radial-gradient(circle at center, rgba(26, 36, 81, 0.8) 0%, rgba(11, 16, 38, 0.95) 100%); 
+            border-radius: 15px; overflow: hidden; box-shadow: 0 0 20px rgba(0, 0, 0, 0.7); cursor: default; 
+            backdrop-filter: blur(3px); border: 2px solid rgba(160, 176, 255, 0.3); flex-shrink: 1;
+        }
+        
+        svg { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 1;}
+        .drawn-line { stroke: #FFF7B0; stroke-width: 25; stroke-linecap: round; stroke-linejoin: round; filter: drop-shadow(0 0 10px #FFD700); transition: opacity 1s; }
+        .temp-line { stroke: rgba(255, 247, 176, 0.8); stroke-width: 25; stroke-linecap: round; }
+        .guide-line { stroke: rgba(255, 255, 255, 0.3); stroke-width: 15; stroke-linecap: round; stroke-dasharray: 20 25; animation: march 1s linear infinite; }
+        @keyframes march { to { stroke-dashoffset: -45; } }
+
+        .star { position: absolute; width: 30px; height: 30px; background-color: #FFF; top: -15px; left: -15px; clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%); filter: drop-shadow(0 0 10px #FFF); transform: scale(1); transition: transform 0.3s; z-index: 10; pointer-events: none;}
+        .star.target-glow { animation: pulse 1.5s infinite alternate; background-color: #FFD700; transform: scale(1.3); }
+        .star.passed { background-color: #FFF7B0; filter: drop-shadow(0 0 5px #FFD700); transform: scale(0.8); }
+        @keyframes pulse { 0% { transform: scale(1.3); filter: drop-shadow(0 0 10px #FFD700); } 100% { transform: scale(1.7); filter: drop-shadow(0 0 20px #FF8C00); } }
+
+        .hitbox { position: absolute; width: 100px; height: 100px; top: -50px; left: -50px; border-radius: 50%; cursor: pointer; z-index: 100; pointer-events: auto;}
+
+        #bottom-area { height: clamp(60px, 15vh, 100px); display: flex; justify-content: center; align-items: center; gap: 20px; opacity: 0; transition: opacity 0.5s; background: rgba(0,0,0,0.5); padding: 5px 20px; border-radius: 30px; backdrop-filter: blur(5px); flex-shrink: 0;}
+        
+        #result-text { font-size: clamp(36px, 8vw, 60px); font-weight: bold; color: #FFF; text-shadow: 0 0 10px #FFD700; cursor: pointer; transition: transform 0.2s; }
+        #result-art { font-size: clamp(40px, 10vw, 80px); cursor: pointer; filter: drop-shadow(0 0 10px rgba(255, 215, 0, 0.5)); transition: transform 0.2s; }
+        
+        #empty-message { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: clamp(16px, 3.5vw, 24px); color: rgba(255,255,255,0.7); pointer-events: none; font-weight: bold; width: 100%; text-align: center; z-index: 2;}
+    </style>
+</head>
+<body>
+
+<div id="landscape-warning">
+    <div class="icon">📱</div>
+    <h2>화면을 가로로 눕혀주세요!</h2>
+    <p>선 긋기는 가로 화면에서 해야 편해요.</p>
+</div>
+
+<div id="intro-screen">
+    <div id="line-greeting">"놀이동산의 밤이에요. 밤하늘에 예쁜 별자리를 만들어볼까요?"</div>
+    <button id="intro-btn">✨ 별자리 그리기</button>
+</div>
+
+<div id="game-ui">
+    <a href="index.html" class="action-btn-top">🏠 처음으로</a>
+    <header>상상하고 말하고 그리는 마법의 한글 놀이공원</header>
+
+    <main>
+        <div class="sidebar" id="consonants-list">
+            <div class="sidebar-title">기본 자음</div>
+            <div class="btn-grid" id="consonants-grid"></div>
+            <div class="sidebar-title" style="margin-top: 10px;">쌍자음</div>
+            <div class="btn-grid" id="double-consonants-grid"></div>
+        </div>
+
+        <div id="center-area">
+            <div id="game-container">
+                <div id="empty-message">옆에서 그리고 싶은 글자를 골라봐!</div>
+                <!-- preserveAspectRatio="none" 속성 추가: 부모 크기에 맞춰 선이 유동적으로 늘어남 -->
+                <svg id="svg-layer" viewBox="0 0 800 500" preserveAspectRatio="none">
+                    <line id="guide-line" class="guide-line" x1="0" y1="0" x2="0" y2="0" opacity="0"></line>
+                    <line id="temp-line" class="temp-line" x1="0" y1="0" x2="0" y2="0" opacity="0"></line>
+                    <g id="completed-lines"></g>
+                </svg>
+                <div id="stars-container" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none;"></div>
+            </div>
+            <div id="bottom-area">
+                <div id="result-text"></div>
+                <div id="result-art"></div>
+            </div>
+        </div>
+
+        <div class="sidebar" id="vowels-list">
+            <div class="sidebar-title">기본 모음</div>
+            <div class="btn-grid" id="vowels-grid"></div>
+            <div class="sidebar-title" style="margin-top: 10px;">이중 모음</div>
+            <div class="btn-grid" id="complex-vowels-grid"></div>
+        </div>
+    </main>
+</div>
+
+<script>
+    document.getElementById('intro-btn').addEventListener('click', () => {
+        const introBtn = document.getElementById('intro-btn'); const greeting = document.getElementById('line-greeting');
+        introBtn.style.display = 'none'; greeting.style.display = 'block';
+        const introAudio = new Audio('../media/sound/os-line.mp3'); introAudio.onended = () => { transitionToGame(); };
+        introAudio.play().catch(e => { setTimeout(() => { if (document.getElementById('intro-screen').style.opacity !== '0') transitionToGame(); }, 2000); });
+        setTimeout(() => { if (document.getElementById('intro-screen').style.opacity !== '0') transitionToGame(); }, 6000);
+    });
+
+    function transitionToGame() {
+        const intro = document.getElementById('intro-screen'); intro.style.opacity = '0';
+        setTimeout(() => { intro.style.display = 'none'; const gameUI = document.getElementById('game-ui'); gameUI.style.display = 'flex'; setTimeout(() => { gameUI.style.opacity = '1'; }, 50); }, 1000);
+    }
+
+    const line = (x1, y1, x2, y2) => ({ start: {x: x1, y: y1}, end: {x: x2, y: y2} });
+    
+    // 글자 좌표 데이터 (기준 해상도 800x500)
+    const letterData = {
+        'ㄱ': { name: '기역', sound: '그으', word: '가방', art: '🎒', strokes: [ line(300,150, 500,150), line(500,150, 500,400) ] },
+        'ㄴ': { name: '니은', sound: '느으', word: '나비', art: '🦋', strokes: [ line(300,150, 300,400), line(300,400, 500,400) ] },
+        'ㄷ': { name: '디귿', sound: '드으', word: '도넛', art: '🍩', strokes: [ line(300,150, 500,150), line(300,150, 300,400), line(300,400, 500,400) ] },
+        'ㄹ': { name: '리을', sound: '르으', word: '라디오', art: '📻', strokes: [ line(300,150, 500,150), line(500,150, 500,275), line(300,275, 500,275), line(300,275, 300,400), line(300,400, 500,400) ] },
+        'ㅁ': { name: '미음', sound: '므으', word: '모자', art: '🧢', strokes: [ line(300,150, 300,400), line(300,150, 500,150), line(500,150, 500,400), line(300,400, 500,400) ] },
+        'ㅂ': { name: '비읍', sound: '브으', word: '버스', art: '🚌', strokes: [ line(300,150, 300,400), line(500,150, 500,400), line(300,275, 500,275), line(300,400, 500,400) ] },
+        'ㅅ': { name: '시옷', sound: '스으', word: '사과', art: '🍎', strokes: [ line(400,150, 250,400), line(400,250, 550,400) ] },
+        'ㅇ': { name: '이응', sound: '으으', word: '우주선', art: '🛸', strokes: [ line(400,150, 250,275), line(250,275, 400,400), line(400,400, 550,275), line(550,275, 400,150) ] },
+        'ㅈ': { name: '지읒', sound: '즈으', word: '자전거', art: '🚲', strokes: [ line(300,150, 500,150), line(400,150, 250,400), line(400,250, 550,400) ] },
+        'ㅊ': { name: '치읓', sound: '츠으', word: '치즈', art: '🧀', strokes: [ line(400,60, 400,130), line(300,150, 500,150), line(400,150, 250,400), line(400,250, 550,400) ] },
+        'ㅋ': { name: '키읔', sound: '크으', word: '쿠키', art: '🍪', strokes: [ line(300,150, 500,150), line(500,150, 500,400), line(300,275, 500,275) ] },
+        'ㅌ': { name: '티읕', sound: '트으', word: '토마토', art: '🍅', strokes: [ line(300,150, 500,150), line(300,275, 500,275), line(300,150, 300,400), line(300,400, 500,400) ] },
+        'ㅍ': { name: '피읖', sound: '프으', word: '피자', art: '🍕', strokes: [ line(300,150, 500,150), line(350,150, 350,400), line(450,150, 450,400), line(300,400, 500,400) ] },
+        'ㅎ': { name: '히읗', sound: '흐으', word: '헬리콥터', art: '🚁', strokes: [ line(400,40, 400,130), line(300,180, 500,180), line(400,230, 290,320), line(290,320, 400,410), line(400,410, 510,320), line(510,320, 400,230) ] },
+        
+        'ㄲ': { name: '쌍기역', sound: '끄으', word: '까치', art: '🐦', strokes: [ line(250,150, 380,150), line(380,150, 380,400), line(420,150, 550,150), line(550,150, 550,400) ] },
+        'ㄸ': { name: '쌍디귿', sound: '뜨으', word: '딸기', art: '🍓', strokes: [ line(220,150, 350,150), line(220,150, 220,400), line(220,400, 350,400), line(400,150, 530,150), line(400,150, 400,400), line(400,400, 530,400) ] },
+        'ㅃ': { name: '쌍비읍', sound: '쁘으', word: '빵', art: '🍞', strokes: [ line(220,150, 220,400), line(330,150, 330,400), line(220,275, 330,275), line(220,400, 330,400), line(420,150, 420,400), line(530,150, 530,400), line(420,275, 530,275), line(420,400, 530,400) ] },
+        'ㅆ': { name: '쌍시옷', sound: '쓰으', word: '썰매', art: '🛷', strokes: [ line(300,150, 200,400), line(300,250, 400,400), line(500,150, 400,400), line(500,250, 600,400) ] },
+        'ㅉ': { name: '쌍지읒', sound: '쯔으', word: '짜장면', art: '🍜', strokes: [ line(200,150, 350,150), line(275,150, 180,400), line(275,250, 370,400), line(450,150, 600,150), line(525,150, 430,400), line(525,250, 620,400) ] },
+
+        'ㅏ': { name: '아', sound: '아아', word: '아이스크림', art: '🍦', strokes: [ line(350,100, 350,450), line(350,275, 450,275) ] },
+        'ㅑ': { name: '야', sound: '야아', word: '야구공', art: '⚾', strokes: [ line(350,100, 350,450), line(350,200, 450,200), line(350,350, 450,350) ] },
+        'ㅓ': { name: '어', sound: '어어', word: '어항', art: '🐠', strokes: [ line(350,275, 450,275), line(450,100, 450,450) ] },
+        'ㅕ': { name: '여', sound: '여어', word: '여우', art: '🦊', strokes: [ line(350,200, 450,200), line(350,350, 450,350), line(450,100, 450,450) ] },
+        'ㅗ': { name: '오', sound: '오오', word: '오리', art: '🦆', strokes: [ line(400,150, 400,300), line(250,300, 550,300) ] },
+        'ㅛ': { name: '요', sound: '요오', word: '요술봉', art: '🪄', strokes: [ line(330,150, 330,300), line(470,150, 470,300), line(200,300, 600,300) ] },
+        'ㅜ': { name: '우', sound: '우우', word: '우산', art: '☂️', strokes: [ line(250,200, 550,200), line(400,200, 400,350) ] },
+        'ㅠ': { name: '유', sound: '유우', word: '유니콘', art: '🦄', strokes: [ line(200,200, 600,200), line(330,200, 330,350), line(470,200, 470,350) ] },
+        'ㅡ': { name: '으', sound: '으으', word: '은하수', art: '🌌', strokes: [ line(200,275, 600,275) ] },
+        'ㅣ': { name: '이', sound: '이이', word: '이불', art: '🛏️', strokes: [ line(400,100, 400,450) ] },
+        
+        'ㅐ': { name: '애', sound: '애애', word: '개미', art: '🐜', strokes: [ line(300,100, 300,450), line(300,275, 400,275), line(400,100, 400,450) ] },
+        'ㅒ': { name: '얘', sound: '얘애', word: '얘기', art: '🗣️', strokes: [ line(300,100, 300,450), line(300,200, 400,200), line(300,350, 400,350), line(400,100, 400,450) ] },
+        'ㅔ': { name: '에', sound: '에에', word: '그네', art: '🛝', strokes: [ line(300,275, 400,275), line(400,100, 400,450), line(500,100, 500,450) ] },
+        'ㅖ': { name: '예', sound: '예에', word: '시계', art: '⌚', strokes: [ line(300,200, 400,200), line(300,350, 400,350), line(400,100, 400,450), line(500,100, 500,450) ] },
+        'ㅘ': { name: '와', sound: '와아', word: '사과', art: '🍎', strokes: [ line(310,200, 310,320), line(200,320, 420,320), line(520,100, 520,450), line(520,275, 620,275) ] },
+        'ㅙ': { name: '왜', sound: '왜애', word: '돼지', art: '🐷', strokes: [ line(270,200, 270,320), line(160,320, 380,320), line(480,100, 480,450), line(480,275, 570,275), line(570,100, 570,450) ] },
+        'ㅚ': { name: '외', sound: '외에', word: '열쇠', art: '🗝️', strokes: [ line(330,200, 330,320), line(220,320, 440,320), line(540,100, 540,450) ] },
+        'ㅝ': { name: '워', sound: '워어', word: '거북이', art: '🐢', strokes: [ line(220,200, 440,200), line(330,200, 330,380), line(440,275, 540,275), line(540,100, 540,450) ] },
+        'ㅞ': { name: '웨', sound: '웨에', word: '스웨터', art: '🧥', strokes: [ line(160,200, 380,200), line(270,200, 270,380), line(380,275, 470,275), line(470,100, 470,450), line(560,100, 560,450) ] },
+        'ㅟ': { name: '위', sound: '위이', word: '가위', art: '✂️', strokes: [ line(250,200, 450,200), line(350,200, 350,380), line(550,100, 550,450) ] },
+        'ㅢ': { name: '의', sound: '의이', word: '의자', art: '🪑', strokes: [ line(230,275, 470,275), line(570,100, 570,450) ] }
+    };
+
+    const consonants = ['ㄱ','ㄴ','ㄷ','ㄹ','ㅁ','ㅂ','ㅅ','ㅇ','ㅈ','ㅊ','ㅋ','ㅌ','ㅍ','ㅎ'];
+    const doubleConsonants = ['ㄲ','ㄸ','ㅃ','ㅆ','ㅉ'];
+    const vowels = ['ㅏ','ㅑ','ㅓ','ㅕ','ㅗ','ㅛ','ㅜ','ㅠ','ㅡ','ㅣ'];
+    const complexVowels = ['ㅐ','ㅒ','ㅔ','ㅖ','ㅘ','ㅙ','ㅚ','ㅝ','ㅞ','ㅟ','ㅢ'];
+
+    let currentLetter = null; let currentStrokeIdx = 0; let currentSubNodes = []; let currentSubNodeIdx = 0;
+    let isDrawing = false; let isCompleted = false; let audioCtx, magicOsc, magicGain; let bestKoreanVoice = null;
+    const completedLetters = new Set();
+
+    const svgLayer = document.getElementById('svg-layer'); const tempLine = document.getElementById('temp-line'); const guideLine = document.getElementById('guide-line'); const completedLines = document.getElementById('completed-lines'); const starsContainer = document.getElementById('stars-container'); const container = document.getElementById('game-container'); const bottomArea = document.getElementById('bottom-area'); const resultArt = document.getElementById('result-art'); const resultText = document.getElementById('result-text'); const emptyMessage = document.getElementById('empty-message');
+
+    function findBestVoice() { const voices = window.speechSynthesis.getVoices(); if (voices.length === 0) return; bestKoreanVoice = voices.find(v => v.lang.includes('ko') && (v.name.includes('Google') || v.name.includes('Siri') || v.name.includes('Yuna'))) || voices.find(v => v.lang.includes('ko')); }
+    window.speechSynthesis.onvoiceschanged = findBestVoice;
+
+    function getChosung(word) { if (!word) return null; const CHOSUNG_LIST = ['ㄱ', 'ㄲ', 'ㄴ', 'ㄷ', 'ㄸ', 'ㄹ', 'ㅁ', 'ㅂ', 'ㅃ', 'ㅅ', 'ㅆ', 'ㅇ', 'ㅈ', 'ㅉ', 'ㅊ', 'ㅋ', 'ㅌ', 'ㅍ', 'ㅎ']; const charCode = word.charCodeAt(0) - 0xAC00; if (charCode > -1 && charCode < 11172) { return CHOSUNG_LIST[Math.floor(charCode / 588)]; } return null; }
+
+    document.addEventListener("DOMContentLoaded", () => {
+        findBestVoice();
+        let weakWords = JSON.parse(localStorage.getItem('hangeul_weak_words') || '[]'); let recommendedLetters = new Set();
+        weakWords.forEach(w => { const cho = getChosung(w.target); if (cho) recommendedLetters.add(cho); });
+
+        function createButtons(list, containerId) {
+            const grid = document.getElementById(containerId);
+            list.forEach(c => {
+                let btn = document.createElement('button'); btn.className = 'letter-btn'; btn.id = `btn-${c}`; btn.innerText = c;
+                if (recommendedLetters.has(c)) { btn.innerHTML = c + '<span class="rec-badge">추천</span>'; btn.style.boxShadow = '0 0 10px rgba(255, 82, 82, 0.5)'; }
+                btn.onclick = () => loadLetter(c, btn); grid.appendChild(btn);
+            });
+        }
+        createButtons(consonants, 'consonants-grid'); createButtons(doubleConsonants, 'double-consonants-grid'); createButtons(vowels, 'vowels-grid'); createButtons(complexVowels, 'complex-vowels-grid');
+    });
+
+    function ensureAudioInit() { if (!audioCtx) { const AudioContext = window.AudioContext || window.webkitAudioContext; audioCtx = new AudioContext(); const silentUtterance = new SpeechSynthesisUtterance(''); window.speechSynthesis.speak(silentUtterance); findBestVoice(); } }
+
+    function playNodeHitSound() { if (!audioCtx) return; const osc = audioCtx.createOscillator(); const gain = audioCtx.createGain(); osc.connect(gain); gain.connect(audioCtx.destination); osc.type = 'sine'; osc.frequency.setValueAtTime(800, audioCtx.currentTime); osc.frequency.exponentialRampToValueAtTime(1200, audioCtx.currentTime + 0.1); gain.gain.setValueAtTime(0.2, audioCtx.currentTime); gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.1); osc.start(); osc.stop(audioCtx.currentTime + 0.1); }
+    function startMagicSound() { if (!audioCtx) return; magicOsc = audioCtx.createOscillator(); magicGain = audioCtx.createGain(); magicOsc.type = 'sine'; magicOsc.frequency.setValueAtTime(400, audioCtx.currentTime); const lfo = audioCtx.createOscillator(); lfo.type = 'sine'; lfo.frequency.value = 5; lfo.connect(magicGain.gain); lfo.start(); magicGain.gain.setValueAtTime(0.0, audioCtx.currentTime); magicGain.gain.linearRampToValueAtTime(0.1, audioCtx.currentTime + 0.1); magicOsc.connect(magicGain); magicGain.connect(audioCtx.destination); magicOsc.start(); }
+    function stopMagicSound() { if (magicOsc && magicGain) { magicGain.gain.linearRampToValueAtTime(0, audioCtx.currentTime + 0.1); setTimeout(() => { if(magicOsc) { magicOsc.stop(); magicOsc.disconnect(); magicOsc = null; } }, 100); } }
+    function playSuccessSound() { if (!audioCtx) return; const osc = audioCtx.createOscillator(); const gain = audioCtx.createGain(); osc.type = 'sine'; osc.connect(gain); gain.connect(audioCtx.destination); osc.frequency.setValueAtTime(523.25, audioCtx.currentTime); osc.frequency.setValueAtTime(659.25, audioCtx.currentTime + 0.15); osc.frequency.setValueAtTime(783.99, audioCtx.currentTime + 0.3); gain.gain.setValueAtTime(0.1, audioCtx.currentTime); gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 2.0); osc.start(); osc.stop(audioCtx.currentTime + 2.0); }
+
+    function playTTS(text, rate = 1.0, pitch = 1.0) { const synth = window.speechSynthesis; const utterance = new SpeechSynthesisUtterance(text); utterance.lang = 'ko-KR'; utterance.rate = rate; utterance.pitch = pitch; if (bestKoreanVoice) utterance.voice = bestKoreanVoice; synth.speak(utterance); }
+
+    container.addEventListener('click', () => { if (isCompleted && currentLetter) { playTTS(letterData[currentLetter].sound, 0.6, 0.9); } });
+
+    function loadLetter(letter, btnElement) {
+        ensureAudioInit(); document.querySelectorAll('.letter-btn').forEach(b => b.classList.remove('active')); if(btnElement) btnElement.classList.add('active');
+        emptyMessage.style.display = 'none'; currentLetter = letter; currentStrokeIdx = 0; isCompleted = false; container.style.cursor = 'default';
+        completedLines.innerHTML = ''; completedLines.style.opacity = '1'; bottomArea.style.opacity = '0'; resultArt.innerText = ''; resultText.innerText = '';
+        tempLine.setAttribute('opacity', '0'); guideLine.setAttribute('opacity', '0'); starsContainer.innerHTML = ''; setupStroke(0);
+    }
+
+    function createStarNode(x, y, isStart, isSubNode = false) {
+        const wrapper = document.createElement('div'); wrapper.style.position = 'absolute'; 
+        wrapper.style.left = `${(x / 800) * 100}%`; wrapper.style.top = `${(y / 500) * 100}%`; 
+        
+        wrapper.style.zIndex = isStart ? "100" : "90";
+        wrapper.style.pointerEvents = "auto";
+        
+        const star = document.createElement('div'); star.className = 'star';
+        
+        if (isStart) star.classList.add('target-glow');
+        if (isSubNode) { star.style.width = '20px'; star.style.height = '20px'; star.style.top = '-10px'; star.style.left = '-10px'; star.style.opacity = '0.7'; }
+
+        const hitbox = document.createElement('div'); hitbox.className = 'hitbox';
+        
+        if (isStart) {
+            hitbox.addEventListener('pointerdown', (e) => {
+                isDrawing = true; startMagicSound(); tempLine.setAttribute('x1', x); tempLine.setAttribute('y1', y); tempLine.setAttribute('x2', x); tempLine.setAttribute('y2', y); tempLine.setAttribute('opacity', '1'); star.classList.remove('target-glow'); star.classList.add('passed'); guideLine.setAttribute('opacity', '0');
+            });
+        }
+        wrapper.appendChild(star); wrapper.appendChild(hitbox); starsContainer.appendChild(wrapper); return wrapper;
+    }
+
+    function setupStroke(idx) {
+        starsContainer.innerHTML = ''; const data = letterData[currentLetter]; if (idx >= data.strokes.length) { handleComplete(); return; }
+        const stroke = data.strokes[idx];
+        guideLine.setAttribute('x1', stroke.start.x); guideLine.setAttribute('y1', stroke.start.y); guideLine.setAttribute('x2', stroke.end.x); guideLine.setAttribute('y2', stroke.end.y); guideLine.setAttribute('opacity', '1');
+        createStarNode(stroke.start.x, stroke.start.y, true, false);
+
+        const dx = stroke.end.x - stroke.start.x; const dy = stroke.end.y - stroke.start.y; const distance = Math.hypot(dx, dy); const segmentLength = 60; const nodeCount = Math.floor(distance / segmentLength);
+        currentSubNodes = []; currentSubNodeIdx = 0;
+
+        for (let i = 1; i <= nodeCount; i++) {
+            const ratio = i / (nodeCount + 1); const nx = stroke.start.x + dx * ratio; const ny = stroke.start.y + dy * ratio;
+            currentSubNodes.push({x: nx, y: ny}); const subNodeWrap = createStarNode(nx, ny, false, true); currentSubNodes[i-1].element = subNodeWrap.querySelector('.star');
+        }
+        currentSubNodes.push({x: stroke.end.x, y: stroke.end.y, isEnd: true}); const endNodeWrap = createStarNode(stroke.end.x, stroke.end.y, false, false); currentSubNodes[currentSubNodes.length - 1].element = endNodeWrap.querySelector('.star');
+        currentSubNodes[0].element.classList.add('target-glow');
+    }
+
+    container.addEventListener('pointermove', (e) => {
+        if (!isDrawing) return;
+        const rect = container.getBoundingClientRect(); 
+        const scaleX = 800 / rect.width;
+        const scaleY = 500 / rect.height;
+        const mouseX = (e.clientX - rect.left) * scaleX; 
+        const mouseY = (e.clientY - rect.top) * scaleY;
+        
+        tempLine.setAttribute('x2', mouseX); tempLine.setAttribute('y2', mouseY);
+
+        let highestHit = -1;
+        for (let i = currentSubNodeIdx; i < currentSubNodes.length; i++) {
+            const targetNode = currentSubNodes[i]; const distToTarget = Math.hypot(targetNode.x - mouseX, targetNode.y - mouseY);
+            if (distToTarget < 60) { highestHit = i; }
+        }
+
+        if (highestHit !== -1) {
+            let delayCounter = 0;
+            for (let i = currentSubNodeIdx; i <= highestHit; i++) {
+                const targetNode = currentSubNodes[i]; setTimeout(() => playNodeHitSound(), delayCounter * 30); delayCounter++;
+                targetNode.element.classList.remove('target-glow'); targetNode.element.classList.add('passed');
+                const stroke = letterData[currentLetter].strokes[currentStrokeIdx]; const prevX = i === 0 ? stroke.start.x : currentSubNodes[i-1].x; const prevY = i === 0 ? stroke.start.y : currentSubNodes[i-1].y;
+                const line = document.createElementNS('http://www.w3.org/2000/svg', 'line'); line.setAttribute('x1', prevX); line.setAttribute('y1', prevY); line.setAttribute('x2', targetNode.x); line.setAttribute('y2', targetNode.y); line.setAttribute('class', 'drawn-line'); completedLines.appendChild(line);
+                tempLine.setAttribute('x1', targetNode.x); tempLine.setAttribute('y1', targetNode.y);
+            }
+            currentSubNodeIdx = highestHit + 1;
+            if (currentSubNodeIdx >= currentSubNodes.length) { isDrawing = false; stopMagicSound(); tempLine.setAttribute('opacity', '0'); currentStrokeIdx++; setupStroke(currentStrokeIdx); } 
+            else { currentSubNodes[currentSubNodeIdx].element.classList.add('target-glow'); }
+        }
+    });
+
+    container.addEventListener('pointerup', () => { if (isDrawing) { isDrawing = false; stopMagicSound(); tempLine.setAttribute('opacity', '0'); guideLine.setAttribute('opacity', '1'); const nodesToRemove = currentSubNodeIdx; for(let i=0; i<nodesToRemove; i++) { if(completedLines.lastChild) completedLines.removeChild(completedLines.lastChild); } setupStroke(currentStrokeIdx); } });
+    container.addEventListener('pointerleave', () => { if(isDrawing) container.dispatchEvent(new Event('pointerup')); });
+
+    function handleComplete() {
+        isCompleted = true; container.style.cursor = 'pointer'; tempLine.setAttribute('opacity', '0'); guideLine.setAttribute('opacity', '0'); starsContainer.innerHTML = ''; const data = letterData[currentLetter];
+        playSuccessSound(); saveReward(10, 'game_line');
+        if (!completedLetters.has(currentLetter)) { completedLetters.add(currentLetter); const activeBtn = document.getElementById(`btn-${currentLetter}`); if (activeBtn) { const badge = document.createElement('span'); badge.className = 'star-badge'; badge.innerText = '⭐'; activeBtn.appendChild(badge); } }
+        if (currentLetter === 'ㅇ') { completedLines.innerHTML = '<circle cx="400" cy="275" r="125" class="drawn-line" fill="none"/>'; } else if (currentLetter === 'ㅎ') { completedLines.innerHTML = `<line x1="400" y1="40" x2="400" y2="130" class="drawn-line" /><line x1="300" y1="180" x2="500" y2="180" class="drawn-line" /><circle cx="400" cy="320" r="90" class="drawn-line" fill="none" />`; }
+        resultText.innerText = data.name; resultArt.innerText = data.art; bottomArea.style.opacity = '1'; setTimeout(() => playTTS(data.name, 0.9, 0.9), 300);
+        resultText.onclick = (e) => { e.stopPropagation(); resultText.style.transform = 'scale(1.2)'; setTimeout(() => resultText.style.transform = 'scale(1)', 200); playTTS(data.name, 0.9, 0.9); }; resultArt.onclick = (e) => { e.stopPropagation(); resultArt.style.transform = 'scale(1.2)'; setTimeout(() => resultArt.style.transform = 'scale(1)', 200); playTTS(data.word, 0.9, 1.0); };
+        setTimeout(() => { completedLines.style.opacity = '0.3'; }, 1000);
+    }
+
+    function saveReward(earnedCoins, gameId) { let currentCoins = parseInt(localStorage.getItem('hangeul_park_coins') || '0'); localStorage.setItem('hangeul_park_coins', currentCoins + earnedCoins); let clearedGames = JSON.parse(localStorage.getItem('hangeul_park_cleared') || '{}'); let currentCount = clearedGames[gameId] || 0; clearedGames[gameId] = currentCount + 1; localStorage.setItem('hangeul_park_cleared', JSON.stringify(clearedGames)); }
+</script>
+</body>
+</html>

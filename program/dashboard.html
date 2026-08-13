@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>학습 분석</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Jua&display=swap');
+
+        body { 
+            font-family: 'Malgun Gothic', sans-serif; margin: 0; padding: clamp(10px, 2vw, 20px);
+            background-color: #f0f4f8; background-image: url('../media/image/bg-lobby.png'); background-size: cover; background-position: center; background-attachment: fixed;
+            color: #333; display: flex; flex-direction: column; align-items: center; 
+            min-height: 100vh; min-height: 100dvh; overflow-y: auto; overflow-x: hidden;
+            box-sizing: border-box;
+        }
+
+        .overlay-bg { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(10px); z-index: -1; }
+
+        header {
+            width: 100%; max-width: 900px; display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 15px; position: relative; z-index: 10; gap: 10px; flex-shrink: 0;
+        }
+        @media (max-width: 600px) { header { flex-direction: column; text-align: center; margin-bottom: 10px;} }
+
+        h1 { font-family: 'Jua', sans-serif; font-size: clamp(24px, 5vw, 42px); color: #1e3c72; margin: 0; text-shadow: 2px 2px 0px #fff; text-align: center;}
+
+        .btn {
+            background-color: #ff6b6b; color: white; text-decoration: none; padding: 8px 15px;
+            border-radius: 20px; font-weight: bold; font-size: clamp(14px, 3vw, 18px); box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+            transition: transform 0.2s; cursor: pointer; border: 2px solid white; font-family: 'Jua', sans-serif; white-space: nowrap; flex-shrink: 0;
+        }
+        .btn:active { transform: translateY(3px); box-shadow: 0 2px 4px rgba(0,0,0,0.3); }
+
+        .dashboard-container { width: 100%; max-width: 900px; display: grid; grid-template-columns: 1fr; gap: clamp(10px, 2vw, 25px); position: relative; z-index: 10; padding-bottom: 20px; flex: 1; }
+        @media (min-width: 768px) { .dashboard-container { grid-template-columns: 1fr 1fr; } }
+
+        .card { background: #fff; border-radius: 20px; padding: clamp(10px, 3vw, 25px); box-shadow: 0 5px 15px rgba(0,0,0,0.08); border: 4px solid #e0e0e0; display: flex; flex-direction: column; }
+        .card-full { grid-column: 1 / -1; }
+        .card h2 { font-family: 'Jua', sans-serif; font-size: clamp(18px, 4vw, 26px); color: #0277bd; margin-top: 0; border-bottom: 2px dashed #b3e5fc; padding-bottom: 8px; display: flex; align-items: center; gap: 8px; margin-bottom: 10px;}
+
+        .summary-box { display: flex; justify-content: space-around; align-items: center; margin-top: 5px; }
+        .stat-item { text-align: center; }
+        .stat-value { font-size: clamp(30px, 7vw, 45px); font-weight: 900; color: #ff9800; font-family: 'Jua', sans-serif; text-shadow: 1px 1px 0px #fff; }
+        .stat-label { font-size: clamp(14px, 3vw, 18px); color: #555; font-weight: bold; }
+
+        .weak-word-list { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 15px; justify-content: center;}
+        .weak-tag { background: #ffebee; color: #c62828; border: 2px solid #ef9a9a; padding: 4px 12px; border-radius: 15px; font-weight: bold; font-size: clamp(14px, 3vw, 18px); box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+        
+        .analysis-result { background: #e3f2fd; border-radius: 15px; padding: 15px; border: 2px solid #81d4fa; line-height: 1.5; font-size: clamp(13px, 2.8vw, 18px); color: #01579b; font-weight: bold; word-break: keep-all; }
+        .analysis-highlight { color: #d84315; background: #ffcc80; padding: 2px 6px; border-radius: 6px; display: inline-block; margin: 2px 0;}
+
+        .chart-container { margin-top: 10px; }
+        .chart-bar-group { display: flex; align-items: center; margin-bottom: 8px; }
+        .chart-label { width: clamp(100px, 25vw, 140px); font-weight: bold; color: #444; font-size: clamp(12px, 2.5vw, 16px); flex-shrink: 0; }
+        .chart-bar-bg { flex: 1; height: clamp(16px, 4vw, 24px); background: #eeeeee; border-radius: 12px; overflow: hidden; position: relative; }
+        .chart-bar-fill { height: 100%; background: linear-gradient(90deg, #4caf50, #8bc34a); border-radius: 12px; transition: width 1s ease-out; width: 0%; display: flex; align-items: center; justify-content: flex-end; padding-right: 8px; color: white; font-weight: bold; font-size: clamp(10px, 2vw, 14px); text-shadow: 1px 1px 1px rgba(0,0,0,0.5); }
+
+        .empty-state { text-align: center; color: #999; font-size: clamp(14px, 3vw, 18px); padding: 20px; font-style: italic; }
+
+        .admin-controls { margin-top: 10px; position: relative; z-index: 10; text-align: center; padding-bottom: 20px; flex-shrink: 0;}
+        .reset-btn { background-color: #9e9e9e; font-size: 12px; padding: 6px 15px; }
+    </style>
+</head>
+<body>
+
+    <div class="overlay-bg"></div>
+
+    <header>
+        <a href="index.html" class="btn">🏠 처음으로</a>
+        <h1>📊 우리 아이 한글 성장 리포트</h1>
+        <div style="width: 80px;" class="spacer"></div>
+    </header>
+
+    <div class="dashboard-container">
+        
+        <div class="card">
+            <h2>🏆 학습 기록</h2>
+            <div class="summary-box">
+                <div class="stat-item">
+                    <div class="stat-value" id="total-gems">0</div>
+                    <div class="stat-label">모은 보물(💎)</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" id="total-clears" style="color: #4caf50;">0</div>
+                    <div class="stat-label">게임 성공 횟수</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card card-full" style="border-color: #ffcc80;">
+            <h2>🕵️‍♂️ AI 취약점 정밀 분석</h2>
+            <div id="weak-words-container">
+                <div style="color: #666; margin-bottom: 10px; font-weight: bold; text-align: center; font-size: clamp(12px, 2.5vw, 16px);">가장 많이 헷갈려 한 낱말 TOP</div>
+                <div class="weak-word-list" id="weak-word-list"></div>
+                <div class="analysis-result" id="analysis-text">데이터를 분석 중입니다...</div>
+            </div>
+            <div id="empty-weak-state" class="empty-state" style="display: none;">🎉 와! 아직 어려워하는 단어가 없어요. 완벽합니다!</div>
+        </div>
+
+        <div class="card card-full">
+            <h2>🎡 어떤 놀이를 가장 좋아할까요?</h2>
+            <div class="chart-container" id="chart-container"></div>
+        </div>
+
+    </div>
+
+    <div class="admin-controls">
+        <button class="btn reset-btn" onclick="resetAllData()">⚠️ 학습 데이터 초기화 (테스트용)</button>
+    </div>
+
+    <script>
+        const gameNames = { 'game_ghost': '👻 유령의 집', 'game_detective': '🔍 명탐정 돋보기', 'game_frog': '🐸 징검다리', 'game_line': '✏️ 별자리 선 긋기', 'game_sketch': '🎨 요정 스케치북', 'game_combine': '🍲 한글 솥단지', 'game_boss': '🚂 끝말잇기 기차' };
+        const chartColors = ['#ff5252', '#ff4081', '#7c4dff', '#536dfe', '#448aff', '#4caf50', '#ff9800'];
+
+        window.onload = () => { loadSummaryData(); loadChartData(); analyzeWeakWords(); };
+
+        function loadSummaryData() {
+            document.getElementById('total-gems').innerText = localStorage.getItem('hangeul_park_coins') || '0';
+            const clearedData = JSON.parse(localStorage.getItem('hangeul_park_cleared') || '{}');
+            let totalClears = 0; for (let key in clearedData) { if (typeof clearedData[key] === 'number') totalClears += clearedData[key]; }
+            document.getElementById('total-clears').innerText = totalClears;
+        }
+
+        function loadChartData() {
+            const clearedData = JSON.parse(localStorage.getItem('hangeul_park_cleared') || '{}');
+            const chartContainer = document.getElementById('chart-container');
+            let maxCount = 1; for (let key in gameNames) { if (clearedData[key] > maxCount) maxCount = clearedData[key]; }
+            let colorIdx = 0;
+            for (let key in gameNames) {
+                const count = clearedData[key] || 0; const percentage = (count / maxCount) * 100; const color = chartColors[colorIdx % chartColors.length];
+                const barGroup = document.createElement('div'); barGroup.className = 'chart-bar-group';
+                barGroup.innerHTML = `<div class="chart-label">${gameNames[key]}</div><div class="chart-bar-bg"><div class="chart-bar-fill" style="background: ${color}; width: 0%;" data-width="${percentage}%">${count > 0 ? count + '회' : ''}</div></div>`;
+                chartContainer.appendChild(barGroup); colorIdx++;
+            }
+            setTimeout(() => { document.querySelectorAll('.chart-bar-fill').forEach(bar => { bar.style.width = bar.getAttribute('data-width'); }); }, 300);
+        }
+
+        function analyzeWeakWords() {
+            const weakWordsObj = JSON.parse(localStorage.getItem('hangeul_weak_words') || '[]');
+            if (weakWordsObj.length === 0) { document.getElementById('weak-words-container').style.display = 'none'; document.getElementById('empty-weak-state').style.display = 'block'; return; }
+
+            const reversedWords = [...weakWordsObj].reverse(); const tagContainer = document.getElementById('weak-word-list');
+            reversedWords.slice(0, 5).forEach(item => { const tag = document.createElement('div'); tag.className = 'weak-tag'; tag.innerText = item.target; tagContainer.appendChild(tag); });
+
+            let batchimCount = 0; let complexVowelCount = 0; let chosungMap = {};
+            const COMPLEX_VOWELS = ['ㅐ','ㅒ','ㅔ','ㅖ','ㅘ','ㅙ','ㅚ','ㅝ','ㅞ','ㅟ','ㅢ'];
+            const CHOSUNG_LIST = ['ㄱ', 'ㄲ', 'ㄴ', 'ㄷ', 'ㄸ', 'ㄹ', 'ㅁ', 'ㅂ', 'ㅃ', 'ㅅ', 'ㅆ', 'ㅇ', 'ㅈ', 'ㅉ', 'ㅊ', 'ㅋ', 'ㅌ', 'ㅍ', 'ㅎ'];
+            const JUNGSUNG_LIST = ['ㅏ', 'ㅐ', 'ㅑ', 'ㅒ', 'ㅓ', 'ㅔ', 'ㅕ', 'ㅖ', 'ㅗ', 'ㅘ', 'ㅙ', 'ㅚ', 'ㅛ', 'ㅜ', 'ㅝ', 'ㅞ', 'ㅟ', 'ㅠ', 'ㅡ', 'ㅢ', 'ㅣ'];
+            let totalCharsAnalyzed = 0;
+
+            weakWordsObj.forEach(item => {
+                let word = item.target;
+                for(let i = 0; i < word.length; i++) {
+                    let charCode = word.charCodeAt(i) - 0xAC00;
+                    if (charCode > -1 && charCode < 11172) {
+                        totalCharsAnalyzed++; let cho = Math.floor(charCode / 588); let jung = Math.floor((charCode % 588) / 28); let jong = charCode % 28;
+                        if (jong > 0) batchimCount++; if (COMPLEX_VOWELS.includes(JUNGSUNG_LIST[jung])) complexVowelCount++; chosungMap[CHOSUNG_LIST[cho]] = (chosungMap[CHOSUNG_LIST[cho]] || 0) + 1;
+                    }
+                }
+            });
+
+            let findings = [];
+            if (batchimCount > totalCharsAnalyzed * 0.3) findings.push("<span class='analysis-highlight'>받침이 있는 낱말(은/는, 강 등)</span>");
+            if (complexVowelCount > totalCharsAnalyzed * 0.2) findings.push("<span class='analysis-highlight'>복잡한 모음(ㅐ, ㅔ, ㅘ 등)</span>");
+            let maxCho = Object.keys(chosungMap).reduce((a, b) => chosungMap[a] > chosungMap[b] ? a : b, "");
+            if (maxCho && chosungMap[maxCho] >= 3) findings.push(`<span class='analysis-highlight'>자음 '${maxCho}'(이)가 들어간 낱말</span>`);
+
+            const analysisBox = document.getElementById('analysis-text');
+            if (findings.length > 0) { analysisBox.innerHTML = `우리 아이는 헷갈렸던 단어들을 살펴보니, 특히 <strong>${findings.join(' 및 ')}</strong>을(를) 듣고 구별하는 데 조금 더 연습이 필요해 보여요!<br><br>💡 <b>추천:</b> '마법의 선 긋기'나 '한글 솥단지'에서 요정의 추천 미션을 따라가며 자연스럽게 모양과 소리를 익히도록 지도해 주세요.`; } 
+            else { analysisBox.innerHTML = `특정한 규칙(받침, 모음 등)을 몰라서라기보다는 <strong>전반적인 낱말 소리 듣기</strong> 연습을 꾸준히 해주면 좋을 것 같아요! 🌟<br><br>💡 <b>추천:</b> '유령의 집'이나 '징검다리' 놀이를 통해 소리에 귀 기울이는 연습을 많이 칭찬해 주세요.`; }
+        }
+
+        function resetAllData() {
+            if (confirm("모든 학습 데이터와 보석, 오답 노트가 삭제됩니다. 정말 초기화할까요?")) {
+                localStorage.clear(); alert("초기화되었습니다. 페이지를 새로고침합니다."); location.reload();
+            }
+        }
+    </script>
+</body>
+</html>

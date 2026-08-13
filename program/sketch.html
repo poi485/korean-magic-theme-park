@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>한글 요술 스케치북</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Jua&display=swap');
+
+        body { 
+            font-family: 'Jua', 'Malgun Gothic', sans-serif; text-align: center; margin: 0; padding: 10px;
+            touch-action: none; min-height: 100vh; min-height: 100dvh; overflow: hidden; /* 모바일 세로 스크롤 완전 차단 */
+            background-image: url('../media/image/bg-sketch.png'); background-size: cover; background-position: center;
+            background-attachment: fixed; background-color: #fce4ec; display: flex; flex-direction: column; align-items: center; box-sizing: border-box;
+        }
+
+        /* 세로 모드 경고창 (가로 유도) */
+        #landscape-warning { display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: #e91e63; z-index: 999999; flex-direction: column; justify-content: center; align-items: center; color: white; text-align: center; font-family: 'Jua', sans-serif; }
+        #landscape-warning .icon { font-size: 80px; animation: rotatePhone 1.5s infinite ease-in-out; margin-bottom: 20px;}
+        #landscape-warning p { font-size: 24px; font-family: 'Malgun Gothic', sans-serif;}
+        @keyframes rotatePhone { 0% { transform: rotate(0deg); } 50% { transform: rotate(-90deg); } 100% { transform: rotate(-90deg); } }
+        @media screen and (orientation: portrait) { #landscape-warning { display: flex !important; } }
+        
+        #intro-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100vh; display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 1000; background: rgba(255, 240, 245, 0.6); backdrop-filter: blur(10px); transition: opacity 1s; }
+        #intro-btn { background-color: #ff69b4; color: white; font-size: clamp(24px, 5vw, 32px); font-family: 'Jua', sans-serif; padding: 15px 40px; border: 4px solid #fff; border-radius: 50px; cursor: pointer; box-shadow: 0 8px 0 #c71585, 0 10px 15px rgba(0,0,0,0.3); transition: all 0.1s; animation: float 2s infinite ease-in-out; }
+        #intro-btn:active { transform: translateY(8px); box-shadow: 0 0 0 #c71585, 0 4px 6px rgba(0,0,0,0.3); }
+        #sketch-greeting { font-size: clamp(24px, 5vw, 42px); color: #fff; text-shadow: 0 0 10px #ff69b4, 0 0 20px #ff1493, 2px 2px 0px #c71585; margin-bottom: 30px; display: none; text-align: center; padding: 0 15px; }
+
+        @keyframes float { 0% { transform: translateY(0px); } 50% { transform: translateY(-10px); } 100% { transform: translateY(0px); } }
+
+        #game-ui { display: none; flex-direction: column; align-items: center; width: 100%; height: 100%; padding: 5px; box-sizing: border-box; opacity: 0; transition: opacity 1.5s; position: relative; }
+
+        .header-area { flex-shrink: 0; margin-bottom: 5px; display: flex; flex-direction: column; align-items: center; width: 100%;}
+        h1 { margin: 0; font-size: clamp(20px, 4vw, 32px); color: #c71585; text-shadow: 2px 2px 0px #fff;}
+
+        .action-btn-top { position: absolute; top: 5px; left: 10px; background: #ff6b6b; color: white; text-decoration: none; padding: 6px 12px; border-radius: 20px; font-size: clamp(12px, 2.5vw, 16px); font-weight: bold; box-shadow: 0 4px 10px rgba(0,0,0,0.2); z-index: 99; border: 2px solid white; font-family: 'Jua', sans-serif;}
+        .gallery-btn-top { position: absolute; top: 5px; right: 10px; background: #ab47bc; color: white; text-decoration: none; padding: 6px 12px; border-radius: 20px; font-size: clamp(12px, 2.5vw, 16px); font-weight: bold; box-shadow: 0 4px 10px rgba(0,0,0,0.2); z-index: 99; border: 2px solid white; font-family: 'Jua', sans-serif; cursor: pointer;}
+
+        #recommend-banner { display: none; background: rgba(233, 30, 99, 0.85); color: #fff; font-size: clamp(12px, 2.5vw, 18px); font-weight: bold; padding: 4px 15px; border-radius: 20px; border: 2px dashed #fce4ec; margin-top: 5px; box-shadow: 0 4px 10px rgba(0,0,0,0.3); animation: pulseBanner 2s infinite alternate; }
+        @keyframes pulseBanner { 0% { transform: scale(1); } 100% { transform: scale(1.03); } }
+
+        .game-content-row { display: flex; flex-direction: row; justify-content: center; align-items: center; gap: clamp(10px, 2vw, 20px); width: 100%; max-width: 900px; flex: 1; min-height: 0; box-sizing: border-box; padding-top: 5px;}
+
+        .left-panel { display: flex; flex-direction: column; align-items: center; flex: 1; height: 100%; justify-content: space-evenly; }
+        .right-panel { display: flex; flex-direction: column; align-items: center; justify-content: center; flex: 1; background: rgba(255, 255, 255, 0.6); backdrop-filter: blur(5px); border-radius: 20px; padding: 10px; border: 4px dashed #ffb6c1; box-shadow: 0 5px 15px rgba(0,0,0,0.1); height: 95%; box-sizing: border-box; }
+
+        #mic-btn { font-size: clamp(14px, 3vw, 20px); font-family: 'Jua', sans-serif; color: #d81b60; padding: 6px 15px; border-radius: 30px; background: rgba(255, 205, 210, 0.95); border: 3px solid #fff; cursor: pointer; box-shadow: 0 4px 10px rgba(233, 30, 99, 0.3); transition: 0.2s; margin-bottom: 5px; flex-shrink: 0;}
+        #mic-btn:active { transform: translateY(4px); box-shadow: 0 0px 0 rgba(233, 30, 99, 0.4); }
+
+        #result-text { font-size: clamp(20px, 4vw, 28px); color: #fff; min-height: 30px; text-shadow: 2px 2px 0px #e91e63, -1px -1px 0 #e91e63, 1px -1px 0 #e91e63, -1px 1px 0 #e91e63; letter-spacing: 2px; margin-bottom: 5px; flex-shrink: 0;}
+        
+        #canvas-wrapper { position: relative; width: 100%; max-width: 320px; aspect-ratio: 4/3; margin: 0 auto; border: 4px solid #fff; background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(5px); border-radius: 20px; transition: max-width 0.3s ease; box-shadow: 0 10px 20px rgba(0,0,0,0.2), inset 0 0 10px rgba(255,182,193,0.5); flex-shrink: 1;}
+        #bg-canvas, #drawing-canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border-radius: 16px; }
+        #bg-canvas { pointer-events: none; }
+        #drawing-canvas { cursor: crosshair; }
+
+        .btn-group { display: flex; gap: 10px; margin-top: 5px; flex-shrink: 0;}
+        .action-btn { padding: 6px 12px; font-size: clamp(12px, 2.5vw, 16px); font-family: 'Jua', sans-serif; border: 2px solid #fff; border-radius: 20px; cursor: pointer; color: white; box-shadow: 0 4px 10px rgba(0,0,0,0.2); transition: 0.2s; }
+        .action-btn:active { transform: translateY(4px); box-shadow: 0 0px 0 rgba(0,0,0,0.2); }
+        #clear-btn { background-color: #81d4fa; color: #01579b; } 
+        #check-btn { background-color: #69f0ae; color: #1b5e20; } 
+
+        #feedback-text { font-size: clamp(14px, 3vw, 20px); text-shadow: 2px 2px 0px #fff, 0 2px 5px rgba(0,0,0,0.3); color: #fff; margin-bottom: 10px; flex-shrink: 0; text-align: center; word-break: keep-all;}
+
+        #reward-section { display: none; text-align: center; width: 100%; height: 100%; display: flex; flex-direction: column; justify-content: center; align-items: center;}
+        #loading-text { font-size: clamp(14px, 3vw, 18px); color: #9c27b0; text-shadow: 1px 1px 0px #fff; animation: blink 1.5s infinite; }
+        @keyframes blink { 0% { opacity: 0.3; } 50% { opacity: 1; } 100% { opacity: 0.3; } }
+        
+        #ai-image { max-width: 100%; max-height: 80%; object-fit: contain; border-radius: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.3); border: 4px solid #fff; display: none; animation: popIn 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        @keyframes popIn { 0% { transform: translateY(-30px) scale(0.5); opacity: 0; } 100% { transform: translateY(0) scale(1); opacity: 1; } }
+
+        /* 갤러리 모달 UI */
+        #gallery-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.7); backdrop-filter: blur(5px); display: none; justify-content: center; align-items: center; z-index: 9999; }
+        .gallery-content { background: #fff; width: 90%; max-width: 600px; max-height: 90vh; border-radius: 20px; padding: 20px; box-shadow: 0 15px 30px rgba(0,0,0,0.5); text-align: center; display: flex; flex-direction: column;}
+        .gallery-content h2 { margin-top: 0; color: #ab47bc; font-size: clamp(20px, 4vw, 28px); text-shadow: 1px 1px 0px #f3e5f5; flex-shrink: 0;}
+        .gallery-list { display: grid; grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); gap: 10px; overflow-y: auto; padding: 5px; flex: 1; }
+        .album-item { background: #f3e5f5; border: 3px solid #ce93d8; border-radius: 15px; padding: 5px; display: flex; flex-direction: column; align-items: center; box-shadow: 0 3px 6px rgba(0,0,0,0.1); cursor: pointer; transition: transform 0.2s; }
+        .album-item:active { transform: scale(0.95); }
+        .album-item img { width: 100%; aspect-ratio: 1/1; object-fit: cover; border-radius: 10px; margin-bottom: 5px; border: 2px solid #fff; pointer-events: none;}
+        .album-item .album-word { font-size: clamp(14px, 3vw, 16px); font-weight: bold; color: #6a1b9a; }
+        
+        #album-detail-view { display: none; flex-direction: column; align-items: center; flex: 1; justify-content: center;}
+        #detail-image { width: 100%; max-width: 250px; border-radius: 15px; border: 4px solid #ce93d8; box-shadow: 0 5px 15px rgba(0,0,0,0.2); margin-bottom: 15px; }
+        #detail-word { font-size: clamp(24px, 5vw, 32px); color: #ab47bc; margin: 0 0 15px 0; text-shadow: 1px 1px 0 #fff; }
+        .detail-btn-group { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; }
+
+        .close-modal-btn { margin-top: 15px; background: #9e9e9e; color: white; border: none; padding: 8px 25px; border-radius: 15px; font-size: clamp(14px, 3vw, 18px); font-family: 'Jua', sans-serif; cursor: pointer; flex-shrink: 0;}
+        .empty-album { font-size: 16px; color: #757575; padding: 20px; grid-column: 1 / -1; }
+    </style>
+</head>
+<body>
+
+    <div id="landscape-warning">
+        <div class="icon">📱</div>
+        <h2>화면을 가로로 눕혀주세요!</h2>
+        <p>스케치북은 가로 화면에서 그려야 편해요.</p>
+    </div>
+
+    <div id="intro-screen">
+        <div id="sketch-greeting">"여기는 마법의 기념품 가게야! 단어를 적고 멋진 선물을 받아가렴!"</div>
+        <button id="intro-btn">기념품 가게 들어가기</button>
+    </div>
+
+    <div id="game-ui">
+        <div class="header-area">
+            <a href="index.html" class="action-btn-top">처음으로</a>
+            <button class="gallery-btn-top" onclick="openAlbum()">내 앨범</button>
+            <h1>AI 요정 스케치북</h1>
+            <div id="recommend-banner"></div>
+        </div>
+
+        <div class="game-content-row">
+            
+            <div class="left-panel">
+                <button id="mic-btn">1. 단어 말하기</button>
+                <div id="result-text">...</div>
+
+                <div id="canvas-wrapper">
+                    <canvas id="bg-canvas" width="350" height="280"></canvas>
+                    <canvas id="drawing-canvas" width="350" height="280"></canvas>
+                </div>
+                
+                <div class="btn-group">
+                    <button id="clear-btn" class="action-btn">다시 쓰기</button>
+                    <button id="check-btn" class="action-btn">2. 검사하기</button>
+                </div>
+            </div>
+
+            <div class="right-panel">
+                <div id="feedback-text">단어를 말하고 글씨를 써보세요!</div>
+                <div id="reward-section" style="display: none;">
+                    <div id="loading-text">요정이 선물을 만들고 있어요...</div>
+                    <img id="ai-image" src="" alt="AI 생성 이미지">
+                </div>
+            </div>
+            
+        </div>
+    </div>
+
+    <div id="gallery-modal">
+        <div class="gallery-content">
+            <h2 id="album-title">내 요술 스케치북 앨범</h2>
+            <div class="gallery-list" id="gallery-list"></div>
+            <button class="close-modal-btn" id="album-close-btn" onclick="closeAlbum()">닫기</button>
+
+            <div id="album-detail-view">
+                <h3 id="detail-word">단어</h3>
+                <img id="detail-image" src="" alt="확대 이미지">
+                <div class="detail-btn-group">
+                    <button class="action-btn" style="background: #29b6f6;" onclick="downloadCurrentItem()">저장하기</button>
+                    <button class="action-btn" style="background: #ef5350;" onclick="deleteCurrentItem()">삭제하기</button>
+                    <button class="action-btn" style="background: #9e9e9e;" onclick="closeAlbumDetail()">목록으로</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('intro-btn').addEventListener('click', () => {
+            const introBtn = document.getElementById('intro-btn'); const greeting = document.getElementById('sketch-greeting');
+            introBtn.style.display = 'none'; greeting.style.display = 'block';
+            const introAudio = new Audio('../media/sound/os-sketch.mp3'); introAudio.onended = () => { transitionToGame(); };
+            introAudio.play().catch(e => { setTimeout(() => { if (document.getElementById('intro-screen').style.opacity !== '0') transitionToGame(); }, 2000); });
+            setTimeout(() => { if (document.getElementById('intro-screen').style.opacity !== '0') transitionToGame(); }, 6000);
+        });
+
+        function transitionToGame() {
+            const intro = document.getElementById('intro-screen'); intro.style.opacity = '0';
+            setTimeout(() => { intro.style.display = 'none'; const gameUI = document.getElementById('game-ui'); gameUI.style.display = 'flex'; initRecommendation(); resizeCanvas(); setTimeout(() => { gameUI.style.opacity = '1'; }, 50); }, 1000);
+        }
+
+        let spokenWord = ""; let currentRecWord = null; 
+        const micBtn = document.getElementById('mic-btn'); const resultText = document.getElementById('result-text'); const feedbackText = document.getElementById('feedback-text'); const wrapper = document.getElementById('canvas-wrapper'); const rewardSection = document.getElementById('reward-section'); const aiImage = document.getElementById('ai-image'); const loadingText = document.getElementById('loading-text');
+
+        const promptDictionary = { "가방": "cute school backpack", "사과": "fresh red apple on a branch", "강아지": "adorable cute puppy dog", "고양이": "cute fluffy kitten cat", "나무": "green lush tree with a cute trunk", "나비": "colorful beautiful butterfly", "자동차": "cute mini toy car", "자전거": "cute children bicycle with a basket", "비행기": "cute little toy airplane flying", "바나나": "fresh yellow banana fruit", "포도": "fresh purple grape fruit bunch", "수박": "fresh sliced watermelon piece", "모자": "cute colorful children baseball cap", "우산": "colorful polka dot umbrella", "별": "glowing cute star with a smiling face", "달": "crescent cute moon with a smiling face", "꽃": "colorful beautiful flower spring blossom", "집": "cute little cozy house with a red roof", "물고기": "cute colorful swimming fish underwater", "로보트": "cute friendly toy robot", "드래곤": "cute baby dragon, friendly", "공룡": "cute baby dinosaur, t-rex", "공주": "beautiful cute fairy tale princess", "왕자": "handsome cute fairy tale prince", "사자": "cute baby lion", "호랑이": "cute baby tiger", "곰": "cute teddy bear", "경찰차": "cute toy police car", "소방차": "cute toy fire engine truck", "기차": "cute toy steam train", "오징어": "cute baby squid", "문어": "cute baby octopus", "상어": "cute baby shark", "고래": "cute baby whale", "거북이": "cute baby turtle", "거미": "cute baby spider", "개구리": "cute baby frog", "토끼": "cute fluffy bunny", "돼지": "cute baby pig", "원숭이": "cute baby monkey", "코끼리": "cute baby elephant", "기린": "cute baby giraffe", "하마": "cute baby hippo", "펭귄": "cute baby penguin", "오리": "cute baby duck", "소": "cute baby cow", "말": "cute baby horse", "양": "cute baby sheep" };
+
+        function initRecommendation() {
+            let weakWords = JSON.parse(localStorage.getItem('hangeul_weak_words') || '[]'); let validWords = weakWords.filter(w => promptDictionary[w.target]);
+            if (validWords.length > 0) { currentRecWord = validWords[Math.floor(Math.random() * validWords.length)].target; const banner = document.getElementById('recommend-banner'); banner.innerHTML = `요정의 추천: <span style="color:#ffeb3b;">'${currentRecWord}'</span> 그려볼까요?`; banner.style.display = 'block'; } 
+            else { currentRecWord = null; document.getElementById('recommend-banner').style.display = 'none'; }
+        }
+
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        const bgCanvas = document.getElementById('bg-canvas'); const bgCtx = bgCanvas.getContext('2d'); const drawCanvas = document.getElementById('drawing-canvas'); const drawCtx = drawCanvas.getContext('2d');
+
+        function resizeCanvas() {
+            const rect = wrapper.getBoundingClientRect();
+            bgCanvas.width = rect.width; bgCanvas.height = rect.height;
+            drawCanvas.width = rect.width; drawCanvas.height = rect.height;
+            drawCtx.lineWidth = 15; drawCtx.lineCap = 'round'; drawCtx.lineJoin = 'round'; drawCtx.strokeStyle = '#333';
+            if (spokenWord) drawGuideText(spokenWord);
+        }
+        window.addEventListener('resize', resizeCanvas);
+
+        if (SpeechRecognition) {
+            const recognition = new SpeechRecognition(); recognition.lang = 'ko-KR'; 
+            micBtn.addEventListener('click', () => { resultText.innerText = "듣고 있어요..."; feedbackText.innerText = "단어를 말하고 글씨를 써보세요!"; feedbackText.style.color = "#fff"; rewardSection.style.display = "none"; drawCtx.clearRect(0, 0, drawCanvas.width, drawCanvas.height); recognition.start(); });
+            recognition.onresult = (event) => { spokenWord = event.results[0][0].transcript.replace(/\./g, '').trim(); resultText.innerText = `"${spokenWord}"`; drawGuideText(spokenWord); };
+        }
+
+        function drawGuideText(text) {
+            bgCtx.clearRect(0, 0, bgCanvas.width, bgCanvas.height);
+            const fontSize = Math.min(bgCanvas.height * 0.5, bgCanvas.width / text.length * 0.8); 
+            bgCtx.font = `${fontSize}px 'Jua'`; bgCtx.textAlign = "center"; bgCtx.textBaseline = "middle"; bgCtx.fillStyle = "rgba(220, 220, 220, 0.8)"; 
+            bgCtx.fillText(text, bgCanvas.width / 2, bgCanvas.height / 2 + 10);
+        }
+
+        let isDrawing = false;
+        const startPosition = (e) => { isDrawing = true; draw(e); }
+        const endPosition = () => { isDrawing = false; drawCtx.beginPath(); }
+        const draw = (e) => {
+            if (!isDrawing) return; e.preventDefault();
+            let clientX = e.clientX || (e.touches && e.touches[0].clientX); let clientY = e.clientY || (e.touches && e.touches[0].clientY);
+            if(clientX === undefined) return;
+            let rect = drawCanvas.getBoundingClientRect(); let x = clientX - rect.left; let y = clientY - rect.top;
+            drawCtx.lineTo(x, y); drawCtx.stroke(); drawCtx.beginPath(); drawCtx.moveTo(x, y);
+        }
+
+        drawCanvas.addEventListener('mousedown', startPosition); drawCanvas.addEventListener('mouseup', endPosition); drawCanvas.addEventListener('mousemove', draw);
+        drawCanvas.addEventListener('touchstart', startPosition, {passive: false}); drawCanvas.addEventListener('touchend', endPosition); drawCanvas.addEventListener('touchmove', draw, {passive: false});
+
+        document.getElementById('clear-btn').addEventListener('click', () => { drawCtx.clearRect(0, 0, drawCanvas.width, drawCanvas.height); feedbackText.innerText = "단어를 말하고 글씨를 써보세요!"; feedbackText.style.color = "#fff"; rewardSection.style.display = "none"; });
+
+        document.getElementById('check-btn').addEventListener('click', () => {
+            if (spokenWord === "") return alert("먼저 단어를 말해주세요!");
+            let bgData = bgCtx.getImageData(0, 0, drawCanvas.width, drawCanvas.height).data; let drawData = drawCtx.getImageData(0, 0, drawCanvas.width, drawCanvas.height).data;
+            let targetPixels = 0; let coveredPixels = 0; let overdrawnPixels = 0; 
+            for (let i = 0; i < bgData.length; i += 4) { let isGuidePixel = bgData[i + 3] > 50; let isDrawnPixel = drawData[i + 3] > 50; if (isGuidePixel) { targetPixels++; if (isDrawnPixel) coveredPixels++; } else { if (isDrawnPixel) overdrawnPixels++; } }
+            if(targetPixels === 0) return;
+            let totalEmptyArea = (bgData.length / 4) - targetPixels; let coverage = coveredPixels / targetPixels; let penaltyRatio = overdrawnPixels / totalEmptyArea; let matchRate = Math.max(0, (coverage * 100) - (penaltyRatio * 150));
+            
+            if (matchRate >= 60) {
+                if (currentRecWord && spokenWord === currentRecWord) { feedbackText.innerText = `추천 단어 완성! (${matchRate.toFixed(1)}%)`; let weakWords = JSON.parse(localStorage.getItem('hangeul_weak_words') || '[]'); weakWords = weakWords.filter(w => w.target !== currentRecWord); localStorage.setItem('hangeul_weak_words', JSON.stringify(weakWords)); currentRecWord = null; initRecommendation(); } 
+                else { feedbackText.innerText = `참 잘 썼어요! (${matchRate.toFixed(1)}%)`; }
+                feedbackText.style.color = "#ffeb3b"; rewardSection.style.display = "flex"; loadingText.style.display = "block"; aiImage.style.display = "none"; saveReward(10, 'game_sketch');
+                const baseItem = promptDictionary[spokenWord] || spokenWord; const prompt = `A single cute 3D Pixar style toy of ${baseItem}, vibrant pastel colors, pure solid white background, masterpiece. No text, no background scenery.`; const imageUrl = `https://image.pollinations.ai/prompt/${encodeURIComponent(prompt)}?width=800&height=800&nologo=true&model=flux`;
+                aiImage.onload = () => { loadingText.style.display = "none"; aiImage.style.display = "block"; saveToAlbum(spokenWord, imageUrl); }; aiImage.src = imageUrl;
+            } else { feedbackText.innerText = `조금 더 꼼꼼히 써보세요! (${matchRate.toFixed(1)}%)`; feedbackText.style.color = "#ffcdd2"; rewardSection.style.display = "none"; }
+        });
+
+        function saveReward(earnedCoins, gameId) { let currentCoins = parseInt(localStorage.getItem('hangeul_park_coins') || '0'); localStorage.setItem('hangeul_park_coins', currentCoins + earnedCoins); let clearedGames = JSON.parse(localStorage.getItem('hangeul_park_cleared') || '{}'); let currentCount = clearedGames[gameId] || 0; clearedGames[gameId] = currentCount + 1; localStorage.setItem('hangeul_park_cleared', JSON.stringify(clearedGames)); }
+
+        let albumData = []; let currentAlbumIndex = null;
+        function saveToAlbum(word, url) { albumData = JSON.parse(localStorage.getItem('hangeul_sketch_album') || '[]'); albumData = albumData.filter(item => item.word !== word); albumData.unshift({ word: word, url: url }); localStorage.setItem('hangeul_sketch_album', JSON.stringify(albumData)); }
+        function openAlbum() {
+            albumData = JSON.parse(localStorage.getItem('hangeul_sketch_album') || '[]'); const listDiv = document.getElementById('gallery-list'); listDiv.innerHTML = '';
+            if (albumData.length === 0) { listDiv.innerHTML = `<div class="empty-album">아직 저장된 선물이 없어요!</div>`; } 
+            else { albumData.forEach((item, index) => { const card = document.createElement('div'); card.className = 'album-item'; card.onclick = () => viewAlbumItem(index); card.innerHTML = `<img src="${item.url}" alt="${item.word}"><div class="album-word">${item.word}</div>`; listDiv.appendChild(card); }); }
+            document.getElementById('album-title').style.display = 'block'; document.getElementById('gallery-list').style.display = 'grid'; document.getElementById('album-close-btn').style.display = 'inline-block'; document.getElementById('album-detail-view').style.display = 'none'; document.getElementById('gallery-modal').style.display = 'flex';
+        }
+        function closeAlbum() { document.getElementById('gallery-modal').style.display = 'none'; }
+        function viewAlbumItem(index) { currentAlbumIndex = index; const item = albumData[index]; document.getElementById('album-title').style.display = 'none'; document.getElementById('gallery-list').style.display = 'none'; document.getElementById('album-close-btn').style.display = 'none'; document.getElementById('detail-image').src = item.url; document.getElementById('detail-word', `✨ ${item.word} ✨`).innerText = `✨ ${item.word} ✨`; document.getElementById('album-detail-view').style.display = 'flex'; }
+        function closeAlbumDetail() { openAlbum(); }
+        function downloadCurrentItem() { if(currentAlbumIndex === null) return; const item = albumData[currentAlbumIndex]; const a = document.createElement('a'); a.href = item.url; a.download = `마법스케치북_${item.word}.png`; a.target = '_blank'; document.body.appendChild(a); a.click(); document.body.removeChild(a); }
+        function deleteCurrentItem() { if(currentAlbumIndex === null) return; if(confirm("정말 지울까요?")) { albumData.splice(currentAlbumIndex, 1); localStorage.setItem('hangeul_sketch_album', JSON.stringify(albumData)); closeAlbumDetail(); } }
+    </script>
+</body>
+</html>
