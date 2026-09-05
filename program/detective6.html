@@ -7,7 +7,7 @@
     <style>
         body { 
             font-family: 'Malgun Gothic', '맑은 고딕', sans-serif; text-align: center; margin: 0; padding: 0; 
-            touch-action: none; user-select: none; height: 100vh; height: 100dvh; overflow: hidden; /* 모바일 스크롤 방지 */
+            touch-action: none; user-select: none; height: 100vh; height: 100dvh; overflow: hidden; 
             background-image: url('../media/image/bg-detective.png'); background-size: cover; background-position: center; background-attachment: fixed; background-color: #fff3e0;
             display: flex; flex-direction: column; box-sizing: border-box;
         }
@@ -114,6 +114,12 @@
     </div>
 
     <script>
+        // 파이어베이스 연동 모듈 동적 로드
+        window.cloudSync = null;
+        import('./firebase-sync.js').then(module => {
+            window.cloudSync = module;
+        }).catch(e => console.error("Firebase module load failed:", e));
+
         document.getElementById('intro-btn').addEventListener('click', () => {
             const introBtn = document.getElementById('intro-btn'); const greeting = document.getElementById('detective-greeting');
             introBtn.style.display = 'none'; greeting.style.display = 'block';
@@ -220,7 +226,20 @@
 
         initMenu();
 
-        function saveReward(earnedCoins, gameId) { let currentCoins = parseInt(localStorage.getItem('hangeul_park_coins') || '0'); localStorage.setItem('hangeul_park_coins', currentCoins + earnedCoins); let clearedGames = JSON.parse(localStorage.getItem('hangeul_park_cleared') || '{}'); let currentCount = clearedGames[gameId]; if (typeof currentCount !== 'number') currentCount = 0; clearedGames[gameId] = currentCount + 1; localStorage.setItem('hangeul_park_cleared', JSON.stringify(clearedGames)); }
+        function saveReward(earnedCoins, gameId) { 
+            let currentCoins = parseInt(localStorage.getItem('hangeul_park_coins') || '0'); 
+            localStorage.setItem('hangeul_park_coins', currentCoins + earnedCoins); 
+            let clearedGames = JSON.parse(localStorage.getItem('hangeul_park_cleared') || '{}'); 
+            let currentCount = clearedGames[gameId] || 0; 
+            clearedGames[gameId] = currentCount + 1; 
+            localStorage.setItem('hangeul_park_cleared', JSON.stringify(clearedGames)); 
+            
+            if (window.cloudSync) {
+                const studentId = localStorage.getItem('currentUser');
+                const classCode = localStorage.getItem('currentClassCode');
+                if (studentId && classCode) window.cloudSync.saveRewardToCloud(classCode + "_" + studentId, earnedCoins, gameId);
+            }
+        }
     </script>
 </body>
 </html>

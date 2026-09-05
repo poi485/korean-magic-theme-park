@@ -49,7 +49,6 @@
 
         #center-area { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; gap: 10px; padding: 10px; box-sizing: border-box; min-width: 0;}
         
-        /* 그리기 캔버스 영역: 16:10 비율로 변경하여 SVG 좌표계(800x500)와 완벽 일치 */
         #game-container { 
             position: relative; width: 100%; max-width: 700px; 
             aspect-ratio: 16 / 10; 
@@ -107,7 +106,6 @@
         <div id="center-area">
             <div id="game-container">
                 <div id="empty-message">옆에서 그리고 싶은 글자를 골라봐!</div>
-                <!-- preserveAspectRatio="none" 속성 추가: 부모 크기에 맞춰 선이 유동적으로 늘어남 -->
                 <svg id="svg-layer" viewBox="0 0 800 500" preserveAspectRatio="none">
                     <line id="guide-line" class="guide-line" x1="0" y1="0" x2="0" y2="0" opacity="0"></line>
                     <line id="temp-line" class="temp-line" x1="0" y1="0" x2="0" y2="0" opacity="0"></line>
@@ -131,6 +129,12 @@
 </div>
 
 <script>
+    // 파이어베이스 연동 모듈 동적 로드
+    window.cloudSync = null;
+    import('./firebase-sync.js').then(module => {
+        window.cloudSync = module;
+    }).catch(e => console.error("Firebase module load failed:", e));
+
     document.getElementById('intro-btn').addEventListener('click', () => {
         const introBtn = document.getElementById('intro-btn'); const greeting = document.getElementById('line-greeting');
         introBtn.style.display = 'none'; greeting.style.display = 'block';
@@ -146,7 +150,6 @@
 
     const line = (x1, y1, x2, y2) => ({ start: {x: x1, y: y1}, end: {x: x2, y: y2} });
     
-    // 글자 좌표 데이터 (기준 해상도 800x500)
     const letterData = {
         'ㄱ': { name: '기역', sound: '그으', word: '가방', art: '🎒', strokes: [ line(300,150, 500,150), line(500,150, 500,400) ] },
         'ㄴ': { name: '니은', sound: '느으', word: '나비', art: '🦋', strokes: [ line(300,150, 300,400), line(300,400, 500,400) ] },
@@ -326,7 +329,20 @@
         setTimeout(() => { completedLines.style.opacity = '0.3'; }, 1000);
     }
 
-    function saveReward(earnedCoins, gameId) { let currentCoins = parseInt(localStorage.getItem('hangeul_park_coins') || '0'); localStorage.setItem('hangeul_park_coins', currentCoins + earnedCoins); let clearedGames = JSON.parse(localStorage.getItem('hangeul_park_cleared') || '{}'); let currentCount = clearedGames[gameId] || 0; clearedGames[gameId] = currentCount + 1; localStorage.setItem('hangeul_park_cleared', JSON.stringify(clearedGames)); }
+    function saveReward(earnedCoins, gameId) { 
+        let currentCoins = parseInt(localStorage.getItem('hangeul_park_coins') || '0'); 
+        localStorage.setItem('hangeul_park_coins', currentCoins + earnedCoins); 
+        let clearedGames = JSON.parse(localStorage.getItem('hangeul_park_cleared') || '{}'); 
+        let currentCount = clearedGames[gameId] || 0; 
+        clearedGames[gameId] = currentCount + 1; 
+        localStorage.setItem('hangeul_park_cleared', JSON.stringify(clearedGames)); 
+        
+        if (window.cloudSync) {
+            const studentId = localStorage.getItem('currentUser');
+            const classCode = localStorage.getItem('currentClassCode');
+            if (studentId && classCode) window.cloudSync.saveRewardToCloud(classCode + "_" + studentId, earnedCoins, gameId);
+        }
+    }
 </script>
 </body>
 </html>

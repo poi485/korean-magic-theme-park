@@ -9,12 +9,11 @@
 
         body { 
             font-family: 'Jua', 'Malgun Gothic', sans-serif; text-align: center; margin: 0; padding: 10px;
-            touch-action: none; min-height: 100vh; min-height: 100dvh; overflow: hidden; /* 모바일 세로 스크롤 완전 차단 */
+            touch-action: none; min-height: 100vh; min-height: 100dvh; overflow: hidden; 
             background-image: url('../media/image/bg-sketch.png'); background-size: cover; background-position: center;
             background-attachment: fixed; background-color: #fce4ec; display: flex; flex-direction: column; align-items: center; box-sizing: border-box;
         }
 
-        /* 세로 모드 경고창 (가로 유도) */
         #landscape-warning { display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: #e91e63; z-index: 999999; flex-direction: column; justify-content: center; align-items: center; color: white; text-align: center; font-family: 'Jua', sans-serif; }
         #landscape-warning .icon { font-size: 80px; animation: rotatePhone 1.5s infinite ease-in-out; margin-bottom: 20px;}
         #landscape-warning p { font-size: 24px; font-family: 'Malgun Gothic', sans-serif;}
@@ -69,7 +68,6 @@
         #ai-image { max-width: 100%; max-height: 80%; object-fit: contain; border-radius: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.3); border: 4px solid #fff; display: none; animation: popIn 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
         @keyframes popIn { 0% { transform: translateY(-30px) scale(0.5); opacity: 0; } 100% { transform: translateY(0) scale(1); opacity: 1; } }
 
-        /* 갤러리 모달 UI */
         #gallery-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.7); backdrop-filter: blur(5px); display: none; justify-content: center; align-items: center; z-index: 9999; }
         .gallery-content { background: #fff; width: 90%; max-width: 600px; max-height: 90vh; border-radius: 20px; padding: 20px; box-shadow: 0 15px 30px rgba(0,0,0,0.5); text-align: center; display: flex; flex-direction: column;}
         .gallery-content h2 { margin-top: 0; color: #ab47bc; font-size: clamp(20px, 4vw, 28px); text-shadow: 1px 1px 0px #f3e5f5; flex-shrink: 0;}
@@ -156,6 +154,11 @@
     </div>
 
     <script>
+        window.cloudSync = null;
+        import('./firebase-sync.js').then(module => {
+            window.cloudSync = module;
+        }).catch(e => console.error("Firebase module load failed:", e));
+
         document.getElementById('intro-btn').addEventListener('click', () => {
             const introBtn = document.getElementById('intro-btn'); const greeting = document.getElementById('sketch-greeting');
             introBtn.style.display = 'none'; greeting.style.display = 'block';
@@ -230,15 +233,42 @@
             let totalEmptyArea = (bgData.length / 4) - targetPixels; let coverage = coveredPixels / targetPixels; let penaltyRatio = overdrawnPixels / totalEmptyArea; let matchRate = Math.max(0, (coverage * 100) - (penaltyRatio * 150));
             
             if (matchRate >= 60) {
-                if (currentRecWord && spokenWord === currentRecWord) { feedbackText.innerText = `추천 단어 완성! (${matchRate.toFixed(1)}%)`; let weakWords = JSON.parse(localStorage.getItem('hangeul_weak_words') || '[]'); weakWords = weakWords.filter(w => w.target !== currentRecWord); localStorage.setItem('hangeul_weak_words', JSON.stringify(weakWords)); currentRecWord = null; initRecommendation(); } 
-                else { feedbackText.innerText = `참 잘 썼어요! (${matchRate.toFixed(1)}%)`; }
+                if (currentRecWord && spokenWord === currentRecWord) { 
+                    feedbackText.innerText = `추천 단어 완성! (${matchRate.toFixed(1)}%)`; 
+                    let weakWords = JSON.parse(localStorage.getItem('hangeul_weak_words') || '[]'); 
+                    weakWords = weakWords.filter(w => w.target !== currentRecWord); 
+                    localStorage.setItem('hangeul_weak_words', JSON.stringify(weakWords)); 
+                    currentRecWord = null; 
+                    initRecommendation(); 
+                    
+                    if (window.cloudSync) {
+                        const studentId = localStorage.getItem('currentUser');
+                        const classCode = localStorage.getItem('currentClassCode');
+                        if (studentId && classCode) window.cloudSync.syncLocalToCloud(classCode + "_" + studentId);
+                    }
+                } else { 
+                    feedbackText.innerText = `참 잘 썼어요! (${matchRate.toFixed(1)}%)`; 
+                }
                 feedbackText.style.color = "#ffeb3b"; rewardSection.style.display = "flex"; loadingText.style.display = "block"; aiImage.style.display = "none"; saveReward(10, 'game_sketch');
                 const baseItem = promptDictionary[spokenWord] || spokenWord; const prompt = `A single cute 3D Pixar style toy of ${baseItem}, vibrant pastel colors, pure solid white background, masterpiece. No text, no background scenery.`; const imageUrl = `https://image.pollinations.ai/prompt/${encodeURIComponent(prompt)}?width=800&height=800&nologo=true&model=flux`;
                 aiImage.onload = () => { loadingText.style.display = "none"; aiImage.style.display = "block"; saveToAlbum(spokenWord, imageUrl); }; aiImage.src = imageUrl;
             } else { feedbackText.innerText = `조금 더 꼼꼼히 써보세요! (${matchRate.toFixed(1)}%)`; feedbackText.style.color = "#ffcdd2"; rewardSection.style.display = "none"; }
         });
 
-        function saveReward(earnedCoins, gameId) { let currentCoins = parseInt(localStorage.getItem('hangeul_park_coins') || '0'); localStorage.setItem('hangeul_park_coins', currentCoins + earnedCoins); let clearedGames = JSON.parse(localStorage.getItem('hangeul_park_cleared') || '{}'); let currentCount = clearedGames[gameId] || 0; clearedGames[gameId] = currentCount + 1; localStorage.setItem('hangeul_park_cleared', JSON.stringify(clearedGames)); }
+        function saveReward(earnedCoins, gameId) { 
+            let currentCoins = parseInt(localStorage.getItem('hangeul_park_coins') || '0'); 
+            localStorage.setItem('hangeul_park_coins', currentCoins + earnedCoins); 
+            let clearedGames = JSON.parse(localStorage.getItem('hangeul_park_cleared') || '{}'); 
+            let currentCount = clearedGames[gameId] || 0; 
+            clearedGames[gameId] = currentCount + 1; 
+            localStorage.setItem('hangeul_park_cleared', JSON.stringify(clearedGames)); 
+            
+            if (window.cloudSync) {
+                const studentId = localStorage.getItem('currentUser');
+                const classCode = localStorage.getItem('currentClassCode');
+                if (studentId && classCode) window.cloudSync.saveRewardToCloud(classCode + "_" + studentId, earnedCoins, gameId);
+            }
+        }
 
         let albumData = []; let currentAlbumIndex = null;
         function saveToAlbum(word, url) { albumData = JSON.parse(localStorage.getItem('hangeul_sketch_album') || '[]'); albumData = albumData.filter(item => item.word !== word); albumData.unshift({ word: word, url: url }); localStorage.setItem('hangeul_sketch_album', JSON.stringify(albumData)); }

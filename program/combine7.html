@@ -9,14 +9,13 @@
 
         body { 
             font-family: 'Jua', 'Malgun Gothic', sans-serif; text-align: center; margin: 0; padding: 0;
-            touch-action: pan-y; /* 세로 스크롤 허용 */
-            min-height: 100vh; min-height: 100dvh; height: auto; /* 화면이 내용물에 맞춰 늘어나도록 설정 */
+            touch-action: pan-y;
+            min-height: 100vh; min-height: 100dvh; height: auto;
             overflow-y: auto; overflow-x: hidden; 
             background-image: url('../media/image/bg-combine.png'); background-size: cover; background-position: center;
             background-attachment: fixed; display: flex; flex-direction: column; align-items: center; box-sizing: border-box;
         }
 
-        /* 세로 모드 경고창 (가로 유도) */
         #landscape-warning { display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: #5b2c6f; z-index: 999999; flex-direction: column; justify-content: center; align-items: center; color: white; text-align: center; font-family: 'Jua', sans-serif; }
         #landscape-warning .icon { font-size: 80px; animation: rotatePhone 1.5s infinite ease-in-out; margin-bottom: 20px;}
         #landscape-warning p { font-size: 24px; font-family: 'Malgun Gothic', sans-serif;}
@@ -29,7 +28,6 @@
         #witch-greeting { font-size: clamp(28px, 6vw, 40px); font-weight: bold; color: #fff; text-shadow: 0 4px 10px rgba(0,0,0,0.8); margin-bottom: 40px; display: none; font-family: 'Jua', sans-serif;}
         @keyframes float { 0% { transform: translateY(0px); } 50% { transform: translateY(-15px); } 100% { transform: translateY(0px); } }
 
-        /* 높이를 100%로 강제 고정하지 않고 내용에 맞춰 늘어나게 수정 */
         #game-ui { display: none; flex-direction: column; width: 100%; min-height: 100%; height: auto; padding: 10px 10px 40px 10px; opacity: 0; transition: opacity 1.5s; box-sizing: border-box;}
 
         .header-area { flex-shrink: 0; display: flex; flex-direction: column; align-items: center; margin-bottom: 10px;}
@@ -41,7 +39,6 @@
 
         .action-btn-top { position: absolute; top: 10px; left: 10px; background: #ff6b6b; color: white; text-decoration: none; padding: 6px 12px; border-radius: 20px; font-size: clamp(12px, 2vw, 16px); font-weight: bold; box-shadow: 0 4px 10px rgba(0,0,0,0.5); z-index: 9999; border: 2px solid white; font-family: 'Jua', sans-serif;}
 
-        /* 글자 선택 영역: 넉넉하게 크기 복구 및 줄어들지 않게 방어 */
         #selection-board { display: flex; justify-content: space-between; width: 100%; max-width: 1000px; margin: 0 auto 15px auto; gap: clamp(5px, 1.5vw, 15px); flex-shrink: 0; }
         .panel { flex: 1; background: rgba(255, 255, 255, 0.85); border-radius: 15px; padding: clamp(8px, 1.5vw, 15px); box-shadow: 0 5px 10px rgba(0,0,0,0.15); backdrop-filter: blur(5px); }
         .panel h2 { font-size: clamp(16px, 2.5vw, 20px); margin: 0 0 8px 0; border-bottom: 2px solid #eee; padding-bottom: 5px; font-family: 'Jua', sans-serif;}
@@ -55,7 +52,6 @@
         .jong-btn { background-color: #e0ffff; border-color: #afeeee; box-shadow: 0 3px 0 #afeeee; }
         .empty-jong-btn { background-color: #f5f5f5; border-color: #ccc; grid-column: span 4; color: #888; font-size: clamp(14px, 2.5vw, 18px); box-shadow: 0 3px 0 #ccc; }
 
-        /* 솥단지 영역: 최소 높이를 보장하고, 하단에 여백을 주어 스크롤 시 공간 확보 */
         #cauldron-area {
             background: rgba(255, 255, 255, 0.9); width: 100%; max-width: 800px; margin: 0 auto 30px auto; padding: 20px 10px;
             border-radius: 20px; border: 4px dashed #ffb6c1; box-shadow: 0 10px 20px rgba(0,0,0,0.2); backdrop-filter: blur(5px);
@@ -144,6 +140,12 @@
     </div>
 
     <script>
+        // 파이어베이스 연동 모듈 동적 로드
+        window.cloudSync = null;
+        import('./firebase-sync.js').then(module => {
+            window.cloudSync = module;
+        }).catch(e => console.error("Firebase module load failed:", e));
+
         const CHOSUNG_LIST = ['ㄱ', 'ㄲ', 'ㄴ', 'ㄷ', 'ㄸ', 'ㄹ', 'ㅁ', 'ㅂ', 'ㅃ', 'ㅅ', 'ㅆ', 'ㅇ', 'ㅈ', 'ㅉ', 'ㅊ', 'ㅋ', 'ㅌ', 'ㅍ', 'ㅎ'];
         const JUNGSUNG_LIST = ['ㅏ', 'ㅐ', 'ㅑ', 'ㅒ', 'ㅓ', 'ㅔ', 'ㅕ', 'ㅖ', 'ㅗ', 'ㅘ', 'ㅙ', 'ㅚ', 'ㅛ', 'ㅜ', 'ㅝ', 'ㅞ', 'ㅟ', 'ㅠ', 'ㅡ', 'ㅢ', 'ㅣ'];
         const JONGSEUNG_LIST = ['', 'ㄱ', 'ㄲ', 'ㄳ', 'ㄴ', 'ㄵ', 'ㄶ', 'ㄷ', 'ㄹ', 'ㄺ', 'ㄻ', 'ㄼ', 'ㄽ', 'ㄾ', 'ㄿ', 'ㅀ', 'ㅁ', 'ㅂ', 'ㅄ', 'ㅅ', 'ㅆ', 'ㅇ', 'ㅈ', 'ㅊ', 'ㅋ', 'ㅌ', 'ㅍ', 'ㅎ'];
@@ -179,12 +181,26 @@
             startFreeMode();
         }
 
-        function startMissionMode() { document.getElementById('mode-select-modal').style.display = 'none'; currentMissionChar = currentMissionCharCandidate; document.getElementById('mission-banner').style.display = 'block'; document.getElementById('mission-banner').innerHTML = `🧙‍♀️ 마녀의 주문: <span class="mission-char">'${currentMissionChar}'</span> 글자를 만들어라!`; document.querySelector('.guide').style.display = 'none'; }
-        function startFreeMode() { document.getElementById('mode-select-modal').style.display = 'none'; currentMissionChar = null; document.getElementById('mission-banner').style.display = 'none'; document.querySelector('.guide').style.display = 'block'; }
+        window.startMissionMode = function() { document.getElementById('mode-select-modal').style.display = 'none'; currentMissionChar = currentMissionCharCandidate; document.getElementById('mission-banner').style.display = 'block'; document.getElementById('mission-banner').innerHTML = `🧙‍♀️ 마녀의 주문: <span class="mission-char">'${currentMissionChar}'</span> 글자를 만들어라!`; document.querySelector('.guide').style.display = 'none'; }
+        window.startFreeMode = function() { document.getElementById('mode-select-modal').style.display = 'none'; currentMissionChar = null; document.getElementById('mission-banner').style.display = 'none'; document.querySelector('.guide').style.display = 'block'; }
 
-        function logWeakWord(wordStr) { let weakWords = JSON.parse(localStorage.getItem('hangeul_weak_words') || '[]'); if (!weakWords.some(item => item.target === wordStr)) { weakWords.push({ target: wordStr, traps: [] }); if (weakWords.length > 20) weakWords.shift(); localStorage.setItem('hangeul_weak_words', JSON.stringify(weakWords)); } }
+        function logWeakWord(wordStr) { 
+            let weakWords = JSON.parse(localStorage.getItem('hangeul_weak_words') || '[]'); 
+            if (!weakWords.some(item => item.target === wordStr)) { 
+                const newWord = { target: wordStr, traps: [] };
+                weakWords.push(newWord); 
+                if (weakWords.length > 20) weakWords.shift(); 
+                localStorage.setItem('hangeul_weak_words', JSON.stringify(weakWords)); 
+                
+                if (window.cloudSync) {
+                    const studentId = localStorage.getItem('currentUser');
+                    const classCode = localStorage.getItem('currentClassCode');
+                    if (studentId && classCode) window.cloudSync.logWeakWordToCloud(classCode + "_" + studentId, newWord);
+                }
+            } 
+        }
 
-        let introTransitioned = false; // 중복 실행 방지 스위치
+        let introTransitioned = false; 
 
         document.getElementById('start-btn').addEventListener('click', () => {
             const startBtn = document.getElementById('start-btn'); const greeting = document.getElementById('witch-greeting');
@@ -202,7 +218,7 @@
             setTimeout(() => { intro.style.display = 'none'; const gameUI = document.getElementById('game-ui'); gameUI.style.display = 'flex'; setTimeout(() => { gameUI.style.opacity = '1'; checkAndShowMissionModal(); }, 50); }, 1000); 
         }
 
-        function handleLetterClick(type, letter) {
+        window.handleLetterClick = function(type, letter) {
             if (isAnimating) return; state[type] = letter; document.getElementById(`slot-${type}`).innerText = letter;
             if(type === 'cho') speak(phonicCho[letter]); else if(type === 'jung') speak(phonicJung[letter]); else if(type === 'jong' && letter !== '') speak(phonicJong[letter]); else if(type === 'jong' && letter === '') speak('없음');
             document.getElementById('result-text').style.display = 'none'; document.getElementById('replay-hint').style.display = 'none'; document.getElementById('reset-btn').style.display = 'none'; document.getElementById('combine-btn').style.display = 'inline-block';
@@ -248,7 +264,21 @@
             window.scrollTo({ top: 0, behavior: 'smooth' });
         });
 
-        function saveReward(earnedCoins, gameId) { let currentCoins = parseInt(localStorage.getItem('hangeul_park_coins') || '0'); localStorage.setItem('hangeul_park_coins', currentCoins + earnedCoins); let clearedGames = JSON.parse(localStorage.getItem('hangeul_park_cleared') || '{}'); let currentCount = clearedGames[gameId]; if (typeof currentCount !== 'number') currentCount = 0; clearedGames[gameId] = currentCount + 1; localStorage.setItem('hangeul_park_cleared', JSON.stringify(clearedGames)); }
+        function saveReward(earnedCoins, gameId) { 
+            let currentCoins = parseInt(localStorage.getItem('hangeul_park_coins') || '0'); 
+            localStorage.setItem('hangeul_park_coins', currentCoins + earnedCoins); 
+            let clearedGames = JSON.parse(localStorage.getItem('hangeul_park_cleared') || '{}'); 
+            let currentCount = clearedGames[gameId]; 
+            if (typeof currentCount !== 'number') currentCount = 0; 
+            clearedGames[gameId] = currentCount + 1; 
+            localStorage.setItem('hangeul_park_cleared', JSON.stringify(clearedGames)); 
+            
+            if (window.cloudSync) {
+                const studentId = localStorage.getItem('currentUser');
+                const classCode = localStorage.getItem('currentClassCode');
+                if (studentId && classCode) window.cloudSync.saveRewardToCloud(classCode + "_" + studentId, earnedCoins, gameId);
+            }
+        }
     </script>
 </body>
 </html>

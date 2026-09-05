@@ -13,9 +13,9 @@
             margin: 0; 
             padding: 0; 
             min-height: 100vh;
-            min-height: 100dvh; /* 모바일 하단바 제외 실제 높이 적용 */
+            min-height: 100dvh;
             box-sizing: border-box;
-            overflow-y: auto; /* 높이가 부족할 경우 스크롤 허용 */
+            overflow-y: auto; 
             overflow-x: hidden;
             touch-action: manipulation;
             user-select: none;
@@ -49,7 +49,7 @@
         .action-btn-top { position: absolute; top: 5px; left: 10px; background: #ff6b6b; color: white; text-decoration: none; padding: 6px 12px; border-radius: 20px; font-size: clamp(12px, 2.5vw, 16px); font-weight: bold; box-shadow: 0 4px 10px rgba(0,0,0,0.5); z-index: 9999; border: 2px solid #fff; font-family: 'Jua', sans-serif; }
 
         #track-area { 
-            flex: 1; width: 100%; min-height: 250px; /* 기차가 잘리지 않는 최소 높이 보장 */
+            flex: 1; width: 100%; min-height: 250px;
             box-sizing: border-box; background-color: rgba(255, 255, 255, 0.45); border-radius: 20px; border: 4px dashed #4caf50; display: flex; align-items: center; justify-content: flex-start; padding: 10px; overflow-x: auto; scroll-behavior: smooth; box-shadow: inset 0 5px 15px rgba(0,0,0,0.1), 0 10px 20px rgba(0,0,0,0.1); backdrop-filter: blur(5px); 
         }
         #track-area::-webkit-scrollbar { display: none; }
@@ -135,6 +135,12 @@
     </div>
 
     <script>
+        // 파이어베이스 연동 모듈 동적 로드
+        window.cloudSync = null;
+        import('./firebase-sync.js').then(module => {
+            window.cloudSync = module;
+        }).catch(e => console.error("Firebase module load failed:", e));
+
         document.getElementById('intro-btn').addEventListener('click', () => {
             const introBtn = document.getElementById('intro-btn'); const greeting = document.getElementById('train-greeting');
             introBtn.style.display = 'none'; greeting.style.display = 'block';
@@ -176,7 +182,21 @@
 
         function speak(text) { window.speechSynthesis.cancel(); const utterThis = new SpeechSynthesisUtterance(text); utterThis.lang = 'ko-KR'; utterThis.rate = 0.85; utterThis.pitch = 1.2; if (targetVoice) utterThis.voice = targetVoice; window.speechSynthesis.speak(utterThis); }
 
-        function logWeakWord(wordStr) { let weakWords = JSON.parse(localStorage.getItem('hangeul_weak_words') || '[]'); if (!weakWords.some(item => item.target === wordStr)) { weakWords.push({ target: wordStr, traps: [] }); if (weakWords.length > 20) weakWords.shift(); localStorage.setItem('hangeul_weak_words', JSON.stringify(weakWords)); } }
+        function logWeakWord(wordStr) { 
+            let weakWords = JSON.parse(localStorage.getItem('hangeul_weak_words') || '[]'); 
+            if (!weakWords.some(item => item.target === wordStr)) { 
+                const newWord = { target: wordStr, traps: [] };
+                weakWords.push(newWord); 
+                if (weakWords.length > 20) weakWords.shift(); 
+                localStorage.setItem('hangeul_weak_words', JSON.stringify(weakWords)); 
+                
+                if (window.cloudSync) {
+                    const studentId = localStorage.getItem('currentUser');
+                    const classCode = localStorage.getItem('currentClassCode');
+                    if (studentId && classCode) window.cloudSync.logWeakWordToCloud(classCode + "_" + studentId, newWord);
+                }
+            } 
+        }
 
         function initGame() {
             usedWords = []; const train = document.getElementById('train-container'); train.innerHTML = ''; train.className = 'train-enter'; document.getElementById('car-count').innerText = "0";
@@ -232,7 +252,21 @@
         recognition.onerror = function(event) { const feedback = document.getElementById('feedback-box'); feedback.innerHTML = `<span>잘 못 들었어요. 다시 눌러주세요!</span>`; feedback.className = 'wrong-text'; speak("다시 말해줄래요?"); };
         recognition.onend = function() { isListening = false; micBtn.classList.remove('listening'); };
 
-        function saveReward(earnedCoins, gameId) { let currentCoins = parseInt(localStorage.getItem('hangeul_park_coins') || '0'); localStorage.setItem('hangeul_park_coins', currentCoins + earnedCoins); let clearedGames = JSON.parse(localStorage.getItem('hangeul_park_cleared') || '{}'); let currentCount = clearedGames[gameId]; if (typeof currentCount !== 'number') currentCount = 0; clearedGames[gameId] = currentCount + 1; localStorage.setItem('hangeul_park_cleared', JSON.stringify(clearedGames)); }
+        function saveReward(earnedCoins, gameId) { 
+            let currentCoins = parseInt(localStorage.getItem('hangeul_park_coins') || '0'); 
+            localStorage.setItem('hangeul_park_coins', currentCoins + earnedCoins); 
+            let clearedGames = JSON.parse(localStorage.getItem('hangeul_park_cleared') || '{}'); 
+            let currentCount = clearedGames[gameId]; 
+            if (typeof currentCount !== 'number') currentCount = 0; 
+            clearedGames[gameId] = currentCount + 1; 
+            localStorage.setItem('hangeul_park_cleared', JSON.stringify(clearedGames)); 
+            
+            if (window.cloudSync) {
+                const studentId = localStorage.getItem('currentUser');
+                const classCode = localStorage.getItem('currentClassCode');
+                if (studentId && classCode) window.cloudSync.saveRewardToCloud(classCode + "_" + studentId, earnedCoins, gameId);
+            }
+        }
     </script>
 </body>
 </html>
