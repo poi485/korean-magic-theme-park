@@ -97,13 +97,29 @@
         .placed-item.selected-target { z-index: 100; }
         .placed-item.selected-target img { filter: drop-shadow(0 0 15px #ffeb3b) drop-shadow(0 0 8px #ff5722); transform: scale(1.1); }
 
-        #gallery-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.7); backdrop-filter: blur(5px); display: flex; justify-content: center; align-items: center; z-index: 9999; display: none; }
-        .gallery-content { background: #fff; width: 90%; max-width: 600px; border-radius: 20px; padding: 20px; box-shadow: 0 15px 40px rgba(0,0,0,0.5); text-align: center; }
-        .gallery-content h2 { margin-top: 0; color: #1e3c72; font-size: 24px; margin-bottom: 15px;}
-        .gallery-list { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; max-height: 60vh; overflow-y: auto; padding: 5px; }
+        /* 공통 모달 및 갤러리/공유 모달 스타일 */
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.7); backdrop-filter: blur(5px); display: flex; justify-content: center; align-items: center; z-index: 9999; display: none; }
+        .modal-content { background: #fff; width: 90%; max-width: 600px; border-radius: 20px; padding: 20px; box-shadow: 0 15px 40px rgba(0,0,0,0.5); text-align: center; }
+        .modal-content h2 { margin-top: 0; color: #1e3c72; font-size: 24px; margin-bottom: 15px;}
+        
+        .gallery-list { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; max-height: 50vh; overflow-y: auto; padding: 5px; margin-bottom: 15px;}
         .gallery-card { background: #f1f8e9; border: 3px solid #8bc34a; border-radius: 12px; padding: 12px; font-size: 16px; font-weight: bold; color: #33691e; cursor: pointer; transition: 0.2s; }
         .gallery-card:hover { transform: translateY(-3px); box-shadow: 0 5px 10px rgba(0,0,0,0.2); background: #dcedc8; }
-        .close-modal-btn { margin-top: 15px; background: #9e9e9e; color: white; border: none; padding: 8px 25px; border-radius: 15px; font-size: 16px; font-weight: bold; cursor: pointer; }
+        
+        .close-modal-btn { background: #9e9e9e; color: white; border: none; padding: 8px 25px; border-radius: 15px; font-size: 16px; font-weight: bold; cursor: pointer; }
+
+        /* 공유 범위 선택 모달 스타일 */
+        .share-options { display: flex; flex-direction: column; gap: 15px; margin: 20px 0; }
+        .share-btn { padding: 15px; border-radius: 15px; border: 3px solid; font-size: 18px; font-weight: bold; cursor: pointer; transition: 0.2s; display: flex; flex-direction: column; align-items: center; gap: 5px;}
+        .share-btn:hover { transform: scale(1.02); }
+        .share-all { background: #e3f2fd; border-color: #29b6f6; color: #0277bd; }
+        .share-class { background: #fce4ec; border-color: #f06292; color: #c2185b; }
+        .share-desc { font-size: 13px; font-weight: normal; color: #555; }
+
+        /* 갤러리 탭 버튼 스타일 */
+        .gallery-tabs { display: flex; justify-content: center; gap: 10px; margin-bottom: 15px; }
+        .gallery-tab-btn { padding: 8px 15px; font-size: 15px; font-weight: bold; border: 2px solid #ccc; background: #eee; border-radius: 20px; cursor: pointer; color: #555; transition: 0.2s;}
+        .gallery-tab-btn.active { background: #4caf50; color: white; border-color: #2e7d32; box-shadow: 0 3px 6px rgba(0,0,0,0.2);}
 
         #view-mode-controls { display: none; justify-content: center; align-items: center; margin-top: 10px; flex-shrink: 0; }
         #exit-view-btn { background: #e91e63; color: white; border: 3px solid #fff; padding: 8px 25px; border-radius: 30px; font-size: clamp(16px, 3.5vw, 18px); font-weight: bold; cursor: pointer; box-shadow: 0 6px 12px rgba(0,0,0,0.3); animation: bounceBtn 2s infinite ease-in-out; }
@@ -126,7 +142,7 @@
             <h1 id="page-title">🎡 나만의 놀이동산 꾸미기</h1>
         </div>
         <div class="header-right" id="header-right-menu">
-            <button class="action-btn btn-blue" onclick="uploadPark()">📸 자랑하기</button>
+            <button class="action-btn btn-blue" onclick="openShareModal()">📸 자랑하기</button>
             <button class="action-btn btn-orange" onclick="openGallery()">🌍 구경가기</button>
             <div class="score-box" id="admin-cheat-btn">내 보물: <span id="park-coins">0</span> 💎</div>
         </div>
@@ -162,10 +178,36 @@
         </div>
     </div>
 
-    <div id="gallery-modal">
-        <div class="gallery-content">
+    <!-- 공유 범위 선택 모달창 -->
+    <div id="share-modal" class="modal-overlay">
+        <div class="modal-content" style="max-width: 400px;">
+            <h2>📸 누구에게 자랑할까요?</h2>
+            <div class="share-options">
+                <button class="share-btn share-class" onclick="executeUpload('class')">
+                    🏫 우리 반 친구들에게만
+                    <span class="share-desc">같은 반 코드를 쓰는 친구들만 볼 수 있어요.</span>
+                </button>
+                <button class="share-btn share-all" onclick="executeUpload('all')">
+                    🌍 전 세계 모든 친구들에게
+                    <span class="share-desc">누구든 내 멋진 놀이동산을 구경할 수 있어요.</span>
+                </button>
+            </div>
+            <button class="close-modal-btn" onclick="closeShareModal()">취소</button>
+        </div>
+    </div>
+
+    <!-- 갤러리 모달창 -->
+    <div id="gallery-modal" class="modal-overlay">
+        <div class="modal-content">
             <h2>🌍 친구들의 놀이동산</h2>
+            
+            <div class="gallery-tabs">
+                <button class="gallery-tab-btn active" id="tab-class" onclick="switchGalleryTab('class')">🏫 우리 반 구경</button>
+                <button class="gallery-tab-btn" id="tab-all" onclick="switchGalleryTab('all')">🌍 모두 구경</button>
+            </div>
+
             <div class="gallery-list" id="gallery-list">
+                <!-- 갤러리 아이템 추가됨 -->
             </div>
             <button class="close-modal-btn" onclick="closeGallery()">닫기</button>
         </div>
@@ -173,7 +215,7 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-        import { getFirestore, collection, addDoc, getDocs } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, getDocs, query, where, orderBy } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyDakimsR5994YA2uQnjPEKv8He6hHDdhNs",
@@ -192,22 +234,37 @@
             window.cloudSync = module;
         }).catch(e => console.error("Firebase module load failed:", e));
 
-        window.uploadPark = async function() {
+        const studentName = localStorage.getItem('currentUser') || '익명';
+        const classCode = localStorage.getItem('currentClassCode') || 'none';
+
+        // 공유 모달 열기/닫기
+        window.openShareModal = function() {
             if (placedList.length === 0) return alert("앗! 아직 공터가 텅 비어있어요. 먼저 아이템을 예쁘게 꾸며주세요!");
-            const authorName = prompt("우와, 정말 멋진 놀이동산이네요! 작가님의 이름을 적어주세요:");
-            if (!authorName) return; 
+            document.getElementById('share-modal').style.display = 'flex';
+        }
+        window.closeShareModal = function() {
+            document.getElementById('share-modal').style.display = 'none';
+        }
+
+        // 서버에 업로드 (공개 범위 설정)
+        window.executeUpload = async function(scope) {
+            closeShareModal();
             
             const now = new Date();
             const timeString = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
-            const uniqueAuthorName = `${authorName.trim()} (${timeString})`;
+            const displayAuthor = `${studentName} (${timeString})`;
 
             try {
                 await addDoc(collection(db, "parks"), {
-                    author: uniqueAuthorName,
+                    author: displayAuthor,
                     park: JSON.parse(JSON.stringify(placedList)),
+                    scope: scope, 
+                    classCode: (scope === 'class') ? classCode : 'public',
                     createdAt: Date.now()
                 });
-                alert(`성공적으로 서버에 업로드했어요! 이제 [구경가기]에서 '${uniqueAuthorName}'님의 작품을 볼 수 있습니다! 📸`);
+                
+                let scopeText = scope === 'class' ? '우리 반 친구들' : '전 세계 친구들';
+                alert(`성공적으로 저장했어요! 이제 ${scopeText}에게 멋진 놀이동산을 자랑할 수 있습니다! 📸`);
             } catch (e) {
                 console.error("업로드 에러: ", e);
                 alert("업로드 중 문제가 발생했어요. 인터넷 연결을 확인해 주세요!");
@@ -215,15 +272,39 @@
         }
 
         let remoteGalleryData = [];
+        let currentGalleryScope = 'class'; 
 
-        window.openGallery = async function() {
+        window.switchGalleryTab = function(scope) {
+            currentGalleryScope = scope;
+            document.getElementById('tab-class').classList.remove('active');
+            document.getElementById('tab-all').classList.remove('active');
+            document.getElementById('tab-' + scope).classList.add('active');
+            loadGalleryData(scope);
+        }
+
+        window.openGallery = function() {
+            document.getElementById('gallery-modal').style.display = 'flex';
+            switchGalleryTab('class'); 
+        }
+
+        window.closeGallery = function() {
+            document.getElementById('gallery-modal').style.display = 'none';
+        }
+
+        async function loadGalleryData(scope) {
             const listDiv = document.getElementById('gallery-list');
             listDiv.innerHTML = '불러오는 중... ⏳';
-            document.getElementById('gallery-modal').style.display = 'flex';
+            remoteGalleryData = [];
 
             try {
-                const querySnapshot = await getDocs(collection(db, "parks"));
-                remoteGalleryData = [];
+                let q;
+                if (scope === 'class') {
+                    q = query(collection(db, "parks"), where("classCode", "==", classCode));
+                } else {
+                    q = query(collection(db, "parks"), where("scope", "==", "all"));
+                }
+
+                const querySnapshot = await getDocs(q);
                 querySnapshot.forEach((doc) => {
                     remoteGalleryData.push({ id: doc.id, ...doc.data() });
                 });
@@ -232,7 +313,7 @@
 
                 listDiv.innerHTML = '';
                 if (remoteGalleryData.length === 0) {
-                    listDiv.innerHTML = '아직 등록된 친구들의 놀이동산이 없어요!';
+                    listDiv.innerHTML = scope === 'class' ? '아직 우리 반 친구들이 등록한 놀이동산이 없어요!' : '아직 등록된 놀이동산이 없어요!';
                     return;
                 }
 
@@ -245,12 +326,8 @@
                 });
             } catch (e) {
                 console.error("갤러리 로드 에러: ", e);
-                listDiv.innerHTML = '목록을 불러오지 못했어요 ㅠ_ㅠ';
+                listDiv.innerHTML = '목록을 불러오지 못했어요 ㅠ_ㅠ (인터넷을 확인해주세요)';
             }
-        }
-
-        window.closeGallery = function() {
-            document.getElementById('gallery-modal').style.display = 'none';
         }
 
         window.viewPark = function(index) {
