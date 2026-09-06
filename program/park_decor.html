@@ -92,15 +92,14 @@
         .size-btn { background: #fff; border: 2px solid #00897b; border-radius: 6px; padding: 4px 8px; font-weight: bold; color: #00796b; cursor: pointer; font-size: clamp(11px, 2.5vw, 13px); transition: 0.2s; white-space: nowrap;}
         .size-btn.active { background: #00897b; color: white; box-shadow: 0 3px 6px rgba(0,0,0,0.2); }
 
-        /* 터치 범위 대폭 축소 (핵심 중심부만 클릭 가능하게 설정) */
         .placed-item { position: absolute; transform: translate(-50%, -50%); transition: transform 0.1s; display: flex; justify-content: center; align-items: center; pointer-events: none; }
         .placed-item img { width: 100%; height: auto; display: block; filter: drop-shadow(0 8px 12px rgba(0,0,0,0.4)); pointer-events: none; }
         .core-hitbox {
             position: absolute;
-            width: 35%; height: 35%; /* 중심부 35% 영역만 클릭 가능하게 축소 */
+            width: 35%; height: 35%; 
             top: 50%; left: 50%; transform: translate(-50%, -50%);
             cursor: pointer;
-            pointer-events: auto; /* 여기만 터치 이벤트 허용 */
+            pointer-events: auto; 
             border-radius: 50%;
             z-index: 10;
         }
@@ -108,7 +107,6 @@
         .placed-item.selected-target { z-index: 9999 !important; }
         .placed-item.selected-target img { filter: drop-shadow(0 0 15px #ffeb3b) drop-shadow(0 0 8px #ff5722); transform: scale(1.1); }
 
-        /* 공통 모달 및 갤러리/공유 모달 스타일 */
         .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.7); backdrop-filter: blur(5px); display: flex; justify-content: center; align-items: center; z-index: 9999; display: none; }
         .modal-content { background: #fff; width: 90%; max-width: 600px; border-radius: 20px; padding: 20px; box-shadow: 0 15px 40px rgba(0,0,0,0.5); text-align: center; }
         .modal-content h2 { margin-top: 0; color: #1e3c72; font-size: 24px; margin-bottom: 15px;}
@@ -119,7 +117,6 @@
         
         .close-modal-btn { background: #9e9e9e; color: white; border: none; padding: 8px 25px; border-radius: 15px; font-size: 16px; font-weight: bold; cursor: pointer; }
 
-        /* 공유 범위 선택 모달 스타일 */
         .share-options { display: flex; flex-direction: column; gap: 15px; margin: 20px 0; }
         .share-btn { padding: 15px; border-radius: 15px; border: 3px solid; font-size: 18px; font-weight: bold; cursor: pointer; transition: 0.2s; display: flex; flex-direction: column; align-items: center; gap: 5px;}
         .share-btn:hover { transform: scale(1.02); }
@@ -127,7 +124,6 @@
         .share-class { background: #fce4ec; border-color: #f06292; color: #c2185b; }
         .share-desc { font-size: 13px; font-weight: normal; color: #555; }
 
-        /* 갤러리 탭 버튼 스타일 */
         .gallery-tabs { display: flex; justify-content: center; gap: 10px; margin-bottom: 15px; }
         .gallery-tab-btn { padding: 8px 15px; font-size: 15px; font-weight: bold; border: 2px solid #ccc; background: #eee; border-radius: 20px; cursor: pointer; color: #555; transition: 0.2s;}
         .gallery-tab-btn.active { background: #4caf50; color: white; border-color: #2e7d32; box-shadow: 0 3px 6px rgba(0,0,0,0.2);}
@@ -218,7 +214,6 @@
             </div>
 
             <div class="gallery-list" id="gallery-list">
-                <!-- 갤러리 아이템 추가됨 -->
             </div>
             <button class="close-modal-btn" onclick="closeGallery()">닫기</button>
         </div>
@@ -226,7 +221,7 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-        import { getFirestore, collection, addDoc, getDocs, query, where, orderBy } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, getDocs, query, where, orderBy, doc, updateDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyDakimsR5994YA2uQnjPEKv8He6hHDdhNs",
@@ -248,7 +243,6 @@
         const studentName = localStorage.getItem('currentUser') || '익명';
         const classCode = localStorage.getItem('currentClassCode') || 'none';
 
-        // 공유 모달 열기/닫기
         window.openShareModal = function() {
             if (placedList.length === 0) return alert("앗! 아직 공터가 텅 비어있어요. 먼저 아이템을 예쁘게 꾸며주세요!");
             document.getElementById('share-modal').style.display = 'flex';
@@ -257,10 +251,8 @@
             document.getElementById('share-modal').style.display = 'none';
         }
 
-        // 서버에 업로드 (공개 범위 설정)
         window.executeUpload = async function(scope) {
             closeShareModal();
-            
             const now = new Date();
             const timeString = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
             const displayAuthor = `${studentName} (${timeString})`;
@@ -316,8 +308,8 @@
                 }
 
                 const querySnapshot = await getDocs(q);
-                querySnapshot.forEach((doc) => {
-                    remoteGalleryData.push({ id: doc.id, ...doc.data() });
+                querySnapshot.forEach((document) => {
+                    remoteGalleryData.push({ id: document.id, ...document.data() });
                 });
                 
                 remoteGalleryData.sort((a, b) => b.createdAt - a.createdAt);
@@ -375,6 +367,11 @@
             activeIndex = null;
             renderPark();
         }
+
+        // 보석 사용 및 치트 코드 사용 시 클라우드 동기화를 위한 글로벌 객체 바인딩
+        window.db = db;
+        window.doc = doc;
+        window.updateDoc = updateDoc;
     </script>
 
     <script>
@@ -459,6 +456,20 @@
             osc.stop(audioCtx.currentTime + 0.1);
         }
 
+        // 보석 변화 시 로컬과 클라우드 동시 업데이트
+        function updateCoins(newAmount) {
+            currentCoins = newAmount;
+            localStorage.setItem('hangeul_park_coins', currentCoins);
+            document.getElementById('park-coins').innerText = currentCoins;
+            
+            const studentId = localStorage.getItem('currentUser');
+            const classCode = localStorage.getItem('currentClassCode');
+            if (studentId && classCode && studentId !== '익명') {
+                const studentRef = window.doc(window.db, "students", classCode + "_" + studentId);
+                window.updateDoc(studentRef, { coins: currentCoins }).catch(e => console.log("동기화 지연:", e));
+            }
+        }
+
         let adminClickCount = 0;
         let adminClickTimer = null;
         document.getElementById('admin-cheat-btn').addEventListener('click', () => {
@@ -467,9 +478,7 @@
             adminClickTimer = setTimeout(() => { adminClickCount = 0; }, 1000); 
 
             if (adminClickCount === 10) {
-                currentCoins = 5000;
-                localStorage.setItem('hangeul_park_coins', currentCoins);
-                document.getElementById('park-coins').innerText = currentCoins;
+                updateCoins(5000); // 클라우드에 영구 적용
                 alert("✨ [관리자 모드] 보물이 5,000개 충전되었습니다! 테스트 하세요! ✨");
                 adminClickCount = 0;
             }
@@ -525,9 +534,7 @@
                         alert("💎 보석이 부족해요! 게임을 더 클리어하고 오세요!");
                         return;
                     }
-                    currentCoins -= selectedPrice;
-                    localStorage.setItem('hangeul_park_coins', currentCoins);
-                    document.getElementById('park-coins').innerText = currentCoins;
+                    updateCoins(currentCoins - selectedPrice); // 클라우드에 영구 적용
                 } else {
                     if (!inventoryData[itemToPlace] || inventoryData[itemToPlace] <= 0) return;
                     inventoryData[itemToPlace]--;
@@ -550,7 +557,6 @@
             renderPark();
         }
 
-        // 터치 시 이벤트 버블링을 막아 바닥 클릭으로 인식되지 않도록 처리
         window.selectPlacedItem = function(index, event) {
             if (isViewingGallery) return; 
             event.stopPropagation(); 
@@ -607,12 +613,8 @@
             field.innerHTML = guideHTML;
 
             const listToRender = isViewingGallery ? currentViewData : placedList;
-
-            // 나중에 놓은 것이 최상단.
             const sortedList = listToRender.map((item, index) => ({...item, originalIndex: index}));
 
-            // y좌표 값을 정수형 z-index로 변환하여 할당 ★
-            // y값이 클수록 z-index가 커져서 앞쪽에
             sortedList.forEach((item) => {
                 const div = document.createElement('div');
                 div.className = `placed-item ${(activeIndex === item.originalIndex && !isViewingGallery) ? 'selected-target' : ''}`;
@@ -620,13 +622,10 @@
                 div.style.width = (item.size || 130) + 'px'; 
                 div.style.left = item.x + '%';
                 div.style.top = item.y + '%';
-                
-                // [수정된 부분] y 좌표에 100을 곱해 정교한 층 생성.
                 div.style.zIndex = Math.floor(item.y * 100);
                 
                 const imgSrc = getSrcById(item.id);
                 
-                // 이미지의 투명 영역은 터치를 무시하고, 정중앙의 core-hitbox만 터치를 감지하도록 설정
                 if (!isViewingGallery) {
                     div.innerHTML = `
                         <img src="${imgSrc}" alt="item">
