@@ -472,12 +472,6 @@
                 document.getElementById('park-coins').innerText = currentCoins;
                 alert("✨ [관리자 모드] 보물이 5,000개 충전되었습니다! 테스트 하세요! ✨");
                 adminClickCount = 0;
-                
-                if (window.cloudSync) {
-                    const studentId = localStorage.getItem('currentUser');
-                    const classCode = localStorage.getItem('currentClassCode');
-                    if (studentId && classCode) window.cloudSync.syncLocalToCloud(classCode + "_" + studentId);
-                }
             }
         });
 
@@ -534,12 +528,6 @@
                     currentCoins -= selectedPrice;
                     localStorage.setItem('hangeul_park_coins', currentCoins);
                     document.getElementById('park-coins').innerText = currentCoins;
-                    
-                    if (window.cloudSync) {
-                        const studentId = localStorage.getItem('currentUser');
-                        const classCode = localStorage.getItem('currentClassCode');
-                        if (studentId && classCode) window.cloudSync.syncLocalToCloud(classCode + "_" + studentId);
-                    }
                 } else {
                     if (!inventoryData[itemToPlace] || inventoryData[itemToPlace] <= 0) return;
                     inventoryData[itemToPlace]--;
