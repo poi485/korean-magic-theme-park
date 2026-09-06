@@ -92,9 +92,20 @@
         .size-btn { background: #fff; border: 2px solid #00897b; border-radius: 6px; padding: 4px 8px; font-weight: bold; color: #00796b; cursor: pointer; font-size: clamp(11px, 2.5vw, 13px); transition: 0.2s; white-space: nowrap;}
         .size-btn.active { background: #00897b; color: white; box-shadow: 0 3px 6px rgba(0,0,0,0.2); }
 
-        .placed-item { position: absolute; transform: translate(-50%, -50%); cursor: pointer; transition: transform 0.1s; }
-        .placed-item img { width: 100%; height: auto; display: block; pointer-events: none; filter: drop-shadow(0 8px 12px rgba(0,0,0,0.4)); }
-        .placed-item.selected-target { z-index: 100; }
+        /* 터치 범위 대폭 축소 (핵심 중심부만 클릭 가능하게 설정) */
+        .placed-item { position: absolute; transform: translate(-50%, -50%); transition: transform 0.1s; display: flex; justify-content: center; align-items: center; pointer-events: none; }
+        .placed-item img { width: 100%; height: auto; display: block; filter: drop-shadow(0 8px 12px rgba(0,0,0,0.4)); pointer-events: none; }
+        .core-hitbox {
+            position: absolute;
+            width: 35%; height: 35%; /* 중심부 35% 영역만 클릭 가능하게 축소 */
+            top: 50%; left: 50%; transform: translate(-50%, -50%);
+            cursor: pointer;
+            pointer-events: auto; /* 여기만 터치 이벤트 허용 */
+            border-radius: 50%;
+            z-index: 10;
+        }
+
+        .placed-item.selected-target { z-index: 9999 !important; }
         .placed-item.selected-target img { filter: drop-shadow(0 0 15px #ffeb3b) drop-shadow(0 0 8px #ff5722); transform: scale(1.1); }
 
         /* 공통 모달 및 갤러리/공유 모달 스타일 */
@@ -551,7 +562,8 @@
             renderPark();
         }
 
-        function selectPlacedItem(index, event) {
+        // 터치 시 이벤트 버블링을 막아 바닥 클릭으로 인식되지 않도록 처리
+        window.selectPlacedItem = function(index, event) {
             if (isViewingGallery) return; 
             event.stopPropagation(); 
             activeIndex = index;     
@@ -608,9 +620,11 @@
 
             const listToRender = isViewingGallery ? currentViewData : placedList;
 
-            const sortedList = listToRender.map((item, index) => ({...item, originalIndex: index}))
-                                         .sort((a, b) => a.y - b.y);
+            // 나중에 놓은 것이 최상단.
+            const sortedList = listToRender.map((item, index) => ({...item, originalIndex: index}));
 
+            // y좌표 값을 정수형 z-index로 변환하여 할당 ★
+            // y값이 클수록 z-index가 커져서 앞쪽에
             sortedList.forEach((item) => {
                 const div = document.createElement('div');
                 div.className = `placed-item ${(activeIndex === item.originalIndex && !isViewingGallery) ? 'selected-target' : ''}`;
@@ -619,12 +633,21 @@
                 div.style.left = item.x + '%';
                 div.style.top = item.y + '%';
                 
-                const imgSrc = getSrcById(item.id);
-                div.innerHTML = `<img src="${imgSrc}" alt="item">`;
+                // [수정된 부분] y 좌표에 100을 곱해 정교한 층 생성.
+                div.style.zIndex = Math.floor(item.y * 100);
                 
+                const imgSrc = getSrcById(item.id);
+                
+                // 이미지의 투명 영역은 터치를 무시하고, 정중앙의 core-hitbox만 터치를 감지하도록 설정
                 if (!isViewingGallery) {
-                    div.onclick = (e) => selectPlacedItem(item.originalIndex, e);
+                    div.innerHTML = `
+                        <img src="${imgSrc}" alt="item">
+                        <div class="core-hitbox" onclick="selectPlacedItem(${item.originalIndex}, event)"></div>
+                    `;
+                } else {
+                    div.innerHTML = `<img src="${imgSrc}" alt="item">`;
                 }
+                
                 field.appendChild(div);
             });
         }
