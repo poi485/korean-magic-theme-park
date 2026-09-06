@@ -261,6 +261,8 @@
     <div id="lobby-section">
         <div class="top-right-menu">
             <a href="dashboard.html" class="top-btn">📊 내 학습 분석</a>
+            <!-- 로그아웃 버튼 추가 -->
+            <button class="top-btn" onclick="logout()" style="border-color: #ff6b6b; color: #ff6b6b;">🚪 로그아웃</button>
         </div>
 
         <header>
@@ -407,6 +409,17 @@
             }
         };
 
+        // 로그아웃 (다른 사용자 전환)
+        window.logout = function() {
+            if(confirm("로그아웃하고 다른 친구 이름으로 들어갈까요?")) {
+                sessionStorage.removeItem('introSeen');
+                // 로컬 기기에 남은 기존 유저 세션 정보 날리기
+                localStorage.removeItem('currentUser');
+                localStorage.removeItem('currentPicPw');
+                location.reload();
+            }
+        }
+
         function updateLobbyUI() {
             let savedCoins = localStorage.getItem('hangeul_park_coins') || '0';
             document.getElementById('total-coins').innerText = savedCoins;
@@ -525,7 +538,6 @@
                     localStorage.setItem('hangeul_weak_words', JSON.stringify(data.weakWords));
                 }
             } else {
-                // 수정된 부분: 배열 객체 대신 조합된 문자열(studentPwStr)을 바로 저장합니다.
                 await setDoc(studentRef, {
                     picturePassword: studentPwStr, 
                     coins: 0,
@@ -563,8 +575,17 @@
             }, 1200); 
         });
 
+        // 페이지 로드 시 기존 기록 출력 및 자동 통과 체크
         window.addEventListener('load', () => {
             updateLobbyUI();
+            
+            // 이미 로그인한 상태라면 팝업창 없이 로비로 직행
+            if (sessionStorage.getItem('introSeen') === 'true' && localStorage.getItem('currentUser')) {
+                document.getElementById('opening-section').style.display = 'none';
+                const lobby = document.getElementById('lobby-section');
+                lobby.style.display = 'flex';
+                lobby.style.opacity = '1';
+            }
         });
     </script>
 </body>
