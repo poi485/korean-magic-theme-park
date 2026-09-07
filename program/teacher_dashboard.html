@@ -159,6 +159,9 @@
             'game_sketch': '스케치북(쓰기)', 'game_combine': '솥단지(조합)', 'game_boss': '기차놀이(어휘)' 
         };
 
+        // 빨, 주, 노, 초, 하늘(파), 남, 보 무지개 색상 팔레트
+        const chartColors = ['#ef5350', '#ffa726', '#fbc02d', '#66bb6a', '#29b6f6', '#5c6bc0', '#ab47bc'];
+
         let allStudentsData = [];
         let classPieChartInstance = null;
         let studentRadarChartInstance = null;
@@ -241,7 +244,7 @@
                     labels: Object.values(gameNames),
                     datasets: [{
                         data: Object.keys(gameNames).map(k => gameCounts[k]),
-                        backgroundColor: ['#ff5252', '#ff4081', '#7c4dff', '#536dfe', '#448aff', '#4caf50', '#ff9800']
+                        backgroundColor: chartColors
                     }]
                 },
                 options: { 
