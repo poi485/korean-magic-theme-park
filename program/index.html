@@ -4,6 +4,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>마법의 한글 놀이공원</title>
+    
+    <!-- 깜빡임 방지 & 자동 로그인 -->
+    <script>
+        if (localStorage.getItem('currentUser') && localStorage.getItem('currentClassCode')) {
+            document.write('<style>#opening-section { display: none !important; } #lobby-section { display: flex !important; opacity: 1 !important; }</style>');
+        }
+    </script>
+
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Jua&display=swap');
 
@@ -345,6 +353,34 @@
                     <div class="help-text">
                         <h3>마법의 선 긋기</h3>
                         <p>밤하늘의 반짝이는 별자리를 이으며 예쁜 글자를 그려봐요!</p>
+                    </div>
+                </div>
+                <div class="help-card">
+                    <div class="help-emoji">🎨</div>
+                    <div class="help-text">
+                        <h3>요정 스케치북</h3>
+                        <p>단어를 쓰고 말하면 AI 요정이 멋진 그림 선물을 만들어줘요!</p>
+                    </div>
+                </div>
+                <div class="help-card">
+                    <div class="help-emoji">🍲</div>
+                    <div class="help-text">
+                        <h3>한글 솥단지</h3>
+                        <p>자음과 모음, 받침을 솥단지에 넣고 마법의 글자를 완성해요!</p>
+                    </div>
+                </div>
+                <div class="help-card">
+                    <div class="help-emoji">🚂</div>
+                    <div class="help-text">
+                        <h3>끝말잇기 기차</h3>
+                        <p>마이크에 대고 끝말잇기를 해서 멋진 청룡 열차를 출발시켜요!</p>
+                    </div>
+                </div>
+                <div class="help-card">
+                    <div class="help-emoji">🎡</div>
+                    <div class="help-text">
+                        <h3>놀이동산 꾸미기</h3>
+                        <p>게임에서 모은 보석으로 상점 아이템을 사서 나만의 놀이동산을 꾸며요!</p>
                     </div>
                 </div>
             </div>
