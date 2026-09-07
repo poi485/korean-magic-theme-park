@@ -96,7 +96,7 @@
         .placed-item img { width: 100%; height: auto; display: block; filter: drop-shadow(0 8px 12px rgba(0,0,0,0.4)); pointer-events: none; }
         .core-hitbox {
             position: absolute;
-            width: 35%; height: 35%; 
+            width: 35%; height: 35%;
             top: 50%; left: 50%; transform: translate(-50%, -50%);
             cursor: pointer;
             pointer-events: auto; 
@@ -185,7 +185,6 @@
         </div>
     </div>
 
-    <!-- 공유 범위 선택 모달창 -->
     <div id="share-modal" class="modal-overlay">
         <div class="modal-content" style="max-width: 400px;">
             <h2>📸 누구에게 자랑할까요?</h2>
@@ -203,7 +202,6 @@
         </div>
     </div>
 
-    <!-- 갤러리 모달창 -->
     <div id="gallery-modal" class="modal-overlay">
         <div class="modal-content">
             <h2>🌍 친구들의 놀이동산</h2>
@@ -213,12 +211,12 @@
                 <button class="gallery-tab-btn" id="tab-all" onclick="switchGalleryTab('all')">🌍 모두 구경</button>
             </div>
 
-            <div class="gallery-list" id="gallery-list">
-            </div>
+            <div class="gallery-list" id="gallery-list"></div>
             <button class="close-modal-btn" onclick="closeGallery()">닫기</button>
         </div>
     </div>
 
+    <!-- DB 모듈 임포트 및 윈도우 바인딩 -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
         import { getFirestore, collection, addDoc, getDocs, query, where, orderBy, doc, updateDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
@@ -235,10 +233,10 @@
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
         
-        window.cloudSync = null;
-        import('./firebase-sync.js').then(module => {
-            window.cloudSync = module;
-        }).catch(e => console.error("Firebase module load failed:", e));
+        // 스크립트 블록 간 통신을 위해 윈도우 객체에 바인딩
+        window.db = db;
+        window.doc = doc;
+        window.updateDoc = updateDoc;
 
         const studentName = localStorage.getItem('currentUser') || '익명';
         const classCode = localStorage.getItem('currentClassCode') || 'none';
@@ -253,6 +251,7 @@
 
         window.executeUpload = async function(scope) {
             closeShareModal();
+            
             const now = new Date();
             const timeString = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
             const displayAuthor = `${studentName} (${timeString})`;
@@ -275,10 +274,8 @@
         }
 
         let remoteGalleryData = [];
-        let currentGalleryScope = 'class'; 
 
         window.switchGalleryTab = function(scope) {
-            currentGalleryScope = scope;
             document.getElementById('tab-class').classList.remove('active');
             document.getElementById('tab-all').classList.remove('active');
             document.getElementById('tab-' + scope).classList.add('active');
@@ -308,8 +305,8 @@
                 }
 
                 const querySnapshot = await getDocs(q);
-                querySnapshot.forEach((document) => {
-                    remoteGalleryData.push({ id: document.id, ...document.data() });
+                querySnapshot.forEach((documentObj) => {
+                    remoteGalleryData.push({ id: documentObj.id, ...documentObj.data() });
                 });
                 
                 remoteGalleryData.sort((a, b) => b.createdAt - a.createdAt);
@@ -367,13 +364,9 @@
             activeIndex = null;
             renderPark();
         }
-
-        // 보석 사용 및 치트 코드 사용 시 클라우드 동기화를 위한 글로벌 객체 바인딩
-        window.db = db;
-        window.doc = doc;
-        window.updateDoc = updateDoc;
     </script>
 
+    <!-- UI 조작 및 게임 로직 스크립트 -->
     <script>
         let decorBgm = new Audio('../media/sound/bg-dec.mp3'); 
         decorBgm.loop = true;   
@@ -381,7 +374,6 @@
 
         window.addEventListener('DOMContentLoaded', () => {
             decorBgm.play().catch(e => {
-                console.log("자동재생 방지로 인해 화면 클릭 시 재생됩니다.");
                 document.body.addEventListener('click', () => {
                     if (decorBgm.paused) decorBgm.play();
                 }, { once: true });
@@ -439,34 +431,21 @@
         function playPopSound() {
             if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
             if (audioCtx.state === 'suspended') audioCtx.resume();
-            
             const osc = audioCtx.createOscillator();
             const gain = audioCtx.createGain();
-            osc.connect(gain);
-            gain.connect(audioCtx.destination);
-            
-            osc.type = 'sine'; 
-            osc.frequency.setValueAtTime(800, audioCtx.currentTime);
-            osc.frequency.exponentialRampToValueAtTime(1200, audioCtx.currentTime + 0.1); 
-            
-            gain.gain.setValueAtTime(0.5, audioCtx.currentTime);
-            gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.1);
-            
-            osc.start();
-            osc.stop(audioCtx.currentTime + 0.1);
+            osc.connect(gain); gain.connect(audioCtx.destination);
+            osc.type = 'sine'; osc.frequency.setValueAtTime(800, audioCtx.currentTime); osc.frequency.exponentialRampToValueAtTime(1200, audioCtx.currentTime + 0.1); 
+            gain.gain.setValueAtTime(0.5, audioCtx.currentTime); gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.1);
+            osc.start(); osc.stop(audioCtx.currentTime + 0.1);
         }
 
-        // 보석 변화 시 로컬과 클라우드 동시 업데이트
-        function updateCoins(newAmount) {
-            currentCoins = newAmount;
-            localStorage.setItem('hangeul_park_coins', currentCoins);
-            document.getElementById('park-coins').innerText = currentCoins;
-            
+        // 보석 변화 시 서버로 덮어쓰기 로직
+        function updateCoinsOnServer(newAmount) {
             const studentId = localStorage.getItem('currentUser');
             const classCode = localStorage.getItem('currentClassCode');
-            if (studentId && classCode && studentId !== '익명') {
+            if (studentId && classCode && window.updateDoc && window.doc && window.db) {
                 const studentRef = window.doc(window.db, "students", classCode + "_" + studentId);
-                window.updateDoc(studentRef, { coins: currentCoins }).catch(e => console.log("동기화 지연:", e));
+                window.updateDoc(studentRef, { coins: newAmount }).catch(e => console.error("Coin sync error:", e));
             }
         }
 
@@ -478,7 +457,10 @@
             adminClickTimer = setTimeout(() => { adminClickCount = 0; }, 1000); 
 
             if (adminClickCount === 10) {
-                updateCoins(5000); // 클라우드에 영구 적용
+                currentCoins = 5000;
+                localStorage.setItem('hangeul_park_coins', currentCoins);
+                document.getElementById('park-coins').innerText = currentCoins;
+                updateCoinsOnServer(currentCoins);
                 alert("✨ [관리자 모드] 보물이 5,000개 충전되었습니다! 테스트 하세요! ✨");
                 adminClickCount = 0;
             }
@@ -534,7 +516,10 @@
                         alert("💎 보석이 부족해요! 게임을 더 클리어하고 오세요!");
                         return;
                     }
-                    updateCoins(currentCoins - selectedPrice); // 클라우드에 영구 적용
+                    currentCoins -= selectedPrice;
+                    localStorage.setItem('hangeul_park_coins', currentCoins);
+                    document.getElementById('park-coins').innerText = currentCoins;
+                    updateCoinsOnServer(currentCoins);
                 } else {
                     if (!inventoryData[itemToPlace] || inventoryData[itemToPlace] <= 0) return;
                     inventoryData[itemToPlace]--;
