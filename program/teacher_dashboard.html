@@ -50,7 +50,8 @@
         .btn-reset { background: #ff9800; color: white; border: none; padding: 8px 15px; border-radius: 8px; font-weight: bold; cursor: pointer; box-shadow: 0 2px 5px rgba(0,0,0,0.2);}
         .btn-print { background: #4caf50; color: white; border: none; padding: 8px 15px; border-radius: 8px; font-weight: bold; cursor: pointer; box-shadow: 0 2px 5px rgba(0,0,0,0.2);}
 
-        .chart-wrapper { position: relative; height: 250px; width: 100%; display: flex; justify-content: center; }
+        /* 차트 영역 높이를 300px로 키워 하단 범례 공간 확보 */
+        .chart-wrapper { position: relative; height: 300px; width: 100%; display: flex; justify-content: center; }
         
         .ai-feedback-box { grid-column: 1 / -1; background: #fff8e1; border: 2px solid #ffca28; border-radius: 15px; padding: 20px; box-shadow: 0 5px 10px rgba(0,0,0,0.05); }
         .ai-feedback-box h3 { color: #f57c00; margin-top: 0; display: flex; align-items: center; gap: 8px; font-family: 'Jua', sans-serif; font-size: 22px;}
@@ -151,17 +152,17 @@
         }
         document.getElementById('class-code-display').innerText = `[${classCode}] 반`;
 
+        // UI에 맞게 레이블 명칭을 두 글자 패턴으로 간결하게 통일
         const gameNames = { 
-            'game_ghost': '유령의 집(읽기)', 'game_detective': '명탐정 돋보기(듣기/어휘)', 
-            'game_frog': '징검다리(변별)', 'game_line': '선 긋기(운필력)', 
-            'game_sketch': '스케치북(쓰기)', 'game_combine': '솥단지(조합)', 'game_boss': '기차(어휘 확장)' 
+            'game_ghost': '유령의 집(읽기)', 'game_detective': '명탐정 돋보기(듣기)', 
+            'game_frog': '징검다리(변별)', 'game_line': '선 긋기(운필)', 
+            'game_sketch': '스케치북(쓰기)', 'game_combine': '솥단지(조합)', 'game_boss': '기차놀이(어휘)' 
         };
 
         let allStudentsData = [];
         let classPieChartInstance = null;
         let studentRadarChartInstance = null;
 
-        // 탭 전환 로직
         window.switchTab = function(tabId) {
             document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
             document.querySelectorAll('.container').forEach(con => con.classList.remove('active'));
@@ -169,7 +170,6 @@
             document.getElementById(tabId).classList.add('active');
         }
 
-        // 파이어베이스에서 학급 전체 학생 데이터 불러오기
         async function fetchClassData() {
             try {
                 const querySnapshot = await getDocs(collection(db, "students"));
@@ -193,7 +193,6 @@
             }
         }
 
-        // 1. 학급 전체 통계 렌더링
         function renderClassStats() {
             let totalGems = 0;
             let totalClears = 0;
@@ -222,7 +221,6 @@
             document.getElementById('class-total-gems').innerText = totalGems;
             document.getElementById('class-total-clears').innerText = totalClears;
 
-            // 취약 낱말 TOP 5
             const sortedWords = Object.keys(wordFreq).sort((a, b) => wordFreq[b].count - wordFreq[a].count).slice(0, 5);
             const weakListEl = document.getElementById('class-weak-words');
             weakListEl.innerHTML = '';
@@ -235,7 +233,6 @@
                 });
             }
 
-            // 원그래프 (Chart.js)
             const ctx = document.getElementById('classPieChart').getContext('2d');
             if (classPieChartInstance) classPieChartInstance.destroy();
             classPieChartInstance = new Chart(ctx, {
@@ -247,16 +244,25 @@
                         backgroundColor: ['#ff5252', '#ff4081', '#7c4dff', '#536dfe', '#448aff', '#4caf50', '#ff9800']
                     }]
                 },
-                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'right' } } }
+                options: { 
+                    responsive: true, 
+                    maintainAspectRatio: false, 
+                    plugins: { 
+                        legend: { 
+                            position: 'bottom', // 글씨 잘림 방지를 위해 하단으로 이동
+                            labels: {
+                                font: { size: 12, family: "'Malgun Gothic', sans-serif" }
+                            }
+                        } 
+                    } 
+                }
             });
         }
 
-        // 2. 학생 리스트 사이드바 렌더링
         function renderStudentList() {
             const listContainer = document.getElementById('student-list-container');
             listContainer.innerHTML = '';
             
-            // 이름 가나다순 정렬
             allStudentsData.sort((a, b) => a.name.localeCompare(b.name));
 
             allStudentsData.forEach(student => {
@@ -272,23 +278,18 @@
             });
         }
 
-        // 특정 학생 리포트 렌더링 (정성 분석 및 AI 피드백)
         function renderStudentReport(student) {
             const container = document.getElementById('report-content-container');
             
-            // 데이터 가공
             let radarData = Object.keys(gameNames).map(k => (student.clearedGames && student.clearedGames[k]) ? student.clearedGames[k] : 0);
             let totalStudentClears = radarData.reduce((sum, val) => sum + val, 0);
             
-            // 선호/취약 게임 분석
             let maxGameVal = Math.max(...radarData);
             let bestGameNames = Object.keys(gameNames).filter((k, i) => radarData[i] === maxGameVal && maxGameVal > 0).map(k => gameNames[k]);
             
-            // 오답 패턴 분석 로직
             let patterns = analyzePatterns(student.weakWords || []);
             let patternHTML = patterns.length > 0 ? patterns.map(p => `<span class="pattern-tag">${p}</span>`).join('') : '<span style="color:#999;">충분한 데이터가 없습니다.</span>';
             
-            // AI 맞춤형 피드백 생성 (활동 0회 예외 처리 반영)
             let aiFeedback = generateAIFeedback(student.name, bestGameNames, patterns, student.coins || 0, totalStudentClears);
 
             container.innerHTML = `
@@ -323,13 +324,12 @@
                 </div>
             `;
 
-            // 레이더 차트 그리기
             const ctx = document.getElementById('studentRadarChart').getContext('2d');
             if (studentRadarChartInstance) studentRadarChartInstance.destroy();
             studentRadarChartInstance = new Chart(ctx, {
                 type: 'radar',
                 data: {
-                    labels: ['읽기(유령)', '듣기(돋보기)', '변별(징검다리)', '운필력(선긋기)', '쓰기(스케치북)', '조합(솥단지)', '어휘(기차)'],
+                    labels: ['읽기', '듣기', '변별', '운필', '쓰기', '조합', '어휘'],
                     datasets: [{
                         label: '성공 횟수',
                         data: radarData,
@@ -338,11 +338,17 @@
                         pointBackgroundColor: '#ff9800',
                     }]
                 },
-                options: { responsive: true, maintainAspectRatio: false, scales: { r: { ticks: { stepSize: 1, backdropColor: 'transparent' }, beginAtZero: true } } }
+                options: { 
+                    responsive: true, 
+                    maintainAspectRatio: false, 
+                    plugins: { 
+                        legend: { position: 'bottom' } // 레이더 차트 범례도 하단으로 이동
+                    },
+                    scales: { r: { ticks: { stepSize: 1, backdropColor: 'transparent' }, beginAtZero: true } } 
+                }
             });
         }
 
-        // 패턴 분석 로직
         function analyzePatterns(weakWords) {
             if (weakWords.length < 3) return [];
             let batchimCount = 0; let doubleVowelCount = 0; let trapsCount = 0;
@@ -368,9 +374,7 @@
             return patterns.length > 0 ? patterns : ["특정 패턴보다 전반적인 소리 듣기 훈련 중"];
         }
 
-        // AI 텍스트 조립 로직
         function generateAIFeedback(name, bestGames, patterns, coins, totalClears) {
-            // 활동 내역이 아예 없는 학생 예외 처리
             if (coins === 0 && totalClears === 0) {
                 return `${name} 학생은 아직 놀이공원 활동을 본격적으로 시작하지 않았습니다. 아이가 에듀테크 환경에 흥미를 느낄 수 있도록, '명탐정 돋보기'나 '별자리 선 긋기' 같은 가벼운 탐색 놀이부터 교사나 학부모님이 함께 참여하며 격려해 주시면 큰 도움이 됩니다.`;
             }
@@ -399,13 +403,12 @@
             return feedback;
         }
 
-        // 비밀번호 초기화 기능 (클라우드 업데이트)
         window.resetStudentPassword = async function(docId, studentName) {
             if (confirm(`${studentName} 학생의 비밀 그림 암호를 초기화하시겠습니까? (초기화 시 다음 로그인 때 새로 설정하게 됩니다.)`)) {
                 try {
                     const studentRef = doc(db, "students", docId);
                     await updateDoc(studentRef, {
-                        picturePassword: "" // 빈 문자열로 덮어씌워 초기화
+                        picturePassword: ""
                     });
                     alert(`${studentName} 학생의 비밀번호가 성공적으로 초기화되었습니다.`);
                 } catch(e) {
@@ -415,7 +418,6 @@
             }
         }
 
-        // 초기 데이터 로드 실행
         fetchClassData();
     </script>
 </body>
